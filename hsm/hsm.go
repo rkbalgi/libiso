@@ -79,6 +79,11 @@ func (th *ThalesHsm) Start() {
 
 func (hsm_handle *ThalesHsm) handle_client_msg(tcp_conn *net.TCPConn, msg_data []byte) {
 
+    if(msg_data==nil || len(msg_data)==0){
+    	hsm_handle.log.Printf("invalid request from client")
+    	return;
+    }
+
 	hsm_handle.log.Printf("request from client - \n%s", hex.Dump(msg_data))
 	command_name := string(msg_data[12 : 12+2])
 
@@ -123,6 +128,13 @@ func (hsm_handle *ThalesHsm) handle_client_msg(tcp_conn *net.TCPConn, msg_data [
 func (th *ThalesHsm) msg_reader(tcp_conn *net.TCPConn) {
 
 	var reader io.Reader = tcp_conn
+	defer func(){
+		str:=recover()
+		if(str!=nil){
+			th.log.Println("(recovered)",str)
+		}
+	}();
+	
 	for {
 		//time.Sleep(time.Second * 2)
 
@@ -192,8 +204,15 @@ func (th *ThalesHsm) buffered_msg_reader(reader io.Reader) {
 
 func (th *ThalesHsm) check_error(err error) bool {
 	if err != nil {
+		
+		if(err.Error()=="EOF"){
+			//closed connection, close silently
+			th.log.Println("connection closed by client (EOF).");
+			return true
+		}
+		
 		th.log.Printf("error -%s", err.Error())
-		if strings.Contains(err.Error(), "forcibly closed") {
+		if strings.Contains(err.Error(), "forcibly closed"){
 			return true
 		}
 

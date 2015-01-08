@@ -8,25 +8,25 @@ import (
 )
 
 type ThalesMsRequest struct {
-	_prologue          prologue
+	_prologue            prologue
 	message_block_number uint
-	key_type            uint
-	key_length          uint
-	message_type        uint
-	key                string
-	iv                 string
-	message_length      uint
-	message_block       []byte
-	_epilogue          epilogue
+	key_type             uint
+	key_length           uint
+	message_type         uint
+	key                  string
+	iv                   string
+	message_length       uint
+	message_block        []byte
+	_epilogue            epilogue
 }
 
 type ThalesMsResponse struct {
-	message_header       []byte
-	response_code        []byte
-	error_code           []byte
-	MAB                 []byte
+	message_header        []byte
+	response_code         []byte
+	error_code            []byte
+	MAB                   []byte
 	end_message_delimiter string
-	message_trailer      string
+	message_trailer       string
 }
 
 func (hsm_handle *ThalesHsm) Handle_MS(msg_data []byte) []byte {
@@ -123,18 +123,25 @@ func (hsm_handle *ThalesHsm) Handle_MS(msg_data []byte) []byte {
 
 	mac_key := decrypt_key(ms_req_struct.key, key_type)
 
-	
+	if (ms_req_struct.key_length == 0 && (len(mac_key) == 16 || len(mac_key) == 24)) || (ms_req_struct.key_length == 1 && len(mac_key) == 8) {
+		hsm_handle.log.Println("key length and actual size mismatch.")
+		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	}
+
+	if __hsm_debug_enabled {
+		hsm_handle.log.Println("mac key", hex.EncodeToString(mac_key))
+	}
 	var mac []byte
-	if len(mac_key) == 16 {
+	if len(mac_key) == 16 || len(mac_key) == 24 {
 		//generate X9.19 mac
 		mac = crypto.GenerateMac_X919(ms_req_struct.message_block, mac_key)
-	}else {
+	} else {
 		//x9.9
 		mac = crypto.GenerateMac_X99(ms_req_struct.message_block, mac_key)
-		
+
 	}
 	ms_resp_struct.MAB = mac
-	ms_resp_struct.response_code = []byte("00")
+	ms_resp_struct.error_code = []byte("00")
 
 	if __hsm_debug_enabled {
 		hsm_handle.log.Printf("MAC: %s", hex.EncodeToString(mac))
@@ -158,10 +165,16 @@ func (ms_resp_struct *ThalesMsResponse) generate_response(ms_req_struct *ThalesM
 	resp_cmd_code[1] = resp_cmd_code[1] + 1
 	ms_resp_buf.Write(resp_cmd_code)
 
-	ms_resp_buf.Write(ms_resp_struct.response_code)
+	ms_resp_buf.Write(ms_resp_struct.error_code)
 	if ms_resp_struct.MAB != nil {
 		ms_resp_buf.Write(to_ascii(ms_resp_struct.MAB))
 	}
+
+	if ms_req_struct._epilogue.end_message_delimiter == 0x19 {
+		ms_resp_buf.WriteByte(ms_req_struct._epilogue.end_message_delimiter)
+		ms_resp_buf.Write(ms_req_struct._epilogue.message_trailer)
+	}
+
 	return ms_resp_buf.Bytes()
 
 }

@@ -1,11 +1,11 @@
 package crypto
 
-import "crypto/des"
 
-import "crypto/cipher"
 import (
 	"encoding/hex"
 	"log"
+	"crypto/des"
+	"crypto/cipher"
 )
 
 type DesMode int
@@ -175,6 +175,8 @@ func encrypt_3des(data []byte, key []byte) []byte {
 		//ede3
 		_3deskey = append(_3deskey, key...)
 	}
+	
+	log.Println(hex.EncodeToString(_3deskey))
 	_3des_cipher, err := des.NewTripleDESCipher(_3deskey)
 	if err != nil {
 		panic(err.Error())

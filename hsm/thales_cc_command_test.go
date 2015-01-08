@@ -3,7 +3,7 @@ package hsm
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/rkbalgi/net"
+	"github.com/rkbalgi/go/net"
 	"strings"
 	"testing"
 )
@@ -22,6 +22,7 @@ func Test_Thales_CC_1(t *testing.T) {
 	fail_on_err(t, err)
 	err = hsm_client.Write(msg_data)
 	fail_on_err(t, err)
+	defer hsm_client.Close();
 
 	response_data, err := hsm_client.ReadNextPacket()
 	fail_on_err(t, err)
@@ -40,6 +41,7 @@ func Test_Thales_CC_2(t *testing.T) {
 	hsm_client := net.NewNetCatClient("127.0.0.1:1500", net.MLI_2E)
 	err := hsm_client.OpenConnection()
 	fail_on_err(t, err)
+	defer hsm_client.Close();
 	err = hsm_client.Write(msg_data)
 	fail_on_err(t, err)
 
@@ -61,6 +63,8 @@ func Test_Thales_CC_3(t *testing.T) {
 	hsm_client := net.NewNetCatClient("127.0.0.1:1500", net.MLI_2E)
 	err := hsm_client.OpenConnection()
 	fail_on_err(t, err)
+	defer hsm_client.Close();
+	
 	err = hsm_client.Write(msg_data)
 	fail_on_err(t, err)
 
@@ -82,6 +86,8 @@ func Test_Thales_CC_4(t *testing.T) {
 	hsm_client := net.NewNetCatClient("127.0.0.1:1500", net.MLI_2E)
 	err := hsm_client.OpenConnection()
 	fail_on_err(t, err)
+	defer hsm_client.Close();
+	
 	err = hsm_client.Write(msg_data)
 	fail_on_err(t, err)
 

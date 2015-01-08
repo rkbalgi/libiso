@@ -28,7 +28,7 @@ const (
 
 
 type epilogue struct {
-	delimiter             string
+	delimiter             byte
 	lmk_identifier        uint
 	end_message_delimiter byte
 	message_trailer       []byte
