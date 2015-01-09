@@ -247,7 +247,7 @@ func (hsm_handle *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
 			resp.key_under_zmk = []byte(req.key_scheme_zmk + hex.EncodeToString(resp.key_under_zmk))
 		}
 	}
-	resp.key_check_value = []byte(hex.EncodeToString(resp.key_check_value[0:3]))
+	resp.key_check_value = []byte(hex.EncodeToString(resp.key_check_value[0:6]))
 
 	resp.error_code = HSM_OK
 
