@@ -1,7 +1,7 @@
 package crypto
 
 import (
-	"github.com/rkbalgi/utils"
+	"github.com/rkbalgi/go/utils"
 	"testing"
 	"bytes"
 )

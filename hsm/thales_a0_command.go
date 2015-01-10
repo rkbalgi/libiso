@@ -200,10 +200,12 @@ func (hsm_handle *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
 	//generate the required key and its check value
 	key := crypto.GenerateDesKey(key_len)
 	//generate check value
-	resp.key_check_value = gen_check_value(key)
+	resp.key_check_value = gen_check_value(key)[:3]
+	
+	
 	
 	if(__hsm_debug_enabled){
-		hsm_handle.log.Println(hex.EncodeToString(key),hex.EncodeToString(resp.key_check_value));
+		hsm_handle.log.Println("key value: ",hex.EncodeToString(key),"check value: ",hex.EncodeToString(resp.key_check_value));
 	}
 
 	//TODO:: odd parity enforcement
@@ -223,6 +225,7 @@ func (hsm_handle *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
 		case req.key_scheme_zmk == keys.X || req.key_scheme_zmk == keys.Y:
 			{
 				resp.key_under_zmk = encrypt_key_kek_x917(hex.EncodeToString(key), zmk_tmk_key, req.key_type)
+				hsm_handle.log.Println(hex.EncodeToString(resp.key_under_zmk),"??",hex.EncodeToString(key),"???",hex.EncodeToString(zmk_tmk_key))
 			}
 
 		default:
@@ -247,7 +250,7 @@ func (hsm_handle *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
 			resp.key_under_zmk = []byte(req.key_scheme_zmk + hex.EncodeToString(resp.key_under_zmk))
 		}
 	}
-	resp.key_check_value = []byte(hex.EncodeToString(resp.key_check_value[0:6]))
+	resp.key_check_value = []byte(hex.EncodeToString(resp.key_check_value))
 
 	resp.error_code = HSM_OK
 

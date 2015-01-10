@@ -181,9 +181,13 @@ func encrypt_3des(data []byte, key []byte) []byte {
 	if err != nil {
 		panic(err.Error())
 	}
+	
 
 	result := make([]byte, len(data))
-	_3des_cipher.Encrypt(result, data)
+	for i := 0; i < len(data); i += 8 {
+		_3des_cipher.Encrypt(result[i:], data[i:])
+	}
+	//_3des_cipher.Encrypt(result, data)
 
 	return (result)
 

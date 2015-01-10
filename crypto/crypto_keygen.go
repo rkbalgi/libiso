@@ -23,6 +23,8 @@ func GenerateDesKey(key_len int) []byte {
 		return tmp[:24]
 	}
 	
+	to_odd_parity(key)
+	
 	return key
 
 }
