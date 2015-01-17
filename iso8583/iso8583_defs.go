@@ -1,116 +1,90 @@
 package iso8583
 
 import (
+	"bytes"
+	_ "encoding/binary"
+	_ "encoding/hex"
+	_ "errors"
 	"fmt"
-	"math/big"
-	"encoding/hex"
+	_ "log"
+	_ "os"
+	"strconv"
 )
 
 const (
-	V1 = "V1"
-	V0 = "V0"
+	ebcdic_encoding = iota
+	ascii_encoding  = iota + 1
+	bcd_encoding    = iota + 2
+	binary_encoding = iota + 3
 )
 
-type Bitmap struct {
+const (
+	V1           = "V1"
+	V0           = "V0"
+	ISO_MSG_1100 = "1100"
+	ISO_MSG_1110 = "1110"
+	ISO_MSG_1420 = "1420"
+	ISO_MSG_1430 = "1430"
+	ISO_MSG_1804 = "1804"
+	ISO_MSG_1814 = "1814"
 
-	//primary secondary and tertiary bitmaps
-	_1bmp *big.Int
-	_2bmp *big.Int
-	_3bmp *big.Int
-}
+	ISO_RESP_DECLINE  = "100"
+	ISO_RESP_APPROVAL = "000"
+	ISO_FORMAT_ERROR = "909"
+)
 
-func NewBitmap() *Bitmap {
+var iso8583_msg_def *Iso8583MessageDef
 
-	bitmap := new(Bitmap)
-	bitmap._1bmp = big.NewInt(0)
-	bitmap._2bmp = big.NewInt(0)
-	bitmap._3bmp = big.NewInt(0)
+func init() {
+	iso8583_msg_def = new(Iso8583MessageDef)
+	iso8583_msg_def.spec_name = "ISO8583 v1 (ASCII)"
+	iso8583_msg_def.fields = make([]IsoField, 128+1)
+	//lets use a 1 based slice accessor
 
-	return (bitmap)
-}
+	//add all defined fields
+	iso8583_msg_def.fields[2] = NewVariableFieldDef("PAN", ascii_encoding, ascii_encoding, 2)
+	iso8583_msg_def.fields[4] = NewFixedFieldDef("Transaction Amount", ascii_encoding, 12)
+	iso8583_msg_def.fields[14] = NewFixedFieldDef("Expiry Date", ascii_encoding, 4)
 
-func (bmp *Bitmap) get_bmp_and_pos(pos int) (*big.Int, int) {
+	iso8583_msg_def.fields[14] = NewFixedFieldDef("Approval Code", ascii_encoding, 6)
+	iso8583_msg_def.fields[39] = NewFixedFieldDef("Action Code", ascii_encoding, 3)
 
-	var target_bmp *big.Int
-	var i_pos int
-	
-	fmt.Println(pos);
+	iso8583_msg_def.fields[55] = NewVariableFieldDef("ICC Data", ascii_encoding, binary_encoding, 3)
+	iso8583_msg_def.fields[64] = NewFixedFieldDef("MAC1", binary_encoding, 8)
+	iso8583_msg_def.fields[128] = NewFixedFieldDef("MAC2", binary_encoding, 8)
 
-	switch {
-	case pos >= 0 && pos < 64:
-		{
-			target_bmp = bmp._1bmp
-			i_pos = 63 - pos
-			fmt.Println("i_pos= ",i_pos);
-
-		}
-	case pos >= 64 && pos < 128:
-		{
-			 
-			target_bmp = bmp._2bmp
-			i_pos = 127 - pos
-			fmt.Println("i_pos= ",i_pos);
-
-		}
-	case pos >= 128 && pos < 192:
-		{
-			target_bmp = bmp._3bmp
-			i_pos = 191 - pos
-		}
-	default:
-		{
-			panic(fmt.Sprint("invalid position in bitmap", pos))
-		}
-
-	}
-
-	return target_bmp, i_pos
+	fmt.Println("initialized -" + iso8583_msg_def.spec_name)
 
 }
 
-func (bmp *Bitmap) SetOff(pos int) {
-	pos = pos - 1
-	target_bmp, i_pos := bmp.get_bmp_and_pos(pos)
-	target_bmp.SetBit(target_bmp, i_pos, 0)
+type IsoField interface {
+	Parse(*Iso8583Message, *bytes.Buffer) *FieldData
+	Assemble(*Iso8583Message, *bytes.Buffer)
+	String() string
+	to_string([]byte) string
+	get_data_encoding() int
 }
 
-func (bmp *Bitmap) SetOn(pos int) {
-	pos = pos - 1
-	target_bmp, i_pos := bmp.get_bmp_and_pos(pos)
-	target_bmp.SetBit(target_bmp, i_pos, 1)
-
+type Iso8583MessageDef struct {
+	spec_name string
+	fields    []IsoField
 }
 
-func to_octet(in_data []byte) []byte {
+func ascii2ebcdic(inp_data string) string {
+	return ""
+}
 
-    fmt.Println("to_octet -",hex.EncodeToString(in_data)); 
-	if len(in_data) != 8 {
-		n_pads := 8 - len(in_data)
-		with_pads := make([]byte, n_pads)
-		with_pads = append(with_pads, in_data...)
+func ebcdic2ascii(inp_data []byte) string {
+	return ""
+}
 
-		return with_pads
+func str_to_uint64(str_val string) uint64 {
+
+	val, err := strconv.ParseUint(str_val, 10, 64)
+	if err != nil {
+		panic(err.Error())
 	}
 	
-
-	return in_data
-
-}
-
-func (bmp *Bitmap) Bytes() []byte {
-
-	var bmp_data []byte
-
-	bmp_data = to_octet(bmp._1bmp.Bytes())
-	if bmp._1bmp.Bit(63) == 1 {
-		tmp := to_octet(bmp._2bmp.Bytes())
-		bmp_data = append(bmp_data, tmp...)
-	}
-	if bmp._2bmp.Bit(63) == 1 {
-		tmp := to_octet(bmp._3bmp.Bytes())
-		bmp_data = append(bmp_data, tmp...)
-	}
-
-	return bmp_data
+	return val
 
 }
