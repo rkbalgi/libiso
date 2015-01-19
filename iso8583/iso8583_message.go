@@ -25,6 +25,12 @@ func NewIso8583Message() *Iso8583Message {
 	iso_msg.iso_msg_def = iso8583_msg_def
 	iso_msg.bit_map = NewBitMap()
 	iso_msg.field_data_list = make([]FieldData, len(iso8583_msg_def.fields))
+	for i, f_def := range iso8583_msg_def.fields {
+		if f_def != nil {
+			//fmt.Println(i,f_def.String())
+			iso_msg.field_data_list[i].field_def = f_def
+		}
+	}
 	iso_msg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
 	return iso_msg
 
@@ -53,31 +59,34 @@ func (iso_msg *Iso8583Message) handle_error(err error) {
 	}
 }
 
-func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData,error){
-	
-	if(iso_msg.bit_map.IsOn(pos)){
-		return &iso_msg.field_data_list[pos],nil
-	}else{
-		return nil,errors.New("field not present")
+func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
+
+	if iso_msg.bit_map.IsOn(pos) {
+		return &iso_msg.field_data_list[pos], nil
+	} else {
+		return nil, errors.New("field not present")
 	}
-	
 
 }
 
-
 //set field
-func (iso_msg *Iso8583Message) set_field(pos int, value string){
-	
+func (iso_msg *Iso8583Message) set_field(pos int, value string) {
+
 	iso_msg.bit_map.SetOn(pos)
-	iso_msg.field_data_list[pos].SetData(value);
-	
+	fmt.Println(pos);
+	//fmt.Println(iso_msg.field_data_list[pos].field_def.String());
+	//for i,_p := range iso_msg.field_data_list {
+	//	fmt.Println(i,_p)
+	//}
+	iso_msg.field_data_list[pos].SetData(value)
+
 }
 
 //copy all data from req to response message
 func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 
 	iso_resp.bit_map = iso_req.bit_map.Copy()
-	iso_resp.field_data_list = make([]FieldData, len(iso_req.field_data_list))
+	//iso_resp.field_data_list = make([]FieldData, len(iso_req.field_data_list))
 
 	for i := 1; i < 129+64; i++ {
 
@@ -88,7 +97,6 @@ func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 	}
 
 }
-
 
 //this method handles an incoming ISO8583 message, doing the parsing, processing
 //and response creation
@@ -129,11 +137,18 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 
 }
 
-
 //create a string dump of the iso message
 func (iso_msg *Iso8583Message) Dump() string {
-	
-	return ""
+
+    msg_buf:=bytes.NewBufferString(fmt.Sprintf("\n%-25s: %s\n","Message Type",iso_msg.msg_type));
+    msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n","BitMap",hex.EncodeToString(iso_msg.bit_map.Bytes())));
+    for i,v:=range iso_msg.field_data_list{
+    	if v.field_def!=nil && iso_msg.bit_map.IsOn(i){
+    		msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n",v.field_def.String(),v.String()));
+    	}
+    }
+
+	return msg_buf.String()
 }
 
 //parse the bytes from 'buf' and populate 'Iso8583Message'

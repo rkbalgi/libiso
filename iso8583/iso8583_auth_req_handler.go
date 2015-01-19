@@ -29,8 +29,8 @@ func handle_auth_req(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 		}
 	default:
 		{
-			iso_resp.set_field(39, "APPISO")
-			iso_resp.set_field(38, ISO_RESP_APPROVAL)
+			iso_resp.set_field(38, "APPISO")
+			iso_resp.set_field(39, ISO_RESP_APPROVAL)
 		}
 
 	}

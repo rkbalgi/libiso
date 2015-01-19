@@ -27,10 +27,12 @@ func Test_Bitmap(t *testing.T) {
 // 1101 B
 func Test_Iso8583Message(t *testing.T) {
 
-	data, _ := hex.DecodeString("31313030D0040000000000000000000000000001313533373131313131313131313131313430303030303030303031323231323132e201f245ed4abb000000")
-	iso_msg := NewIso8583Message()
+	data, _ := hex.DecodeString("31313030D0040000000000000000000000000001313533373131313131313131313131313430303030303030303031323231323132e201f245ed4abb00")
+
 	buf := bytes.NewBuffer(data)
-	err := iso_msg.Parse(buf)
+	iso_msg, err := Handle(buf)
+	t.Log(iso_msg.Dump());
+
 	if err != nil {
 		t.Fail()
 	}

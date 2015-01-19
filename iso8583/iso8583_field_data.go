@@ -3,6 +3,7 @@ package iso8583
 import (
 	"encoding/hex"
 	"github.com/rkbalgi/go/encoding/ebcdic"
+	_"fmt"
 )
 
 type FieldData struct {
@@ -12,6 +13,9 @@ type FieldData struct {
 
 func (fld_data *FieldData) SetData(value string) {
 
+	//fmt.Println(*fld_data)
+	
+	
 	switch fld_data.field_def.get_data_encoding() {
 	case ascii_encoding:
 		{
