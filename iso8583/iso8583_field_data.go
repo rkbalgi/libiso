@@ -66,7 +66,7 @@ func (field_data FieldData) String() string {
 		}
 	case ebcdic_encoding:
 		{
-			return ebcdic2ascii(field_data.field_data)
+			return ebcdic.EncodeToString(field_data.field_data)
 		}
 	case binary_encoding:
 		fallthrough

@@ -30,7 +30,7 @@ const (
 
 	ISO_RESP_DECLINE  = "100"
 	ISO_RESP_APPROVAL = "000"
-	ISO_FORMAT_ERROR = "909"
+	ISO_FORMAT_ERROR  = "909"
 )
 
 var iso8583_msg_def *Iso8583MessageDef
@@ -43,9 +43,14 @@ func init() {
 
 	//add all defined fields
 	iso8583_msg_def.fields[2] = NewVariableFieldDef("PAN", ascii_encoding, ascii_encoding, 2)
+	iso8583_msg_def.fields[3] = NewFixedFieldDef("Processing Code", ebcdic_encoding, 6)
 	iso8583_msg_def.fields[4] = NewFixedFieldDef("Transaction Amount", ascii_encoding, 12)
 	iso8583_msg_def.fields[14] = NewFixedFieldDef("Expiry Date", ascii_encoding, 4)
 
+	iso8583_msg_def.fields[33] = NewVariableFieldDef("Test Var Binary", binary_encoding, binary_encoding, 2)
+	iso8583_msg_def.fields[34] = NewVariableFieldDef("Test Var BCD", bcd_encoding, binary_encoding, 2)
+
+	iso8583_msg_def.fields[35] = NewVariableFieldDef("Track II", ebcdic_encoding, ebcdic_encoding, 3)
 	iso8583_msg_def.fields[38] = NewFixedFieldDef("Approval Code", ascii_encoding, 6)
 	iso8583_msg_def.fields[39] = NewFixedFieldDef("Action Code", ascii_encoding, 3)
 
@@ -84,7 +89,7 @@ func str_to_uint64(str_val string) uint64 {
 	if err != nil {
 		panic(err.Error())
 	}
-	
+
 	return val
 
 }

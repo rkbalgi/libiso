@@ -2,9 +2,10 @@ package iso8583
 
 import (
 	"bytes"
-	"encoding/binary"
+	_ "encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"github.com/rkbalgi/go/encoding/ebcdic"
 	"strconv"
 )
 
@@ -16,7 +17,11 @@ type VariableFieldDef struct {
 }
 
 //create a new fixed field definition
-func NewVariableFieldDef(p_name string, p_len_encoding int, p_data_encoding int, p_len_ind_size int) *VariableFieldDef {
+func NewVariableFieldDef(p_name string,
+	p_len_encoding int,
+	p_data_encoding int,
+	p_len_ind_size int) *VariableFieldDef {
+
 	field := new(VariableFieldDef)
 	field.name = p_name
 	field.data_encoding = p_data_encoding
@@ -49,19 +54,21 @@ func (field_def *VariableFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buf
 
 		iso_msg.field_parse_error(field_def.name, err)
 	}
+
 	var data_len uint64 = 0
-	switch field_def.data_encoding {
+	switch field_def.length_encoding {
 	case ascii_encoding:
 		{
 			data_len, _ = strconv.ParseUint(string(tmp), 10, 64)
 		}
 	case ebcdic_encoding:
 		{
-			data_len, _ = strconv.ParseUint(ascii2ebcdic(string(tmp)), 10, 64)
+
+			data_len, _ = strconv.ParseUint(ebcdic.EncodeToString(tmp), 10, 64)
 		}
 	case binary_encoding:
 		{
-			data_len = binary.BigEndian.Uint64(tmp)
+			data_len, _ = strconv.ParseUint(hex.EncodeToString(tmp), 16, 64)
 		}
 	case bcd_encoding:
 		{
@@ -87,7 +94,7 @@ func (field_def *VariableFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buf
 
 	}
 	f_data.field_data = b_field_data
-	iso_msg.log.Printf("parsed: [%s]", f_data.String())
+	iso_msg.log.Printf("parsed: [%s]=[%s]", field_def.name, f_data.String())
 
 	return f_data
 
@@ -95,7 +102,6 @@ func (field_def *VariableFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buf
 
 //add the field data into buf as per the encoding
 func (field_def *VariableFieldDef) Assemble(iso_msg *Iso8583Message, buf *bytes.Buffer) {
-
 
 }
 

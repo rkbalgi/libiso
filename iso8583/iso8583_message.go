@@ -73,7 +73,7 @@ func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
 func (iso_msg *Iso8583Message) set_field(pos int, value string) {
 
 	iso_msg.bit_map.SetOn(pos)
-	fmt.Println(pos);
+	//fmt.Println(pos);
 	//fmt.Println(iso_msg.field_data_list[pos].field_def.String());
 	//for i,_p := range iso_msg.field_data_list {
 	//	fmt.Println(i,_p)
@@ -109,6 +109,8 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	req_iso_msg.log.Println("parsed incoming message: ",req_iso_msg.Dump());
 
 	//continue handling
 
@@ -132,6 +134,8 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 
 		}
 	}
+	
+	req_iso_msg.log.Println("outgoing message: ",resp_iso_msg.Dump());
 
 	return resp_iso_msg, err
 

@@ -162,9 +162,9 @@ func (bmp *BitMap) Copy() *BitMap {
 
 	new_bmp := NewBitMap()
 
-	new_bmp._1bmp = big.NewInt(bmp._1bmp.Int64())
-	new_bmp._2bmp = big.NewInt(bmp._2bmp.Int64())
-	new_bmp._3bmp = big.NewInt(bmp._3bmp.Int64())
+	new_bmp._1bmp = big.NewInt(0).Set(bmp._1bmp)
+	new_bmp._2bmp = big.NewInt(0).Set(bmp._2bmp)
+	new_bmp._3bmp = big.NewInt(0).Set(bmp._3bmp)
 	return new_bmp
 
 }

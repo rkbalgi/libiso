@@ -41,7 +41,7 @@ func (field_def *FixedFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buffer
 	f_data := new(FieldData)
 	f_data.field_def = field_def
 	f_data.field_data = tmp
-	iso_msg.log.Printf("parsed: [%s][%s]", field_def.name, f_data.String())
+	iso_msg.log.Printf("parsed: [%s]=[%s]", field_def.name, f_data.String())
 
 	return f_data
 
