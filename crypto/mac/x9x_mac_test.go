@@ -1,4 +1,4 @@
-package crypto
+package mac
 
 import (
 	"github.com/rkbalgi/go/utils"

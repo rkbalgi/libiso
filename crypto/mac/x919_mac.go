@@ -1,4 +1,4 @@
-package crypto
+package mac
 
 import (
 	"crypto/cipher"
@@ -11,25 +11,6 @@ import (
 var _log *log.Logger=log.New(os.Stdout,"## mac routines ## ",log.LstdFlags)
 
 var __zero_iv []byte = make([]byte, 8)
-
-//generate a X9.9 MAC using a single length key
-//data will be zero padded if required
-
-func GenerateMac_X99(in_mac_data []byte, key_data []byte) []byte {
-
-	mac_data := make([]byte, len(in_mac_data))
-	copy(mac_data, in_mac_data)
-
-	//add 0 padding
-	if len(mac_data) < 8 || len(mac_data)%8 != 0 {
-		pads := make([]byte, 8-(len(mac_data)%8))
-		mac_data = append(mac_data, pads...)
-	}
-
-	result := encrypt_des_cbc(mac_data, key_data)
-	return (result[len(result)-8:])
-
-}
 
 //generate a X9.19 MAC (ISO9797 - Algorithm 3) with a double length key (ede2)
 //data will be zero padded if required

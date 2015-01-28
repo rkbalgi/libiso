@@ -3,7 +3,7 @@ package hsm
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/rkbalgi/go/crypto"
+	"github.com/rkbalgi/go/crypto/mac"
 	//_ "github.com/rkbalgi/hsm"
 )
 
@@ -131,20 +131,20 @@ func (hsm_handle *ThalesHsm) Handle_MS(msg_data []byte) []byte {
 	if __hsm_debug_enabled {
 		hsm_handle.log.Println("mac key", hex.EncodeToString(mac_key))
 	}
-	var mac []byte
+	var gen_mac []byte
 	if len(mac_key) == 16 || len(mac_key) == 24 {
 		//generate X9.19 mac
-		mac = crypto.GenerateMac_X919(ms_req_struct.message_block, mac_key)
+		gen_mac = mac.GenerateMac_X919(ms_req_struct.message_block, mac_key)
 	} else {
 		//x9.9
-		mac = crypto.GenerateMac_X99(ms_req_struct.message_block, mac_key)
+		gen_mac = mac.GenerateMac_X99(ms_req_struct.message_block, mac_key)
 
 	}
-	ms_resp_struct.MAB = mac
+	ms_resp_struct.MAB = gen_mac
 	ms_resp_struct.error_code = []byte("00")
 
 	if __hsm_debug_enabled {
-		hsm_handle.log.Printf("MAC: %s", hex.EncodeToString(mac))
+		hsm_handle.log.Printf("MAC: %s", hex.EncodeToString(gen_mac))
 	}
 
 	//send response
