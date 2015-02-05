@@ -29,7 +29,7 @@ func (field_def *FixedFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buffer
 
 	tmp := make([]byte, field_def.data_size)
 	n, err := buf.Read(tmp)
-	
+
 	if n != field_def.data_size || err != nil {
 		if n != field_def.data_size {
 			iso_msg.buffer_underflow_error(field_def.name)
@@ -59,7 +59,19 @@ func (field_def *FixedFieldDef) get_data_encoding() int {
 func (field_def *FixedFieldDef) Assemble(iso_msg *Iso8583Message, buf *bytes.Buffer) {
 
 	//buf.Write(iso_msg);
+}
 
+func (field_def *FixedFieldDef) IsFixed() bool {
+	return true
+}
+
+func (field_def *FixedFieldDef) DataLength() int {
+	return field_def.data_size
+}
+
+func (field_def *FixedFieldDef) EncodedLength(data_len int) []byte {
+	//not applicable to fixed fields
+	panic("illegal operation")
 }
 
 func (field_def *FixedFieldDef) String() string {

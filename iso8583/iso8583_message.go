@@ -109,8 +109,8 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	req_iso_msg.log.Println("parsed incoming message: ",req_iso_msg.Dump());
+
+	req_iso_msg.log.Println("parsed incoming message: ", req_iso_msg.Dump())
 
 	//continue handling
 
@@ -134,8 +134,8 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 
 		}
 	}
-	
-	req_iso_msg.log.Println("outgoing message: ",resp_iso_msg.Dump());
+
+	req_iso_msg.log.Println("outgoing message: ", resp_iso_msg.Dump())
 
 	return resp_iso_msg, err
 
@@ -144,13 +144,13 @@ func Handle(buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 //create a string dump of the iso message
 func (iso_msg *Iso8583Message) Dump() string {
 
-    msg_buf:=bytes.NewBufferString(fmt.Sprintf("\n%-25s: %s\n","Message Type",iso_msg.msg_type));
-    msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n","BitMap",hex.EncodeToString(iso_msg.bit_map.Bytes())));
-    for i,v:=range iso_msg.field_data_list{
-    	if v.field_def!=nil && iso_msg.bit_map.IsOn(i){
-    		msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n",v.field_def.String(),v.String()));
-    	}
-    }
+	msg_buf := bytes.NewBufferString(fmt.Sprintf("\n%-25s: %s\n", "Message Type", iso_msg.msg_type))
+	msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n", "BitMap", hex.EncodeToString(iso_msg.bit_map.Bytes())))
+	for i, v := range iso_msg.field_data_list {
+		if v.field_def != nil && iso_msg.bit_map.IsOn(i) {
+			msg_buf.WriteString(fmt.Sprintf("%-25s: %s\n", v.field_def.String(), v.String()))
+		}
+	}
 
 	return msg_buf.String()
 }
@@ -205,4 +205,23 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 
 	return err
 
+}
+
+func (iso_msg *Iso8583Message) Bytes() []byte {
+
+	msg_buf := bytes.NewBuffer(make([]byte, 0))
+	msg_buf.Write([]byte(iso_msg.msg_type))
+	msg_buf.Write(iso_msg.bit_map.Bytes())
+
+	for i, v := range iso_msg.field_data_list {
+		if v.field_def != nil && iso_msg.bit_map.IsOn(i) {
+			f_data:=v.Bytes()
+			iso_msg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
+				v.field_def.String(),len(v.field_data),hex.EncodeToString(v.field_data),
+				hex.EncodeToString(f_data));
+			msg_buf.Write(f_data)
+		}
+	}
+
+	return msg_buf.Bytes()
 }

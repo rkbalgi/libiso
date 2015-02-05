@@ -105,7 +105,7 @@ func EncodeToString(data []byte) string {
 	return buf.String()
 }
 
-//convert from a ascii/encoded string to ebcdic bytes
+//convert from a ascii encoded string to ebcdic bytes
 func Decode(str string) []byte {
 
 	data := make([]byte, len(str))

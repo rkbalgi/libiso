@@ -37,7 +37,7 @@ var iso8583_msg_def *Iso8583MessageDef
 
 func init() {
 	iso8583_msg_def = new(Iso8583MessageDef)
-	iso8583_msg_def.spec_name = "ISO8583 v1 (ASCII)"
+	iso8583_msg_def.spec_name = "ISO8583_1 v1 (ASCII)"
 	iso8583_msg_def.fields = make([]IsoField, 128+1)
 	//lets use a 1 based slice accessor
 
@@ -66,6 +66,9 @@ type IsoField interface {
 	Parse(*Iso8583Message, *bytes.Buffer) *FieldData
 	Assemble(*Iso8583Message, *bytes.Buffer)
 	String() string
+	IsFixed() bool
+	DataLength() int
+	EncodedLength(int) []byte
 	to_string([]byte) string
 	get_data_encoding() int
 }
@@ -73,14 +76,6 @@ type IsoField interface {
 type Iso8583MessageDef struct {
 	spec_name string
 	fields    []IsoField
-}
-
-func ascii2ebcdic(inp_data string) string {
-	return ""
-}
-
-func ebcdic2ascii(inp_data []byte) string {
-	return ""
 }
 
 func str_to_uint64(str_val string) uint64 {

@@ -2,6 +2,7 @@ package iso8583
 
 import (
 	"bytes"
+	"encoding/binary"
 	_ "encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -103,6 +104,140 @@ func (field_def *VariableFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buf
 //add the field data into buf as per the encoding
 func (field_def *VariableFieldDef) Assemble(iso_msg *Iso8583Message, buf *bytes.Buffer) {
 
+}
+
+func (field_def *VariableFieldDef) IsFixed() bool {
+	return false
+}
+
+func (field_def *VariableFieldDef) DataLength() int {
+	//not applicable
+	return -1
+}
+
+//return the length part of the variable field
+//as a []byte slice
+func (field_def *VariableFieldDef) EncodedLength(data_len int) []byte {
+	//not applicable
+
+	if field_def.len_ind_size > 4 &&
+		(field_def.length_encoding == bcd_encoding || field_def.length_encoding == binary_encoding) {
+		panic("[llvar] invalid length indicator size for bcd/binary - >4")
+	}
+
+	var ll []byte
+
+	switch field_def.length_encoding {
+	case binary_encoding:
+		{
+			switch field_def.len_ind_size {
+			case 1:
+				{
+					ll = []byte{byte(data_len)}
+				}
+			case 2:
+				{
+					ll = make([]byte, 2)
+					binary.BigEndian.PutUint16(ll, uint16(data_len))
+				}
+			case 4:
+				{
+					ll = make([]byte, 4)
+					binary.BigEndian.PutUint32(ll, uint32(data_len))
+				}
+			default:
+				{
+					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field_def.len_ind_size))
+				}
+			}
+
+		}
+
+	case bcd_encoding:
+		{
+
+			switch field_def.len_ind_size {
+			case 1:
+				{
+					ll, _ = hex.DecodeString(fmt.Sprintf("%0d", data_len))
+				}
+			case 2:
+				{
+					ll, _ = hex.DecodeString(fmt.Sprintf("%04d", data_len))
+				}
+			case 4:
+				{
+					ll, _ = hex.DecodeString(fmt.Sprintf("%08d", data_len))
+				}
+			default:
+				{
+					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field_def.len_ind_size))
+				}
+			}
+
+		}
+
+	case ascii_encoding:
+		{
+
+			len_str := encoded_length_as_string(field_def.len_ind_size, data_len)
+			ll = []byte(len_str)
+
+		}
+
+	case ebcdic_encoding:
+		{
+
+			len_str := encoded_length_as_string(field_def.len_ind_size, data_len)
+			ll = ebcdic.Decode(len_str)
+
+		}
+
+	}
+
+	return ll
+}
+
+func encoded_length_as_string(len_ind_size int, data_len int) string {
+
+	var tmp string
+
+	switch len_ind_size {
+	case 1:
+		{
+			if data_len > 9 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			}
+			tmp = fmt.Sprintf("%d", data_len)
+		}
+	case 2:
+		{
+			if data_len > 99 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			}
+			tmp = fmt.Sprintf("%02d", data_len)
+		}
+	case 3:
+		{
+			if data_len > 999 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			}
+			tmp = fmt.Sprintf("%03d", data_len)
+		}
+	case 4:
+		{
+			if data_len > 9999 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			}
+			tmp = fmt.Sprintf("%04d", data_len)
+		}
+	default:
+		{
+			panic(fmt.Sprintf("[llvar] invalid length indicator size for  field - %d", len_ind_size))
+		}
+	}
+
+	return tmp
 }
 
 func (field_def *VariableFieldDef) String() string {
