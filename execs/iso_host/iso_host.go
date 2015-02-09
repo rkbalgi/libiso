@@ -40,8 +40,6 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 
 }
 
-
-
 func main() {
 
 	tcp_addr := new(net.TCPAddr)

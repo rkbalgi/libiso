@@ -2,6 +2,7 @@ package iso8583
 
 import (
 	"bytes"
+	"container/list"
 	_ "encoding/binary"
 	_ "encoding/hex"
 	_ "errors"
@@ -34,8 +35,60 @@ const (
 )
 
 var iso8583_msg_def *Iso8583MessageDef
+var spec_map map[string]*Iso8583MessageDef
+
+// Returns a spec definition for the given spec_name
+func GetMessageDefByName(spec_name string) *Iso8583MessageDef {
+	return spec_map[spec_name]
+}
+
+//Returns all available specs
+func GetSpecs() []string {
+
+	specs := make([]string, len(spec_map))
+	i := 0
+	for k, _ := range spec_map {
+		specs[i] = k
+		i = i + 1
+	}
+
+	return specs
+}
+
+//Returns all available specs
+func GetSpecLayout(spec_name string) []string {
+
+	fields := list.New()
+	fields.Init()
+	fields.PushBack("Message Type")
+	fields.PushBack("Bitmap")
+
+	spec := spec_map[spec_name]
+	//fmt.Println(spec)
+	for _, v := range spec.fields {
+		if v != nil {
+			//fmt.Println(v.String())
+			fields.PushBack(v.String())
+		}
+
+	}
+
+	fields_slice := make([]string, fields.Len())
+	j := 0
+	for i := fields.Front(); i != nil; i = i.Next() {
+		fields_slice[j] = i.Value.(string)
+		j++
+	}
+
+	return fields_slice
+
+}
 
 func init() {
+
+	//initialize map of all spec's to their definitions
+	spec_map = make(map[string]*Iso8583MessageDef)
+
 	iso8583_msg_def = new(Iso8583MessageDef)
 	iso8583_msg_def.spec_name = "ISO8583_1 v1 (ASCII)"
 	iso8583_msg_def.fields = make([]IsoField, 128+1)
@@ -59,6 +112,7 @@ func init() {
 	iso8583_msg_def.fields[128] = NewFixedFieldDef("MAC2", binary_encoding, 8)
 
 	fmt.Println("initialized -" + iso8583_msg_def.spec_name)
+	spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def
 
 }
 
