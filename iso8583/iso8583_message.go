@@ -19,6 +19,49 @@ type Iso8583Message struct {
 	log             *log.Logger
 }
 
+//GetMessageType returns the 'Message Type' as string
+func (iso_msg *Iso8583Message) GetMessageType() string {
+	return iso_msg.msg_type
+}
+
+
+//GetMessageType returns the 'Message Type' as string
+func (iso_msg *Iso8583Message) GetBinaryBitmap() string {
+	
+	
+	binary_bmp_str:=bytes.NewBufferString("");
+	for i:=1;i<129;i++{
+		if iso_msg.bit_map.IsOn(i){
+			binary_bmp_str.WriteString("1");
+		}else{
+			binary_bmp_str.WriteString("0");
+		}
+	}
+	
+	return binary_bmp_str.String();
+	
+	
+}
+
+
+//IsSelected returns a boolean indicating
+//if the 'position' is selected in the bitmap
+func (iso_msg *Iso8583Message) IsSelected(position int) bool {
+	return iso_msg.bit_map.IsOn(position)
+}
+
+//GetFieldData returns the data associated with the 'position'
+//in the iso_msg
+func (iso_msg *Iso8583Message) GetFieldData(position int) (data string, err error) {
+	field_data, err := iso_msg.get_field(position)
+	if err == nil {
+		data = field_data.String()
+	}
+	//iso_msg.log.Println("len",field_data.field_def.String(),position,hex.EncodeToString(field_data.field_data));
+	return data, err
+
+}
+
 func NewIso8583Message() *Iso8583Message {
 
 	iso_msg := new(Iso8583Message)
@@ -59,12 +102,13 @@ func (iso_msg *Iso8583Message) handle_error(err error) {
 	}
 }
 
-func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
+func (iso_msg *Iso8583Message) get_field(pos int) (FieldData, error) {
 
 	if iso_msg.bit_map.IsOn(pos) {
-		return &iso_msg.field_data_list[pos], nil
+		log.Println("get_field ", hex.EncodeToString(iso_msg.field_data_list[pos].field_data))
+		return iso_msg.field_data_list[pos], nil
 	} else {
-		return nil, errors.New("field not present")
+		return FieldData{}, errors.New("field not present")
 	}
 
 }
@@ -73,11 +117,6 @@ func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
 func (iso_msg *Iso8583Message) set_field(pos int, value string) {
 
 	iso_msg.bit_map.SetOn(pos)
-	//fmt.Println(pos);
-	//fmt.Println(iso_msg.field_data_list[pos].field_def.String());
-	//for i,_p := range iso_msg.field_data_list {
-	//	fmt.Println(i,_p)
-	//}
 	iso_msg.field_data_list[pos].SetData(value)
 
 }
@@ -215,10 +254,10 @@ func (iso_msg *Iso8583Message) Bytes() []byte {
 
 	for i, v := range iso_msg.field_data_list {
 		if v.field_def != nil && iso_msg.bit_map.IsOn(i) {
-			f_data:=v.Bytes()
+			f_data := v.Bytes()
 			iso_msg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
-				v.field_def.String(),len(v.field_data),hex.EncodeToString(v.field_data),
-				hex.EncodeToString(f_data));
+				v.field_def.String(), len(v.field_data), hex.EncodeToString(v.field_data),
+				hex.EncodeToString(f_data))
 			msg_buf.Write(f_data)
 		}
 	}

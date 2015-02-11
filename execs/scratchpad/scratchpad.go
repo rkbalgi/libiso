@@ -24,7 +24,27 @@ type CommandHeader struct{
 	MacData []byte `size:"4"`
 }
 
+var letter_map map[string]int;
+func letter_sum(month string) int{
+	
+	sum:=0;
+	for i:=0;i<len(month);i++{
+		sum+=letter_map[month[i:i+1]]
+	}
+	
+	return sum;
+}
+
 func main() {
+	
+	letter_map=make(map[string]int,26);
+	tmp:="abcdefghijklmnopqrstuvwxyz";
+	for i:=1;i<27;i++{
+		letter_map[tmp[i-1:i]]=i;
+	}
+	
+	fmt.Println("january ",letter_sum("s"));
+	
 	
 	cmd:="NC"
 	
