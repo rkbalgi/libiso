@@ -10,9 +10,10 @@ import (
 type BitMap struct {
 
 	//primary secondary and tertiary bitmaps
-	_1bmp *big.Int
-	_2bmp *big.Int
-	_3bmp *big.Int
+	_1bmp      *big.Int
+	_2bmp      *big.Int
+	_3bmp      *big.Int
+	sub_fields []IsoField
 }
 
 func NewBitMap() *BitMap {
@@ -21,8 +22,40 @@ func NewBitMap() *BitMap {
 	bitmap._1bmp = big.NewInt(0)
 	bitmap._2bmp = big.NewInt(0)
 	bitmap._3bmp = big.NewInt(0)
+	bitmap.sub_fields = make([]IsoField, 128+1)
 
 	return (bitmap)
+}
+
+type BitmappedField interface {
+	Parse(iso_msg *Iso8583Message, buf *bytes.Buffer)
+	IsOn(int) bool
+	SetOn(int)
+	SetOff(int)
+	Bytes() []byte
+}
+
+//add a new  fixed field to the bitmap
+func (bmp *BitMap) add_fixed_field(
+	p_bmp_pos int,
+	p_name string,
+	p_data_encoding int,
+	p_field_len int) {
+
+	field := NewFixedFieldDef(p_name, p_data_encoding, p_field_len)
+	bmp.sub_fields[p_bmp_pos] = field
+
+}
+
+//add a new  variable field to the bitmap
+func (bmp *BitMap) add_variable_field(p_bmp_pos int, p_name string,
+	p_len_encoding int,
+	p_data_encoding int,
+	p_field_len int) {
+
+	field := NewVariableFieldDef(p_name, p_len_encoding, p_data_encoding, p_field_len)
+	bmp.sub_fields[p_bmp_pos] = field
+
 }
 
 //check if the bit at position 'pos' is

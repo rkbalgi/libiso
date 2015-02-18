@@ -2,6 +2,7 @@ package iso8583
 
 import (
 	"bytes"
+	"container/list"
 	_ "container/list"
 	_ "encoding/binary"
 	_ "encoding/hex"
@@ -44,25 +45,30 @@ func init() {
 
 	iso8583_msg_def = new(Iso8583MessageDef)
 	iso8583_msg_def.spec_name = "ISO8583_1 v1 (ASCII)"
-	iso8583_msg_def.fields = make([]IsoField, 128+1)
-	//lets use a 1 based slice accessor
+	iso8583_msg_def.fields_def_list = list.New()
 
-	//add all defined fields
-	iso8583_msg_def.fields[2] = NewVariableFieldDef("PAN", ascii_encoding, ascii_encoding, 2)
-	iso8583_msg_def.fields[3] = NewFixedFieldDef("Processing Code", ebcdic_encoding, 6)
-	iso8583_msg_def.fields[4] = NewFixedFieldDef("Transaction Amount", ascii_encoding, 12)
-	iso8583_msg_def.fields[14] = NewFixedFieldDef("Expiry Date", ascii_encoding, 4)
+	bmp := NewBitMap()
+	iso8583_msg_def.add_field(NewFixedFieldDef("Message Type", ascii_encoding, 4))
 
-	iso8583_msg_def.fields[33] = NewVariableFieldDef("Test Var Binary", binary_encoding, binary_encoding, 2)
-	iso8583_msg_def.fields[34] = NewVariableFieldDef("Test Var BCD", bcd_encoding, binary_encoding, 2)
+	//add all subfields of bitmap
+	bmp.add_variable_field(2, "PAN", ascii_encoding, ascii_encoding, 2)
+	bmp.add_fixed_field(3, "Processing Code", ebcdic_encoding, 6)
+	bmp.add_fixed_field(4, "Transaction Amount", ascii_encoding, 12)
+	bmp.add_fixed_field(14, "Expiry Date", ascii_encoding, 4)
 
-	iso8583_msg_def.fields[35] = NewVariableFieldDef("Track II", ebcdic_encoding, ebcdic_encoding, 3)
-	iso8583_msg_def.fields[38] = NewFixedFieldDef("Approval Code", ascii_encoding, 6)
-	iso8583_msg_def.fields[39] = NewFixedFieldDef("Action Code", ascii_encoding, 3)
+	bmp.add_variable_field(33, "Test Var Binary", binary_encoding, binary_encoding, 2)
+	bmp.add_variable_field(34, "Test Var BCD", bcd_encoding, binary_encoding, 2)
 
-	iso8583_msg_def.fields[55] = NewVariableFieldDef("ICC Data", ascii_encoding, binary_encoding, 3)
-	iso8583_msg_def.fields[64] = NewFixedFieldDef("MAC1", binary_encoding, 8)
-	iso8583_msg_def.fields[128] = NewFixedFieldDef("MAC2", binary_encoding, 8)
+	bmp.add_variable_field(35, "Track II", ebcdic_encoding, ebcdic_encoding, 3)
+	bmp.add_fixed_field(38, "Approval Code", ascii_encoding, 6)
+	bmp.add_fixed_field(39, "Action Code", ascii_encoding, 3)
+
+	bmp.add_variable_field(55, "ICC Data", ascii_encoding, binary_encoding, 3)
+	bmp.add_fixed_field(64, "MAC1", binary_encoding, 8)
+	bmp.add_fixed_field(128, "MAC2", binary_encoding, 8)
+
+	var bmp_field BitmappedField = bmp
+	iso8583_msg_def.add_field(bmp_field)
 
 	fmt.Println("initialized -" + iso8583_msg_def.spec_name)
 	spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def
@@ -81,8 +87,13 @@ type IsoField interface {
 }
 
 type Iso8583MessageDef struct {
-	spec_name string
-	fields    []IsoField
+	spec_name       string
+	fields_def_list *list.List
+	fields          []IsoField
+}
+
+func (iso_def *Iso8583MessageDef) add_field(field interface{}) {
+	iso_def.fields_def_list.PushBack(field)
 }
 
 func str_to_uint64(str_val string) uint64 {

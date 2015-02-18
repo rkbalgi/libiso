@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	_ "strconv"
+	_"reflect"
 )
 
 type Iso8583Message struct {
@@ -24,25 +25,21 @@ func (iso_msg *Iso8583Message) GetMessageType() string {
 	return iso_msg.msg_type
 }
 
-
 //GetMessageType returns the 'Message Type' as string
 func (iso_msg *Iso8583Message) GetBinaryBitmap() string {
-	
-	
-	binary_bmp_str:=bytes.NewBufferString("");
-	for i:=1;i<129;i++{
-		if iso_msg.bit_map.IsOn(i){
-			binary_bmp_str.WriteString("1");
-		}else{
-			binary_bmp_str.WriteString("0");
+
+	binary_bmp_str := bytes.NewBufferString("")
+	for i := 1; i < 129; i++ {
+		if iso_msg.bit_map.IsOn(i) {
+			binary_bmp_str.WriteString("1")
+		} else {
+			binary_bmp_str.WriteString("0")
 		}
 	}
-	
-	return binary_bmp_str.String();
-	
-	
-}
 
+	return binary_bmp_str.String()
+
+}
 
 //IsSelected returns a boolean indicating
 //if the 'position' is selected in the bitmap
@@ -66,15 +63,40 @@ func NewIso8583Message() *Iso8583Message {
 
 	iso_msg := new(Iso8583Message)
 	iso_msg.iso_msg_def = iso8583_msg_def
-	iso_msg.bit_map = NewBitMap()
+	iso_msg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
+
+	for l := iso8583_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
+		switch (l.Value).(type) {
+		case IsoField:
+			{
+				var iso_field IsoField = (l.Value).(IsoField)
+				log.Println(iso_field.String())
+
+			}
+		case BitmappedField:
+			{
+				var iso_bmp_field *BitMap = (l.Value).(*BitMap)
+				log.Println("BitMap", iso_bmp_field.Bytes())
+
+			}
+		default:
+			{
+				
+              log.Printf("%v\n",l.Value);
+			}
+
+		}
+	}
+
+	/*iso_msg.bit_map = NewBitMap()
 	iso_msg.field_data_list = make([]FieldData, len(iso8583_msg_def.fields))
 	for i, f_def := range iso8583_msg_def.fields {
 		if f_def != nil {
 			//fmt.Println(i,f_def.String())
 			iso_msg.field_data_list[i].field_def = f_def
 		}
-	}
-	iso_msg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
+	}*/
+
 	return iso_msg
 
 }
