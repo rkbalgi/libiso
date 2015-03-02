@@ -7,57 +7,55 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/rkbalgi/go/utils"
-	"sync"
 	"reflect"
+	"sync"
 	//"os"
-//	"strings"
+	//	"strings"
 	//"strconv"
-//"bufio"
-//	"io"
+	//"bufio"
+	//	"io"
 )
 
-type CommandHeader struct{
-	
-	
-	Header string    `size:"12"`
+type CommandHeader struct {
+	Header      string `size:"12"`
 	CommandName string `size:"2"`
-	MacData []byte `size:"4"`
+	MacData     []byte `size:"4"`
 }
 
-var letter_map map[string]int;
-func letter_sum(month string) int{
-	
-	sum:=0;
-	for i:=0;i<len(month);i++{
-		sum+=letter_map[month[i:i+1]]
+var letter_map map[string]int
+
+func letter_sum(month string) int {
+
+	sum := 0
+	for i := 0; i < len(month); i++ {
+		sum += letter_map[month[i:i+1]]
 	}
-	
-	return sum;
+
+	return sum
 }
 
 func main() {
-	
-	letter_map=make(map[string]int,26);
-	tmp:="abcdefghijklmnopqrstuvwxyz";
-	for i:=1;i<27;i++{
-		letter_map[tmp[i-1:i]]=i;
-	}
-	
-	fmt.Println("january ",letter_sum("s"));
-	
-	
-	cmd:="NC"
-	
-	fmt.Println(hex.EncodeToString([]byte(cmd)));
-	
-	what_type:=[...]int{1,2,3}
-	
-	fmt.Println(reflect.TypeOf(what_type).Kind().String());
- 
 
-    //fmt.Printf("%s-%s\n",command_header.Header,command_header.CommandName)
-    //fmt.Println(command_header)
-    //os.Exit(0);
+	fmt.Println("Hello World")
+	letter_map = make(map[string]int, 26)
+	tmp := "abcdefghijklmnopqrstuvwxyz"
+	for i := 1; i < 27; i++ {
+		letter_map[tmp[i-1:i]] = i
+	}
+
+	fmt.Println("january ", letter_sum("s"))
+
+	cmd := "NC"
+
+	fmt.Println(hex.EncodeToString([]byte(cmd)))
+
+	what_type := [...]int{1, 2, 3}
+
+	fmt.Println(reflect.TypeOf(what_type).Kind().String())
+
+	//fmt.Printf("%s-%s\n",command_header.Header,command_header.CommandName)
+	//fmt.Println(command_header)
+	//os.Exit(0);
 
 	var testKey []byte = []byte("helloworld111112") //67876543")
 	testData, _ := hex.DecodeString("3657f432e456feda01")

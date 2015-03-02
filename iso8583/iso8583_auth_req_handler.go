@@ -9,11 +9,13 @@ func handle_auth_req(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 	copy_iso_req_to_resp(iso_req, iso_resp)
 
 	//set message type on response as 1110
-	iso_resp.msg_type = ISO_MSG_1110
-	
+
+	msg_type_field := iso_resp.get_field_by_name("Message Type")
+	msg_type_field.SetData(ISO_MSG_1110)
+
 	//turn off fields not required in response
-	iso_resp.bit_map.SetOff(14);
-	iso_resp.bit_map.SetOff(35);
+	iso_resp.bit_map.SetOff(14)
+	iso_resp.bit_map.SetOff(35)
 
 	//for demo purposes, we will simply base our responses
 	//on the input amounts

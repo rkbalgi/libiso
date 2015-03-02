@@ -22,7 +22,7 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 	logger.Println("handling request = \n", hex.Dump(msg_data))
 
 	buf := bytes.NewBuffer(msg_data)
-	resp_iso_msg, err := iso8583.Handle(buf)
+	resp_iso_msg, err := iso8583.Handle("",buf)
 	if err != nil {
 		log.Printf("error handling message from client -[Err: %s]\n", err.Error)
 	}

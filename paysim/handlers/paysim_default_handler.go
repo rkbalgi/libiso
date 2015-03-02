@@ -35,7 +35,7 @@ type parse_trace_req struct {
 
 func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
-	spec_name := req.FormValue("spec_name")
+	spec_name := req.FormValue("Spec")
 	log.Println("form values::", req.Form)
 	log.Println("spec_name::", spec_name)
 
@@ -80,7 +80,7 @@ func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *h
 	}
 
 	in_buf := bytes.NewBuffer(data)
-	iso_msg := iso8583.NewIso8583Message()
+	iso_msg := iso8583.NewIso8583Message(spec_name)
 	err = iso_msg.Parse(in_buf)
 	if err != nil {
 		w.Write([]byte("Error: Parse Failure"))

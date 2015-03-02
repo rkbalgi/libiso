@@ -10,10 +10,13 @@ import (
 type BitMap struct {
 
 	//primary secondary and tertiary bitmaps
-	_1bmp      *big.Int
-	_2bmp      *big.Int
-	_3bmp      *big.Int
-	sub_fields []IsoField
+	_1bmp          *big.Int
+	_2bmp          *big.Int
+	_3bmp          *big.Int
+	sub_field_def  []IsoField
+	sub_field_data []*FieldData
+	id             int
+	iso_msg_def    *Iso8583MessageDef
 }
 
 func NewBitMap() *BitMap {
@@ -22,7 +25,8 @@ func NewBitMap() *BitMap {
 	bitmap._1bmp = big.NewInt(0)
 	bitmap._2bmp = big.NewInt(0)
 	bitmap._3bmp = big.NewInt(0)
-	bitmap.sub_fields = make([]IsoField, 128+1)
+	bitmap.sub_field_def = make([]IsoField, 128+1)
+	bitmap.sub_field_data = make([]*FieldData, 128+1)
 
 	return (bitmap)
 }
@@ -32,6 +36,9 @@ type BitmappedField interface {
 	IsOn(int) bool
 	SetOn(int)
 	SetOff(int)
+	SetId(int)
+	GetId() int
+	SetSpec(iso_msg_def *Iso8583MessageDef)
 	Bytes() []byte
 }
 
@@ -43,7 +50,8 @@ func (bmp *BitMap) add_fixed_field(
 	p_field_len int) {
 
 	field := NewFixedFieldDef(p_name, p_data_encoding, p_field_len)
-	bmp.sub_fields[p_bmp_pos] = field
+	field.SetId(bmp.iso_msg_def.next_field_seq())
+	bmp.sub_field_def[p_bmp_pos] = field
 
 }
 
@@ -54,7 +62,8 @@ func (bmp *BitMap) add_variable_field(p_bmp_pos int, p_name string,
 	p_field_len int) {
 
 	field := NewVariableFieldDef(p_name, p_len_encoding, p_data_encoding, p_field_len)
-	bmp.sub_fields[p_bmp_pos] = field
+	field.SetId(bmp.iso_msg_def.next_field_seq())
+	bmp.sub_field_def[p_bmp_pos] = field
 
 }
 
@@ -153,7 +162,6 @@ func (bmp *BitMap) Parse(iso_msg *Iso8583Message, buf *bytes.Buffer) {
 					if buf.Len() >= 8 {
 						tmp := make([]byte, 8)
 						_, err := buf.Read(tmp)
-
 						iso_msg.handle_error(err)
 						bmp._3bmp.SetBytes(tmp)
 
@@ -177,7 +185,20 @@ func (bmp *BitMap) Bytes() []byte {
 
 	var bmp_data []byte
 
+	if bmp._2bmp.Uint64() != 0 {
+		//second bmp exists
+		bmp._1bmp.SetBit(bmp._1bmp, 63, 1)
+	} else {
+		bmp._1bmp.SetBit(bmp._1bmp, 63, 0)
+	}
+	if bmp._3bmp.Uint64() != 0 {
+		//second bmp exists
+		bmp._2bmp.SetBit(bmp._2bmp, 63, 1)
+	} else {
+		bmp._2bmp.SetBit(bmp._2bmp, 63, 0)
+	}
 	bmp_data = to_octet(bmp._1bmp.Bytes())
+
 	if bmp._1bmp.Bit(63) == 1 {
 		tmp := to_octet(bmp._2bmp.Bytes())
 		bmp_data = append(bmp_data, tmp...)
@@ -191,13 +212,37 @@ func (bmp *BitMap) Bytes() []byte {
 
 }
 
-func (bmp *BitMap) Copy() *BitMap {
+func (bmp *BitMap) bit_string() string{
+	
+	buf:=bytes.NewBufferString("");
+	for i:=1;i<129;i++{
+		if bmp.IsOn(i){
+			buf.Write([]byte("1"));
+		}else{
+			buf.Write([]byte("0"));
+		}
+	}
+	
+	return buf.String();
+	
+}
 
-	new_bmp := NewBitMap()
+func (bmp *BitMap) copy_bits(src_bmp *BitMap) {
 
-	new_bmp._1bmp = big.NewInt(0).Set(bmp._1bmp)
-	new_bmp._2bmp = big.NewInt(0).Set(bmp._2bmp)
-	new_bmp._3bmp = big.NewInt(0).Set(bmp._3bmp)
-	return new_bmp
+	bmp._1bmp = big.NewInt(0).Set(src_bmp._1bmp)
+	bmp._2bmp = big.NewInt(0).Set(src_bmp._2bmp)
+	bmp._3bmp = big.NewInt(0).Set(src_bmp._3bmp)
 
+}
+
+func (bmp *BitMap) SetId(id int) {
+	bmp.id = id
+}
+
+func (bmp *BitMap) GetId() int {
+	return bmp.id
+}
+
+func (bmp *BitMap) SetSpec(iso_msg_def *Iso8583MessageDef) {
+	bmp.iso_msg_def = iso_msg_def
 }

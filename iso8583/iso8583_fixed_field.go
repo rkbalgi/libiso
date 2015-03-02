@@ -10,6 +10,7 @@ type FixedFieldDef struct {
 	name          string
 	data_encoding int
 	data_size     int //in bytes
+	id int
 }
 
 //create a new fixed field definition
@@ -25,7 +26,10 @@ func NewFixedFieldDef(p_name string, p_data_encoding int, p_field_len int) *Fixe
 
 //parse and return field data by reading appropriate bytes
 //from the buffer buf
-func (field_def *FixedFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buffer) *FieldData {
+func (field_def *FixedFieldDef) Parse(
+	iso_msg *Iso8583Message, 
+	f_data *FieldData,
+	buf *bytes.Buffer) *FieldData {
 
 	tmp := make([]byte, field_def.data_size)
 	n, err := buf.Read(tmp)
@@ -38,8 +42,7 @@ func (field_def *FixedFieldDef) Parse(iso_msg *Iso8583Message, buf *bytes.Buffer
 		}
 	}
 
-	f_data := new(FieldData)
-	f_data.field_def = field_def
+
 	f_data.field_data = tmp
 	iso_msg.log.Printf("parsed: [%s]=[%s]", field_def.name, f_data.String())
 
@@ -73,6 +76,14 @@ func (field_def *FixedFieldDef) EncodedLength(data_len int) []byte {
 	//not applicable to fixed fields
 	panic("illegal operation")
 }
+
+func (f_def *FixedFieldDef) SetId(id int){
+	f_def.id=id;
+}
+
+func (f_def *FixedFieldDef) GetId() int{
+	return f_def.id;
+}	
 
 func (field_def *FixedFieldDef) String() string {
 	return field_def.name

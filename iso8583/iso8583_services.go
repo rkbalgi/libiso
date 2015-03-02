@@ -2,6 +2,7 @@ package iso8583
 
 import (
 	"container/list"
+	"fmt"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ type FieldDefExp struct {
 	Name        string
 	JsSafeName  string
 	Data        string
+	Id          int
 }
 
 //GetMessageDefByName returns a spec definition for the given spec_name
@@ -35,18 +37,33 @@ func GetSpecs() []string {
 //GetSpecLayout returns all fields associated with a spec
 func GetSpecLayout(spec_name string) []*FieldDefExp {
 
+	spec := spec_map[spec_name]
 	fields := list.New()
 	fields.Init()
-	fields.PushBack(&FieldDefExp{BitPosition: 0, Name: "Message Type", JsSafeName: "Message$Type"})
-	fields.PushBack(&FieldDefExp{BitPosition: 0, Name: "Bitmap", JsSafeName: "Bitmap"})
 
-	spec := spec_map[spec_name]
-	//fmt.Println(spec)
-	for i, v := range spec.fields {
-		if v != nil {
-			//fmt.Println(v.String())
-			fields.PushBack(&FieldDefExp{BitPosition: i, Name: v.String(), JsSafeName: js_safe(v.String())})
-		}
+	fmt.Println(spec.fields_def_list.Len())
+
+	for l := spec.fields_def_list.Front(); l != nil; l = l.Next() {
+		switch (l.Value).(type) {
+		case IsoField:
+			{
+				var iso_field IsoField = (l.Value).(IsoField)
+				fields.PushBack(&FieldDefExp{Id: iso_field.GetId(), BitPosition: 0, Name: iso_field.String(), JsSafeName: js_safe(iso_field.String())})
+				break
+			}
+		case BitmappedField:
+			{
+				var iso_bmp_field *BitMap = (l.Value).(*BitMap)
+				fields.PushBack(&FieldDefExp{Id: iso_bmp_field.GetId(), BitPosition: 0, Name: "Bitmap", JsSafeName: "Bitmap"})
+
+				for b_position, f_def := range iso_bmp_field.sub_field_def {
+					if f_def != nil {
+						fields.PushBack(&FieldDefExp{Id: f_def.GetId(), BitPosition: b_position, Name: f_def.String(), JsSafeName: js_safe(f_def.String())})
+					}
+				}
+
+			}
+		} //end of switch
 
 	}
 
