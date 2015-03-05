@@ -33,6 +33,11 @@ func NewVariableFieldDef(p_name string,
 	return field
 
 }
+	
+func (field *VariableFieldDef) Def() string {
+	return fmt.Sprintf("Name: %s ; Type: Variable ; Length Indicator Length: %d ;Encoding (Length Indicator): [%s] ; Encoding (Data): [%s]", 
+		                field.name, field.len_ind_size, get_encoding_type(field.length_encoding),get_encoding_type(field.data_encoding))
+}
 
 func (field_def *VariableFieldDef) to_string(data []byte) string {
 	return fmt.Sprintf("[%s] = [%s]", field_def.name, hex.EncodeToString(data))

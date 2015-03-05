@@ -140,7 +140,6 @@ func NewIso8583Message(spec_name string) *Iso8583Message {
 
 	iso_msg := new(Iso8583Message)
 	iso_msg.iso_msg_def = spec_map[spec_name]
-	fmt.Println(iso_msg.iso_msg_def.fields_def_list.Front().Value);
 	iso_msg.field_data_list = list.New()
 	iso_msg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
 
@@ -154,7 +153,7 @@ func (iso_msg *Iso8583Message) __init__() {
 
 	iso_msg.name_to_data_map = make(map[string]*FieldData, 10)
 
-	for l := iso8583_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
+	for l := iso_msg.iso_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
 		switch (l.Value).(type) {
 		case IsoField:
 			{
@@ -168,7 +167,6 @@ func (iso_msg *Iso8583Message) __init__() {
 			{
 				var iso_bmp_field *BitMap = (l.Value).(*BitMap)
 				iso_msg.bit_map = NewBitMap()
-				//fmt.Println(iso_msg.bit_map);
 				for i, f_def := range iso_bmp_field.sub_field_def {
 					if f_def != nil {
 						fdata_ptr := &FieldData{field_data: nil, field_def: f_def}
@@ -225,7 +223,6 @@ func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
 //set field
 func (iso_msg *Iso8583Message) set_field(pos int, value string) {
 
-	fmt.Println("setting", pos, value)
 	iso_msg.bit_map.SetOn(pos)
 	iso_msg.bit_map.sub_field_data[pos].SetData(value)
 
@@ -253,8 +250,6 @@ func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 		}
 	}
 
-	//fmt.Println("Dumping...");
-	//fmt.Println(iso_resp.Dump());
 
 }
 
@@ -417,7 +412,6 @@ func (iso_msg *Iso8583Message) Bytes() []byte {
 				bmp := obj.(*BitMap)
 
 				for i, v := range bmp.sub_field_data {
-					//fmt.Println(i, v.field_def.String(), bmp)
 					if v != nil && v.field_data != nil &&
 						bmp.IsOn(i) {
 

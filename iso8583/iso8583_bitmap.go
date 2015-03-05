@@ -40,6 +40,12 @@ type BitmappedField interface {
 	GetId() int
 	SetSpec(iso_msg_def *Iso8583MessageDef)
 	Bytes() []byte
+	Def() string
+}
+
+
+func (bmp *BitMap) Def() string{
+	return fmt.Sprintf("Bitmap");
 }
 
 //add a new  fixed field to the bitmap

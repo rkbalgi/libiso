@@ -35,10 +35,7 @@ const (
 	ISO_FORMAT_ERROR  = "909"
 )
 
-var iso8583_msg_def *Iso8583MessageDef
 var spec_map map[string]*Iso8583MessageDef
-
-
 
 //To send data back and forth between browser and paysim
 //application
@@ -48,50 +45,32 @@ type WebMsgData struct {
 	DataArray []string
 }
 
-func init() {
-
-	//initialize map of all spec's to their definitions
-	spec_map = make(map[string]*Iso8583MessageDef)
-    //read all specs from the json file 	
-	read_spec_defs();
-	fmt.Println(spec_map);
-
-
-	/*iso8583_msg_def = new(Iso8583MessageDef)
-	iso8583_msg_def.spec_name = "ISO8583_1 v1 (ASCII)"
-	iso8583_msg_def.field_seq = 0
-	iso8583_msg_def.fields_def_list = list.New()
-
-	//iso8583_msg_def.add_field(NewFixedFieldDef("Header", ascii_encoding, 4))
-	iso8583_msg_def.add_field(iso8583_msg_def, NewFixedFieldDef("Message Type", ascii_encoding, 4))
-
-	bmp := NewBitMap()
-	var bmp_field BitmappedField = bmp
-	iso8583_msg_def.add_field(iso8583_msg_def, bmp_field)
-
-	//add all subfields of bitmap
-	bmp.add_variable_field(2, "PAN", ascii_encoding, ascii_encoding, 2)
-	bmp.add_fixed_field(3, "Processing Code", ebcdic_encoding, 6)
-	bmp.add_fixed_field(4, "Transaction Amount", ascii_encoding, 12)
-	bmp.add_fixed_field(14, "Expiry Date", ascii_encoding, 4)
-
-	bmp.add_variable_field(33, "Test Var Binary", binary_encoding, binary_encoding, 2)
-	bmp.add_variable_field(34, "Test Var BCD", bcd_encoding, binary_encoding, 2)
-
-	bmp.add_variable_field(35, "Track II", ebcdic_encoding, ebcdic_encoding, 3)
-	bmp.add_fixed_field(38, "Approval Code", ascii_encoding, 6)
-	bmp.add_fixed_field(39, "Action Code", ascii_encoding, 3)
-
-	bmp.add_variable_field(55, "ICC Data", ascii_encoding, binary_encoding, 3)
-	bmp.add_fixed_field(64, "MAC1", binary_encoding, 8)
-	bmp.add_fixed_field(128, "MAC2", binary_encoding, 8)
-
-	//iso8583_msg_def.add_field(NewFixedFieldDef("Trailer", ascii_encoding, 4))
-
-	fmt.Println("initialized -" + iso8583_msg_def.spec_name)
-	spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def*/
-
+func get_encoding_type(encoding int) string {
+	switch encoding {
+	case ascii_encoding:
+		{
+			return "ascii"
+		}
+	case bcd_encoding:
+		{
+			return "bcd"
+		}
+	case binary_encoding:
+		{
+			return "binary"
+		}
+	case ebcdic_encoding:
+		{
+			return "ebcdic"
+		}
+	default:
+		{
+			return "unknown"
+		}
+	}
 }
+
+
 
 type IsoField interface {
 	Parse(*Iso8583Message, *FieldData, *bytes.Buffer) *FieldData
@@ -104,6 +83,7 @@ type IsoField interface {
 	EncodedLength(int) []byte
 	to_string([]byte) string
 	get_data_encoding() int
+	Def() string
 }
 
 type Iso8583MessageDef struct {

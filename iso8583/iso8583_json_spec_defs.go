@@ -48,9 +48,58 @@ type JsonSpecDefs struct {
 	Specs []JsonSpecDef
 }
 
-func read_spec_defs() {
+func display_specs() {
 
-	file_name := "c:/users/132968/desktop/specs.json"
+	for k, v := range spec_map {
+		spec := v
+		buf := bytes.NewBufferString("")
+		for l := spec.fields_def_list.Front(); l != nil; l = l.Next() {
+
+			switch obj := l.Value.(type) {
+			case IsoField:
+				{
+					buf.WriteString(obj.Def() + "\n")
+					break
+				}
+			case BitmappedField:
+				{
+					bmp := obj.(*BitMap)
+					buf.WriteString(obj.Def() + "\n")
+
+					for _, f_def := range bmp.sub_field_def {
+						if f_def != nil {
+							buf.WriteString(f_def.Def() + "\n")
+
+						}
+					}
+
+				}
+
+			} //end swicth
+		}
+
+		fmt.Printf("Spec: %s : Defs: \n%s\n", k, buf.String())
+
+	} //end for-range
+
+}
+
+var spec_init bool = false
+
+func ReadSpecDefs(file_name string) {
+
+	if !spec_init {
+		spec_map = make(map[string]*Iso8583MessageDef)
+	} else {
+		for k, _ := range spec_map {
+			delete(spec_map, k)
+		}
+	}
+
+	//initialize map of all spec's to their definitions
+	//read all specs from the json file
+	//lets just display details of all defined specs
+
 	file, err := os.Open(file_name)
 	if err != nil {
 		log.Println("failed to open specs.json file", err.Error())
@@ -79,31 +128,31 @@ func read_spec_defs() {
 
 	for _, spec := range spec_defs.Specs {
 		fmt.Println("processing spec -", spec.SpecName)
-		iso8583_msg_def = new(Iso8583MessageDef)
+		iso8583_msg_def := new(Iso8583MessageDef)
 		iso8583_msg_def.spec_name = spec.SpecName
 		iso8583_msg_def.field_seq = 0
 		iso8583_msg_def.fields_def_list = list.New()
 
 		for _, iso_field_def := range spec.Fields {
-			
+
 			if iso_field_def.Type == "Fixed" {
 				fixed_field_def := construct_fixed_field_def(&iso_field_def)
-				fixed_field_def.SetId(iso8583_msg_def.next_field_seq());
+				fixed_field_def.SetId(iso8583_msg_def.next_field_seq())
 				if fixed_field_def != nil {
 					iso8583_msg_def.add_field(fixed_field_def)
 				}
 
 			} else if iso_field_def.Type == "Variable" {
 				var_field_def := construct_variable_field_def(&iso_field_def)
-				var_field_def.SetId(iso8583_msg_def.next_field_seq());
+				var_field_def.SetId(iso8583_msg_def.next_field_seq())
 				if var_field_def != nil {
 					iso8583_msg_def.add_field(var_field_def)
 				}
 
 			} else if iso_field_def.Type == "Bitmapped" {
 
-				bmp_field_def := construct_bmp_field_def(iso8583_msg_def,&iso_field_def)
-				bmp_field_def.SetId(iso8583_msg_def.next_field_seq());
+				bmp_field_def := construct_bmp_field_def(iso8583_msg_def, &iso_field_def)
+				bmp_field_def.SetId(iso8583_msg_def.next_field_seq())
 				if bmp_field_def != nil {
 					iso8583_msg_def.add_field(bmp_field_def)
 				}
@@ -114,6 +163,9 @@ func read_spec_defs() {
 		}
 		spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def
 	}
+
+	spec_init = true
+	display_specs()
 
 }
 
@@ -159,7 +211,7 @@ func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDe
 	return var_field_def
 }
 
-func construct_bmp_field_def(iso8583_msg_def *Iso8583MessageDef,json_field_def *JsonFieldDef) *BitMap {
+func construct_bmp_field_def(iso8583_msg_def *Iso8583MessageDef, json_field_def *JsonFieldDef) *BitMap {
 
 	bmp := NewBitMap()
 	//var bmp_field BitmappedField = bmp
@@ -169,14 +221,14 @@ func construct_bmp_field_def(iso8583_msg_def *Iso8583MessageDef,json_field_def *
 		case "Fixed":
 			{
 				fld := construct_fixed_field_def(&child_field)
-				fld.SetId(iso8583_msg_def.next_field_seq());
+				fld.SetId(iso8583_msg_def.next_field_seq())
 				bmp.sub_field_def[child_field.BitPosition] = fld
-				
+
 			}
 		case "Variable":
 			{
 				fld := construct_variable_field_def(&child_field)
-				fld.SetId(iso8583_msg_def.next_field_seq());
+				fld.SetId(iso8583_msg_def.next_field_seq())
 				bmp.sub_field_def[child_field.BitPosition] = fld
 			}
 		default:
