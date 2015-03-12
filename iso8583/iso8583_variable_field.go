@@ -15,7 +15,8 @@ type VariableFieldDef struct {
 	data_encoding   int
 	length_encoding int
 	len_ind_size    int //in bytes
-	id int
+	id              int
+	b_pos           int
 }
 
 //create a new fixed field definition
@@ -33,10 +34,10 @@ func NewVariableFieldDef(p_name string,
 	return field
 
 }
-	
+
 func (field *VariableFieldDef) Def() string {
-	return fmt.Sprintf("Name: %s ; Type: Variable ; Length Indicator Length: %d ;Encoding (Length Indicator): [%s] ; Encoding (Data): [%s]", 
-		                field.name, field.len_ind_size, get_encoding_type(field.length_encoding),get_encoding_type(field.data_encoding))
+	return fmt.Sprintf("Name: %-40s ; Id: %04d ; Type: %-10s ; Length Indicator Length: %04d ;Encoding (Length Indicator): [%-10s] ; Encoding (Data): [%-10s]",
+		field.name, field.GetId(), "Variable", field.len_ind_size, get_encoding_type(field.length_encoding), get_encoding_type(field.data_encoding))
 }
 
 func (field_def *VariableFieldDef) to_string(data []byte) string {
@@ -48,7 +49,7 @@ func (field_def *VariableFieldDef) get_data_encoding() int {
 }
 
 func (field_def *VariableFieldDef) Parse(
-	iso_msg *Iso8583Message, 
+	iso_msg *Iso8583Message,
 	f_data *FieldData,
 	buf *bytes.Buffer) *FieldData {
 
@@ -247,15 +248,23 @@ func encoded_length_as_string(len_ind_size int, data_len int) string {
 	return tmp
 }
 
-func (f_def *VariableFieldDef) SetId(id int){
-	f_def.id=id;
+func (f_def *VariableFieldDef) SetId(id int) {
+	f_def.id = id
 }
 
-func (f_def *VariableFieldDef) GetId() int{
-	return f_def.id;
-}	
+func (f_def *VariableFieldDef) GetId() int {
+	return f_def.id
+}
 
 func (field_def *VariableFieldDef) String() string {
 	return field_def.name
 
+}
+
+func (f_def *VariableFieldDef) SetBitPosition(id int) {
+	f_def.b_pos = id
+}
+
+func (f_def *VariableFieldDef) BitPosition() int {
+	return f_def.b_pos
 }

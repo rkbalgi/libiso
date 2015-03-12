@@ -70,8 +70,6 @@ func get_encoding_type(encoding int) string {
 	}
 }
 
-
-
 type IsoField interface {
 	Parse(*Iso8583Message, *FieldData, *bytes.Buffer) *FieldData
 	Assemble(*Iso8583Message, *bytes.Buffer)
@@ -83,7 +81,10 @@ type IsoField interface {
 	EncodedLength(int) []byte
 	to_string([]byte) string
 	get_data_encoding() int
-	Def() string
+	Def() string 
+	
+	BitPosition() int
+	SetBitPosition(int)
 }
 
 type Iso8583MessageDef struct {
@@ -119,6 +120,10 @@ func (iso_def *Iso8583MessageDef) add_field(field interface{}) {
 	}
 
 	iso_def.fields_def_list.PushBack(field)
+}
+
+func (iso_def *Iso8583MessageDef) Name() string{
+	return iso_def.spec_name
 }
 
 func str_to_uint64(str_val string) uint64 {

@@ -11,6 +11,7 @@ type FixedFieldDef struct {
 	data_encoding int
 	data_size     int //in bytes
 	id            int
+	b_pos int //bit position in bitmap
 }
 
 //create a new fixed field definition
@@ -25,8 +26,8 @@ func NewFixedFieldDef(p_name string, p_data_encoding int, p_field_len int) *Fixe
 }
 
 func (field *FixedFieldDef) Def() string {
-	return fmt.Sprintf("Name: %s ; Type: Fixed ; Length: %d ;Encoding: [%s]", 
-		                field.name, field.data_size, get_encoding_type(field.data_encoding))
+	return fmt.Sprintf("Name: %-40s ; Id: %04d ; Type: %-10s ; Length: %04d ;Encoding: [%-10s]",
+		field.name, field.GetId(), "Fixed", field.data_size, get_encoding_type(field.data_encoding))
 }
 
 //parse and return field data by reading appropriate bytes
@@ -87,6 +88,14 @@ func (f_def *FixedFieldDef) SetId(id int) {
 
 func (f_def *FixedFieldDef) GetId() int {
 	return f_def.id
+}
+
+func (f_def *FixedFieldDef) SetBitPosition(id int) {
+	f_def.b_pos=id;
+}
+
+func (f_def *FixedFieldDef) BitPosition() int {
+	return f_def.b_pos
 }
 
 func (field_def *FixedFieldDef) String() string {

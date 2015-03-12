@@ -45,7 +45,7 @@ type BitmappedField interface {
 
 
 func (bmp *BitMap) Def() string{
-	return fmt.Sprintf("Bitmap");
+	return fmt.Sprintf("Name: Bitmap ; Id: %04d",bmp.GetId());
 }
 
 //add a new  fixed field to the bitmap

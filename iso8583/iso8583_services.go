@@ -21,13 +21,26 @@ func GetMessageDefByName(spec_name string) *Iso8583MessageDef {
 	return spec_map[spec_name]
 }
 
-//GetSpecs returns all available specs
-func GetSpecs() []string {
+//GetSpecNames returns names of all available specs
+func GetSpecNames() []string {
 
 	specs := make([]string, len(spec_map))
 	i := 0
 	for k, _ := range spec_map {
 		specs[i] = k
+		i = i + 1
+	}
+
+	return specs
+}
+
+//GetSpecs returns all available specs
+func GetSpecs() []*Iso8583MessageDef {
+
+	specs := make([]*Iso8583MessageDef, len(spec_map))
+	i := 0
+	for _, v := range spec_map {
+		specs[i] = v
 		i = i + 1
 	}
 

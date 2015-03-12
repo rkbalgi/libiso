@@ -22,6 +22,7 @@ import (
 	"container/list"
 	"encoding/json"
 	"fmt"
+	"github.com/rkbalgi/go/paysim/demo"
 	_ "io"
 	"log"
 	"os"
@@ -86,6 +87,21 @@ func display_specs() {
 
 var spec_init bool = false
 
+func ReadDemoSpecDefs() {
+
+	if !spec_init {
+		spec_map = make(map[string]*Iso8583MessageDef)
+	} else {
+		for k, _ := range spec_map {
+			delete(spec_map, k)
+		}
+	}
+	str := demo.Demo_Specs
+	ReadSpecDefsFromBuf(bytes.NewBufferString(str))
+	spec_init = true
+	display_specs()
+}
+
 func ReadSpecDefs(file_name string) {
 
 	if !spec_init {
@@ -119,8 +135,17 @@ func ReadSpecDefs(file_name string) {
 		buf.Write(tmp_data[:count])
 	}
 
+	ReadSpecDefsFromBuf(buf)
+
+	spec_init = true
+	display_specs()
+
+}
+
+func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
+
 	spec_defs := new(JsonSpecDefs)
-	err = json.Unmarshal(buf.Bytes(), spec_defs)
+	err := json.Unmarshal(buf.Bytes(), spec_defs)
 	if err != nil {
 		log.Println("failed to parse specs.json", err.Error())
 		return
@@ -164,9 +189,6 @@ func ReadSpecDefs(file_name string) {
 		spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def
 	}
 
-	spec_init = true
-	display_specs()
-
 }
 
 func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
@@ -184,6 +206,8 @@ func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
 	}
 	encoding_type := get_encoding(json_field_def, attrs[2])
 	fixed_field_def := NewFixedFieldDef(json_field_def.Name, encoding_type, int(field_len))
+	fixed_field_def.SetBitPosition(json_field_def.BitPosition)
+
 	log.Println("processed field def- " + json_field_def.Name)
 
 	return fixed_field_def
@@ -206,6 +230,8 @@ func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDe
 	data_encoding_type := get_encoding(json_field_def, attrs[3])
 
 	var_field_def := NewVariableFieldDef(json_field_def.Name, len_encoding_type, data_encoding_type, int(field_len))
+	var_field_def.SetBitPosition(json_field_def.BitPosition)
+
 	log.Println("processed variable field def- " + json_field_def.Name)
 
 	return var_field_def

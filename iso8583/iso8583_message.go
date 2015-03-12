@@ -19,6 +19,11 @@ type Iso8583Message struct {
 	log              *log.Logger
 	bit_map          *BitMap //for convenience
 	name_to_data_map map[string]*FieldData
+	id_to_data_map   map[int]*FieldData
+}
+
+func (iso_msg *Iso8583Message) Bitmap() *BitMap {
+	return iso_msg.bit_map
 }
 
 //GetMessageType returns the 'Message Type' as string
@@ -152,6 +157,7 @@ func NewIso8583Message(spec_name string) *Iso8583Message {
 func (iso_msg *Iso8583Message) __init__() {
 
 	iso_msg.name_to_data_map = make(map[string]*FieldData, 10)
+	iso_msg.id_to_data_map = make(map[int]*FieldData, 10)
 
 	for l := iso_msg.iso_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
 		switch (l.Value).(type) {
@@ -160,7 +166,9 @@ func (iso_msg *Iso8583Message) __init__() {
 				var iso_field IsoField = (l.Value).(IsoField)
 				fdata_ptr := &FieldData{field_data: nil, field_def: iso_field}
 				iso_msg.field_data_list.PushBack(fdata_ptr)
+
 				iso_msg.name_to_data_map[iso_field.String()] = fdata_ptr
+				iso_msg.id_to_data_map[iso_field.GetId()] = fdata_ptr
 
 			}
 		case BitmappedField:
@@ -170,11 +178,13 @@ func (iso_msg *Iso8583Message) __init__() {
 				for i, f_def := range iso_bmp_field.sub_field_def {
 					if f_def != nil {
 						fdata_ptr := &FieldData{field_data: nil, field_def: f_def}
-						iso_msg.name_to_data_map[f_def.String()] = fdata_ptr
 						iso_msg.bit_map.sub_field_data[i] = fdata_ptr
+						iso_msg.name_to_data_map[f_def.String()] = fdata_ptr
+						iso_msg.id_to_data_map[f_def.GetId()] = fdata_ptr
 					}
 				}
 				iso_msg.field_data_list.PushBack(iso_msg.bit_map)
+				iso_msg.id_to_data_map[iso_bmp_field.GetId()] = &FieldData{field_data: nil, field_def: nil, bmp_def: iso_msg.bit_map}
 
 			}
 		default:
@@ -250,12 +260,11 @@ func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 		}
 	}
 
-
 }
 
 //this method handles an incoming ISO8583 message, doing the parsing, processing
 //and response creation
-func Handle(spec_name string,buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
+func Handle(spec_name string, buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
 
 	req_iso_msg := NewIso8583Message(spec_name)
 
@@ -428,4 +437,15 @@ func (iso_msg *Iso8583Message) Bytes() []byte {
 	}
 
 	return msg_buf.Bytes()
+}
+
+func (iso_msg *Iso8583Message) SetFieldData(id int, field_val string) {
+
+	iso_msg.id_to_data_map[id].SetData(field_val)
+}
+
+func (iso_msg *Iso8583Message) GetFieldDataById(id int) *FieldData {
+
+	return iso_msg.id_to_data_map[id]
+
 }

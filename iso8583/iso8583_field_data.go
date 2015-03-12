@@ -2,7 +2,7 @@ package iso8583
 
 import (
 	"encoding/hex"
-	_"fmt"
+	_ "fmt"
 	"github.com/rkbalgi/go/encoding/ebcdic"
 	"log"
 )
@@ -10,19 +10,53 @@ import (
 type FieldData struct {
 	field_data []byte
 	field_def  IsoField
+	bmp_def    *BitMap
 }
 
+func (fld_data *FieldData) BitmapDef() *BitMap {
+	return fld_data.bmp_def
+}
+
+func (fld_data *FieldData) Def() IsoField {
+	return fld_data.field_def
+}
+
+//SetData sets field data as per the encoding
+//additional padding will be applied if required
 func (fld_data *FieldData) SetData(value string) {
 
 	switch fld_data.field_def.get_data_encoding() {
 	case ascii_encoding:
 		{
-			fld_data.field_data = []byte(value)
+			switch fld_data.field_def.(type) {
+			case *FixedFieldDef:
+				{
+					data := []byte(value)
+					fld_data.set_truncate_pad(data)
+					break
+				}
+			default:
+				{
+					fld_data.field_data = []byte(value)
+				}
+			}
 
 		}
 	case ebcdic_encoding:
 		{
-			fld_data.field_data = ebcdic.Decode(value)
+			data := ebcdic.Decode(value)
+			switch fld_data.field_def.(type) {
+			case *FixedFieldDef:
+				{
+					fld_data.set_truncate_pad(data)
+					break
+				}
+			default:
+				{
+					fld_data.field_data = data
+				}
+			}
+
 		}
 	case binary_encoding:
 		fallthrough
@@ -30,10 +64,22 @@ func (fld_data *FieldData) SetData(value string) {
 		{
 			var err error
 
-			fld_data.field_data, err = hex.DecodeString(value)
+			data, err := hex.DecodeString(value)
 			if err != nil {
 				panic(err.Error())
 			}
+			switch fld_data.field_def.(type) {
+			case *FixedFieldDef:
+				{
+					fld_data.set_truncate_pad(data)
+					break
+				}
+			default:
+				{
+					fld_data.field_data = data
+				}
+			}
+
 		}
 	default:
 		{
@@ -42,6 +88,32 @@ func (fld_data *FieldData) SetData(value string) {
 
 	}
 
+}
+
+func (fld_data *FieldData) set_truncate_pad(data []byte) {
+
+	def_obj := fld_data.field_def.(*FixedFieldDef)
+	pad_byte := byte(0x00)
+	switch def_obj.get_data_encoding() {
+	case ascii_encoding:
+		pad_byte = 0x20
+	case ebcdic_encoding:
+		pad_byte = 0x40
+	}
+
+	if len(data) == def_obj.data_size {
+		fld_data.field_data = data
+	} else if len(data) > def_obj.data_size {
+		//truncate
+		fld_data.field_data = data[:len(data)]
+	} else {
+
+		fld_data.field_data = make([]byte, def_obj.data_size)
+		for i, _ := range fld_data.field_data {
+			fld_data.field_data[i] = pad_byte
+		}
+		copy(fld_data.field_data, data)
+	}
 }
 
 //make a copy of FieldData
@@ -56,6 +128,10 @@ func (fld_data *FieldData) copy() *FieldData {
 }
 
 func (field_data FieldData) String() string {
+
+	if field_data.bmp_def != nil {
+		return hex.EncodeToString(field_data.bmp_def.Bytes())
+	}
 
 	switch field_data.field_def.get_data_encoding() {
 	case ascii_encoding:
@@ -84,6 +160,11 @@ func (field_data FieldData) String() string {
 //return the raw data associated with this field
 //it will also include any ll portions for a variable field
 func (field_data FieldData) Bytes() []byte {
+
+	if field_data.bmp_def != nil {
+		//if it's a bmp field, just return the data
+		return field_data.bmp_def.Bytes()
+	}
 
 	if field_data.field_def.IsFixed() {
 		data_len := field_data.field_def.DataLength()
