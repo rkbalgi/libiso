@@ -140,7 +140,9 @@ func (field_data FieldData) String() string {
 		}
 	case ebcdic_encoding:
 		{
-			return ebcdic.EncodeToString(field_data.field_data)
+			encoded:=ebcdic.EncodeToString(field_data.field_data);
+			log.Println("encoded - ",encoded,"hex ",hex.EncodeToString(field_data.field_data)); 
+			return encoded
 		}
 	case binary_encoding:
 		fallthrough

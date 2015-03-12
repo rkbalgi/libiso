@@ -22,7 +22,7 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 	logger.Println("handling request = \n", hex.Dump(msg_data))
 
 	buf := bytes.NewBuffer(msg_data)
-	resp_iso_msg, err := iso8583.Handle("",buf)
+	resp_iso_msg, err := iso8583.Handle("ISO8583_1 v1 (ASCII)",buf)
 	if err != nil {
 		log.Printf("error handling message from client -[Err: %s]\n", err.Error)
 	}
@@ -41,6 +41,8 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 }
 
 func main() {
+	
+	iso8583.ReadDemoSpecDefs();
 
 	tcp_addr := new(net.TCPAddr)
 	tcp_addr.IP = net.ParseIP("127.0.0.1")

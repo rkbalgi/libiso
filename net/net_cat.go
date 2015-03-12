@@ -49,6 +49,17 @@ func (nt *NetCatClient) Read(data []byte) (n int, err error) {
 	return n, err
 }
 
+func (nt *NetCatClient) IsConnected() (bool) {
+	
+	_,err:=nt.conn.Read(make([]byte,0));
+	if err!=nil{
+		panic(err);
+		return false
+	}
+	
+	return true;
+}
+
 func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 
 	//first read the 2E mli

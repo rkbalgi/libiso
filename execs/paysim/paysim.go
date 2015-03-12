@@ -9,22 +9,13 @@ import (
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/rkbalgi/go/iso8583"
+	pynet "github.com/rkbalgi/go/paysim/net"
 	pyui "github.com/rkbalgi/go/paysim/ui"
 	"log"
 	"unsafe"
 )
 
-const (
-	COL_FIELD_SELECTION int = 0
-	COL_BIT_POS             = 1
-	COL_FIELD_NAME          = 2
-	COL_FIELD_VAL           = 3
-
-	COL_FIELD_ID            = 4
-	COLD_FIELD_EDIT_ENABLED = 5
-)
-
-var right_box,spec_tree_vbox *gtk.VBox
+var right_box, spec_tree_vbox *gtk.VBox
 var status_bar *gtk.Statusbar
 var status_bar_context_id uint
 var active_spec_frame *gtk.Frame
@@ -187,10 +178,10 @@ func make_and_populate_spec_tree() {
 
 	status_bar.Push(status_bar_context_id, fmt.Sprintf("%d specs loaded. OK.", n))
 
-    swin_spec_tree=gtk.NewScrolledWindow(nil,nil);
-    swin_spec_tree.SetSizeRequest(250,800);
-    swin_spec_tree.AddWithViewPort(spec_tree_view);
-    
+	swin_spec_tree = gtk.NewScrolledWindow(nil, nil)
+	swin_spec_tree.SetSizeRequest(250, 800)
+	swin_spec_tree.AddWithViewPort(spec_tree_view)
+
 	spec_tree_vbox.PackStart(swin_spec_tree, true, true, 2)
 	spec_tree_vbox.ShowAll()
 
@@ -208,33 +199,11 @@ func show_spec_layout(spec_name string) {
 		right_box.Remove(h_box)
 	}
 
-	field_name_renderer := gtk.NewCellRendererText()
-	field_val_renderer := gtk.NewCellRendererText()
-	field_selection_renderer := gtk.NewCellRendererToggle()
+	spec_msg_tree := pyui.NewPaysimSpecMsgTree()
 
-	field_selection_renderer.SetActivatable(true)
-	//  0             1             2         3            4        5
-	//is selected, bit position,field name, field value, field id,editable
-	spec_lyt_store := gtk.NewTreeStore(glib.G_TYPE_BOOL, glib.G_TYPE_INT, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_INT, glib.G_TYPE_BOOL)
-	spec_lyt_tree := gtk.NewTreeView()
+	spec_lyt_tree := spec_msg_tree.View()
+	spec_lyt_store := spec_msg_tree.Store()
 
-	spec_lyt_tree.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Is Selected", field_selection_renderer))
-	spec_lyt_tree.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Bit Position", field_name_renderer))
-	spec_lyt_tree.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Field Name", field_name_renderer))
-	spec_lyt_tree.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Data", field_val_renderer))
-
-	spec_lyt_tree.GetColumn(0).AddAttribute(field_selection_renderer, "active", 0)
-	spec_lyt_tree.GetColumn(1).AddAttribute(field_name_renderer, "text", 1)
-	spec_lyt_tree.GetColumn(2).AddAttribute(field_name_renderer, "text", 2)
-	spec_lyt_tree.GetColumn(3).AddAttribute(field_val_renderer, "text", 3)
-	spec_lyt_tree.GetColumn(3).AddAttribute(field_val_renderer, "editable", 5)
-
-	//spec_lyt_tree.GetColumn(2).SetExpand(true)
-
-	spec_lyt_tree.GetColumn(0).SetProperty("resizable", glib.ValueFromNative(true))
-	spec_lyt_tree.GetColumn(1).SetProperty("resizable", glib.ValueFromNative(true))
-	spec_lyt_tree.GetColumn(2).SetProperty("resizable", glib.ValueFromNative(true))
-	spec_lyt_tree.GetColumn(3).SetProperty("resizable", glib.ValueFromNative(true))
 	var i1 gtk.TreeIter
 
 	spec_lyt := iso8583.GetSpecLayout(spec_name)
@@ -263,58 +232,58 @@ func show_spec_layout(spec_name string) {
 
 	}
 
-	spec_lyt_tree.SetModel(spec_lyt_store)
+	spec_msg_tree.FieldValueRenderer().Connect("edited",
+		func(ctx *glib.CallbackContext) {
 
-	field_val_renderer.Connect("edited", func(ctx *glib.CallbackContext) {
-
-		field_name := get_current_field_name(spec_lyt_tree, spec_lyt_store)
-		if field_name == "Bitmap" {
-			//do not allow edits on Bitmap field
-			return
-		}
-
-		set_current_field_value(spec_lyt_tree, spec_lyt_store, ctx.Args(1).ToString())
-
-	})
-
-	field_selection_renderer.Connect("toggled", func(ctx *glib.CallbackContext) {
-
-		var path *gtk.TreePath
-		var col *gtk.TreeViewColumn
-		spec_lyt_tree.GetCursor(&path, &col)
-		log.Println(col.GetTitle())
-		if col.GetTitle() != "Is Selected" {
-			return
-		}
-
-		var i1 gtk.TreeIter
-		if spec_lyt_store.GetIter(&i1, path) {
-
-			field_name_val := glib.GValue{}
-			spec_lyt_store.GetValue(&i1, 2, &field_name_val)
-			fmt.Println(field_name_val.GetString())
-
-			if field_name_val.GetString() == "Bitmap" || field_name_val.GetString() == "Message Type" {
+			field_name := get_current_field_name(spec_lyt_tree, spec_lyt_store)
+			if field_name == "Bitmap" {
+				//do not allow edits on Bitmap field
 				return
 			}
 
-			val := glib.GValue{}
-			bit_pos_val := glib.GValue{}
-			spec_lyt_store.GetValue(&i1, 0, &val)
-			spec_lyt_store.GetValue(&i1, 1, &bit_pos_val)
+			set_current_field_value(spec_lyt_tree, spec_lyt_store, ctx.Args(1).ToString())
 
-			spec_lyt_store.SetValue(&i1, 0, !val.GetBool())
+		})
 
-			if !val.GetBool() {
-				req_iso_msg.Bitmap().SetOn(bit_pos_val.GetInt())
-			} else {
-				req_iso_msg.Bitmap().SetOff(bit_pos_val.GetInt())
+	spec_msg_tree.FieldToggleRenderer().Connect("toggled",
+		func(ctx *glib.CallbackContext) {
+
+			var path *gtk.TreePath
+			var col *gtk.TreeViewColumn
+			spec_lyt_tree.GetCursor(&path, &col)
+			log.Println(col.GetTitle())
+			if col.GetTitle() != "Is Selected" {
+				return
 			}
 
-			recompute_bitmap(spec_lyt_store)
-		}
+			var i1 gtk.TreeIter
+			if spec_lyt_store.GetIter(&i1, path) {
 
-	})
+				field_name_val := glib.GValue{}
+				spec_lyt_store.GetValue(&i1, 2, &field_name_val)
+				fmt.Println(field_name_val.GetString())
+
+				if field_name_val.GetString() == "Bitmap" || field_name_val.GetString() == "Message Type" {
+					return
+				}
+
+				val := glib.GValue{}
+				bit_pos_val := glib.GValue{}
+				spec_lyt_store.GetValue(&i1, 0, &val)
+				spec_lyt_store.GetValue(&i1, 1, &bit_pos_val)
+
+				spec_lyt_store.SetValue(&i1, 0, !val.GetBool())
+
+				if !val.GetBool() {
+					req_iso_msg.Bitmap().SetOn(bit_pos_val.GetInt())
+				} else {
+					req_iso_msg.Bitmap().SetOff(bit_pos_val.GetInt())
+				}
+
+				recompute_bitmap(spec_lyt_store)
+			}
+
+		})
 
 	load_trace_btn := gtk.NewButtonWithLabel(" Load Trace ")
 	load_trace_btn.Connect("clicked", func() {
@@ -341,6 +310,27 @@ func show_spec_layout(spec_name string) {
 	})
 
 	send_trace_btn := gtk.NewButtonWithLabel(" Send  ")
+	send_trace_btn.Connect("clicked", func() {
+
+		tcp_addr, mli_type_str, err := ui_ctx.GetCommsConfig()
+		if err != nil {
+			pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+			return
+		}
+
+		//send this msg, get the response and then display
+		//the response
+		resp_iso_msg, err = pynet.SendIsoMsg(tcp_addr.String(), mli_type_str, req_iso_msg)
+		if err != nil {
+			pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+		} else {
+			//hoo-hah! response received
+			//display it as a dialog to the user
+			pyui.ShowIsoResponseMsgDialog(resp_iso_msg);
+
+		}
+
+	})
 	h_box = gtk.NewHBox(false, 5)
 
 	h_box.PackStart(load_trace_btn, false, false, 1)
@@ -445,24 +435,24 @@ func populate_model(iso_tree_store *gtk.TreeStore) {
 
 func get_and_set_field_val(iso_tree_store *gtk.TreeStore, id int, iter *gtk.TreeIter) {
 	f_name_val := glib.GValue{}
-	iso_tree_store.GetValue(iter, COL_FIELD_NAME, &f_name_val)
+	iso_tree_store.GetValue(iter, pyui.COL_FIELD_NAME, &f_name_val)
 	val := req_iso_msg.GetFieldDataById(id)
 	if len(val.Bytes()) > 0 {
 		log.Printf("setting field [%s] value [%s]\n", f_name_val.GetString(), val.String())
-		iso_tree_store.SetValue(iter, COL_FIELD_VAL, val.String())
+		iso_tree_store.SetValue(iter, pyui.COL_FIELD_VAL, val.String())
 
 		if val.Def() != nil {
 
 			if val.Def().BitPosition() > 0 {
 				if req_iso_msg.IsSelected(val.Def().BitPosition()) {
-					iso_tree_store.SetValue(iter, COL_FIELD_SELECTION, true)
+					iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
 				} else {
-					iso_tree_store.SetValue(iter, COL_FIELD_SELECTION, false)
+					iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, false)
 				}
 
 			}
 		} else {
-			iso_tree_store.SetValue(iter, COL_FIELD_SELECTION, true)
+			iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
 		}
 
 	}

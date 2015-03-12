@@ -31,6 +31,11 @@ func (iso_msg *Iso8583Message) GetMessageType() string {
 	return iso_msg.name_to_data_map["Message Type"].String()
 }
 
+//SpecName returns the name of the specification for this message
+func (iso_msg *Iso8583Message) SpecName() string {
+	return iso_msg.iso_msg_def.spec_name
+}
+
 func (iso_msg *Iso8583Message) ToWebMsg(is_req bool) *WebMsgData {
 
 	json_msg := WebMsgData{}
@@ -366,6 +371,7 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 			{
 
 				var f_data *FieldData = l.Value.(*FieldData)
+				log.Println("parsing.. ", f_data.field_def.Def())
 				f_data.field_def.Parse(iso_msg, f_data, buf)
 				break
 			}
@@ -385,6 +391,7 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 					//}
 
 					if f_data != nil && bmp.IsOn(i) {
+						log.Println("parsing.. ", f_data.field_def.Def())
 						f_data.field_def.Parse(iso_msg, f_data, buf)
 					}
 				}

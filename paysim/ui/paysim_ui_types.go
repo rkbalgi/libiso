@@ -7,6 +7,9 @@ import (
 	"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
+	"net"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -25,7 +28,7 @@ func (ctx *PaysimUiContext) Window() *gtk.Window {
 	return ctx._window
 }
 
-func (ctx *PaysimUiContext) MliTypesComboBox() *gtk.ComboBox {
+/*func (ctx *PaysimUiContext) MliTypesComboBox() *gtk.ComboBox {
 	return ctx.mli_types_cb
 }
 
@@ -36,7 +39,7 @@ func (ctx *PaysimUiContext) IpAdrrWidget() *gtk.Entry {
 func (ctx *PaysimUiContext) PortEntryWidget() *gtk.Entry {
 	return ctx.port_entry
 }
-
+*/
 func (ctx *PaysimUiContext) CommsConfigVBox() *gtk.VBox {
 	return ctx.comms_config_vbox
 }
@@ -70,7 +73,38 @@ func NewUiContext() *PaysimUiContext {
 	return ctx
 }
 
+//GetCommsConfig returns the IP, port and the MLI to be used
+//for the message
+func (ctx *PaysimUiContext) GetCommsConfig() (*net.TCPAddr, string, error) {
+
+	ip_str := ctx.ip_addr_entry.GetText()
+	if len(strings.Trim(ip_str, " ")) == 0 {
+		return nil, "", errors.New("invalid ip")
+	}
+
+	port_str := ctx.port_entry.GetText()
+	port := uint64(0)
+	matched, err := regexp.Match("^[0-9]{4,6}$", []byte(port_str))
+	if err != nil {
+		return nil, "", err
+	} else {
+		if !matched {
+			return nil, "", errors.New("invalid port")
+		}
+
+		_ip := net.ParseIP(ip_str)
+		port, err = strconv.ParseUint(port_str, 10, 32)
+		tcp_addr := &net.TCPAddr{IP: _ip, Port: int(port)}
+		return tcp_addr, ctx.mli_types_cb.GetActiveText(), nil
+	}
+
+}
+
 func (ctx *PaysimUiContext) construct_comms_config_vbox() {
+
+	//default values
+	ctx.ip_addr_entry.SetText("127.0.0.1")
+	ctx.port_entry.SetText("9090")
 
 	ctx.comms_config_vbox = gtk.NewVBox(false, 5)
 	//ip addr box
