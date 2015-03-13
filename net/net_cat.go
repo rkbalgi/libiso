@@ -5,6 +5,8 @@ import (
 	"net"
 	//"bytes"
 	//mynet "github.com/rkbalgi/net"
+	//"os"
+	"time"
 )
 
 type MliType string
@@ -51,9 +53,13 @@ func (nt *NetCatClient) Read(data []byte) (n int, err error) {
 
 func (nt *NetCatClient) IsConnected() (bool) {
 	
+	defer func(){
+		nt.conn.SetReadDeadline(time.Time{});
+	}();
+	nt.conn.SetReadDeadline(time.Now().Add(time.Duration(10)*time.Millisecond));
 	_,err:=nt.conn.Read(make([]byte,0));
-	if err!=nil{
-		panic(err);
+	if err!=nil && err.Error()=="EOF"{
+		println(err.Error());
 		return false
 	}
 	

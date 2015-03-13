@@ -7,12 +7,15 @@ import (
 	"github.com/rkbalgi/go/iso8583"
 	p_nc "github.com/rkbalgi/go/net"
 	"log"
+	"os"
 )
 
 var nc_map map[string]*p_nc.NetCatClient
+var net_logger *log.Logger;
 
 func init() {
 	nc_map = make(map[string]*p_nc.NetCatClient, 10)
+	net_logger=log.New(os.Stdout,"#iso_net >> ",log.LstdFlags);
 }
 
 //SendIsoMsg will send a msg over to the host
@@ -34,6 +37,8 @@ func SendIsoMsg(connection_str string,
 	nc, ok := nc_map[connection_str]
 	//lets check if nc is still connected
 	if ok && !nc.IsConnected(){
+		net_logger.Printf("an existing connection [%] has been closed. opening new connection.",connection_str);
+		delete(nc_map,connection_str)
 		ok=false;
 	}
 	
@@ -43,18 +48,19 @@ func SendIsoMsg(connection_str string,
 		if err != nil {
 			return nil, err
 		}
-		log.Println("new tcp/ip connection opened to -", connection_str)
+		net_logger.Println("new tcp/ip connection opened to -", connection_str)
+		nc_map[connection_str]=nc;
 	}
 
 	//we have a client  now
 	req_msg_data := iso_msg.Bytes()
-	log.Println("sending data \n", hex.Dump(req_msg_data), "\n")
+	net_logger.Println("sending data \n", hex.Dump(req_msg_data), "\n")
 	nc.Write(req_msg_data)
 	resp_msg_data, err := nc.ReadNextPacket()
 	if err != nil {
 		return nil, err
 	}
-	log.Println("received data \n", hex.Dump(resp_msg_data), "\n")
+	net_logger.Println("received data \n", hex.Dump(resp_msg_data), "\n")
 
 	resp_iso_msg := iso8583.NewIso8583Message(iso_msg.SpecName())
 	msg_buf := bytes.NewBuffer(resp_msg_data)
