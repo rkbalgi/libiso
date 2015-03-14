@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	_ "fmt"
-	"github.com/mattn/go-gtk/gdk"
+	_"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"net"
@@ -52,7 +52,7 @@ func NewUiContext() *PaysimUiContext {
 	ctx._window.SetPosition(gtk.WIN_POS_CENTER)
 	ctx._window.SetTitle("PaySim v1.00 - An ISO8583 Simulator")
 	ctx._window.SetIconName("gtk-dialog-info")
-	ctx._window.SetSizeRequest(gdk.ScreenWidth(), gdk.ScreenHeight()-40)
+	ctx._window.SetSizeRequest(600,600)
 	ctx._window.Connect("destroy", func(ctx *glib.CallbackContext) {
 		gtk.MainQuit()
 	}, "foo")

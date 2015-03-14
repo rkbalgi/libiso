@@ -47,6 +47,14 @@ func main() {
 	cascade_file_mi.SetSubmenu(file_menu)
 	menu_bar.Append(cascade_file_mi)
 
+	cascade_crypto_mi := gtk.NewMenuItemWithMnemonic("_Crypto Utils")
+	crypto_menu := gtk.NewMenu()
+	//MAC
+	mac_mi := gtk.NewMenuItemWithMnemonic("_MAC")
+	crypto_menu.Add(mac_mi)
+	cascade_crypto_mi.SetSubmenu(crypto_menu)
+	menu_bar.Append(cascade_crypto_mi)
+
 	open_spec_mi := gtk.NewMenuItemWithMnemonic("_Open Specs Def")
 	file_menu.Add(open_spec_mi)
 	open_spec_mi.Connect("activate", func() {
@@ -170,6 +178,7 @@ func make_and_populate_spec_tree() {
 			if tree_store.GetIter(&t_iter, path) {
 				tree_store.GetValue(&t_iter, 0, val)
 				show_spec_layout(val.GetString())
+
 			}
 
 		}
@@ -326,7 +335,7 @@ func show_spec_layout(spec_name string) {
 		} else {
 			//hoo-hah! response received
 			//display it as a dialog to the user
-			pyui.ShowIsoResponseMsgDialog(resp_iso_msg);
+			pyui.ShowIsoResponseMsgDialog(resp_iso_msg)
 
 		}
 
