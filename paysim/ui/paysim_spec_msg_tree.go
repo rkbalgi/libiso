@@ -56,6 +56,8 @@ func NewPaysimSpecMsgTree() *PaysimSpecMsgTree {
 		self._view.GetColumn(i).SetProperty("resizable", glib.ValueFromNative(true))
 	}
 
+    self._view.ModifyFontEasy("Consolas 10");
+    
 	self._view.SetModel(self._store)
 
 	return self

@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"errors"
 	_ "fmt"
-	"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"net"
@@ -52,7 +51,7 @@ func NewUiContext() *PaysimUiContext {
 	ctx._window.SetPosition(gtk.WIN_POS_CENTER)
 	ctx._window.SetTitle("PaySim v1.00 - An ISO8583 Simulator")
 	ctx._window.SetIconName("gtk-dialog-info")
-	ctx._window.SetSizeRequest(gdk.ScreenWidth(), gdk.ScreenHeight()-40)
+	ctx._window.SetSizeRequest(600, 600)
 	ctx._window.Connect("destroy", func(ctx *glib.CallbackContext) {
 		gtk.MainQuit()
 	}, "foo")
@@ -104,24 +103,24 @@ func (ctx *PaysimUiContext) construct_comms_config_vbox() {
 
 	//default values
 	ctx.ip_addr_entry.SetText("127.0.0.1")
-	ctx.port_entry.SetText("9090")
+	ctx.port_entry.SetText("5656")
 
 	ctx.comms_config_vbox = gtk.NewVBox(false, 5)
 	//ip addr box
 	tmp_hbox := gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 10)
-	tmp_hbox.PackStart(ctx.ip_addr_entry, false, false, 20)
+	tmp_hbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 2)
+	tmp_hbox.PackStart(ctx.ip_addr_entry, false, false, 5)
 	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
 
 	//port box
 	tmp_hbox = gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("Destination Port "), false, false, 10)
-	tmp_hbox.PackStart(ctx.port_entry, false, false, 20)
+	tmp_hbox.PackStart(gtk.NewLabel("Destination Port "), false, false, 2)
+	tmp_hbox.PackStart(ctx.port_entry, false, false, 5)
 	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
 
 	tmp_hbox = gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 10)
-	tmp_hbox.PackStart(ctx.mli_types_cb, false, false, 20)
+	tmp_hbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 5)
+	tmp_hbox.PackStart(ctx.mli_types_cb, false, false, 5)
 	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
 
 }
@@ -183,6 +182,7 @@ func (ctx *PaysimUiContext) ShowUsrTrace(trace_data []byte) {
 
 	dialog := gtk.NewDialog()
 	dialog.SetTitle("Assembled Trace")
+	dialog.SetPosition(gtk.WIN_POS_CENTER)
 	dialog.SetModal(true)
 	dialog.SetSizeRequest(400, 200)
 

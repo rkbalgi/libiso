@@ -7,6 +7,7 @@ import (
 	//mynet "github.com/rkbalgi/net"
 	//"os"
 	"time"
+	_"fmt"
 )
 
 type MliType string
@@ -58,8 +59,7 @@ func (nt *NetCatClient) IsConnected() (bool) {
 	}();
 	nt.conn.SetReadDeadline(time.Now().Add(time.Duration(10)*time.Millisecond));
 	_,err:=nt.conn.Read(make([]byte,0));
-	if err!=nil && err.Error()=="EOF"{
-		println(err.Error());
+	if err!=nil{
 		return false
 	}
 	

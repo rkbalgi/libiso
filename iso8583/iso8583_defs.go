@@ -13,6 +13,8 @@ import (
 	"strconv"
 )
 
+
+
 const (
 	ebcdic_encoding = iota
 	ascii_encoding  = iota + 1

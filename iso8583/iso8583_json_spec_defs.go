@@ -21,21 +21,31 @@ import (
 	"bytes"
 	"container/list"
 	"encoding/json"
-	"fmt"
+
 	"github.com/rkbalgi/go/paysim/demo"
+	pylog "github.com/rkbalgi/go/paysim/log"
 	_ "io"
 	"log"
 	"os"
-	"strconv"
-	"strings"
+	_ "strconv"
+	_ "strings"
 )
+
+type FieldAttributes struct {
+	DataEncoding           string
+	FieldLength            int
+	Key                    bool
+	FieldIndicatorLength   int
+	FieldIndicatorEncoding string
+	Padding                string
+}
 
 //JsonFieldDef represents the definition of a field in the specs.json file
 type JsonFieldDef struct {
 	BitPosition int
 	Name        string
 	Type        string
-	Attrs       string
+	Attrs       FieldAttributes
 	Children    []JsonFieldDef
 }
 
@@ -79,7 +89,7 @@ func display_specs() {
 			} //end swicth
 		}
 
-		fmt.Printf("Spec: %s : Defs: \n%s\n", k, buf.String())
+		pylog.Printf("Spec: %s : Defs: \n%s\n", k, buf.String())
 
 	} //end for-range
 
@@ -118,7 +128,7 @@ func ReadSpecDefs(file_name string) {
 
 	file, err := os.Open(file_name)
 	if err != nil {
-		log.Println("failed to open specs.json file", err.Error())
+		pylog.Log("failed to open specs.json file", err.Error())
 		return
 	}
 
@@ -129,7 +139,7 @@ func ReadSpecDefs(file_name string) {
 		if err != nil && err.Error() == "EOF" {
 			break
 		} else if err != nil {
-			log.Println("failed to read from specs.json file", err.Error())
+			pylog.Log("failed to read from specs.json file", err.Error())
 			break
 		}
 		buf.Write(tmp_data[:count])
@@ -147,12 +157,12 @@ func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 	spec_defs := new(JsonSpecDefs)
 	err := json.Unmarshal(buf.Bytes(), spec_defs)
 	if err != nil {
-		log.Println("failed to parse specs.json", err.Error())
+		pylog.Log("failed to parse specs.json", err.Error())
 		return
 	}
 
 	for _, spec := range spec_defs.Specs {
-		fmt.Println("processing spec -", spec.SpecName)
+		
 		iso8583_msg_def := new(Iso8583MessageDef)
 		iso8583_msg_def.spec_name = spec.SpecName
 		iso8583_msg_def.field_seq = 0
@@ -193,7 +203,7 @@ func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 
 func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
 
-	attrs := strings.Split(json_field_def.Attrs, ";")
+	/*attrs := strings.Split(json_field_def.Attrs, ";")
 	if len(attrs) != 4 {
 		log.Panic("invalid attribute spec for fixed field -" + json_field_def.Name)
 		return nil
@@ -203,19 +213,19 @@ func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
 	if err != nil {
 		log.Panic("invalid field length -", json_field_def.Name)
 		return nil
-	}
-	encoding_type := get_encoding(json_field_def, attrs[2])
-	fixed_field_def := NewFixedFieldDef(json_field_def.Name, encoding_type, int(field_len))
+	}*/
+	encoding_type := get_encoding(json_field_def, json_field_def.Attrs.DataEncoding)
+	fixed_field_def := NewFixedFieldDef(json_field_def.Name, encoding_type, json_field_def.Attrs.FieldLength)
 	fixed_field_def.SetBitPosition(json_field_def.BitPosition)
 
-	log.Println("processed field def- " + json_field_def.Name)
+	pylog.Log("processed field def- " + json_field_def.Name)
 
 	return fixed_field_def
 }
 
 func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDef {
 
-	attrs := strings.Split(json_field_def.Attrs, ";")
+	/*attrs := strings.Split(json_field_def.Attrs, ";")
 	if len(attrs) != 5 {
 		log.Panic("invalid attribute spec for variable field -" + json_field_def.Name)
 		return nil
@@ -225,14 +235,14 @@ func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDe
 	if err != nil {
 		log.Panic("invalid length indicator length -", json_field_def.Name)
 		return nil
-	}
-	len_encoding_type := get_encoding(json_field_def, attrs[2])
-	data_encoding_type := get_encoding(json_field_def, attrs[3])
+	}*/
+	len_encoding_type := get_encoding(json_field_def, json_field_def.Attrs.FieldIndicatorEncoding)
+	data_encoding_type := get_encoding(json_field_def, json_field_def.Attrs.DataEncoding)
 
-	var_field_def := NewVariableFieldDef(json_field_def.Name, len_encoding_type, data_encoding_type, int(field_len))
+	var_field_def := NewVariableFieldDef(json_field_def.Name, len_encoding_type, data_encoding_type, json_field_def.Attrs.FieldIndicatorLength)
 	var_field_def.SetBitPosition(json_field_def.BitPosition)
 
-	log.Println("processed variable field def- " + json_field_def.Name)
+	pylog.Log("processed variable field def- " + json_field_def.Name)
 
 	return var_field_def
 }
@@ -264,7 +274,7 @@ func construct_bmp_field_def(iso8583_msg_def *Iso8583MessageDef, json_field_def 
 		}
 
 	}
-	log.Println("processed bitmapped field - " + json_field_def.Name)
+	pylog.Log("processed bitmapped field - " + json_field_def.Name)
 	return bmp
 }
 

@@ -23,6 +23,7 @@ var swin_spec_tree *gtk.ScrolledWindow
 var ui_ctx *pyui.PaysimUiContext
 var bmp_iter gtk.TreeIter
 var h_box *gtk.HBox
+var swin_console *gtk.ScrolledWindow
 
 //the tree holding all the specs
 var spec_tree_view *gtk.TreeView
@@ -37,6 +38,7 @@ func main() {
 	gtk.SettingsGetDefault().SetStringProperty("gtk-font-name", "Dejavu Sans 10", "")
 	//a vbox that will hold the spec tree
 	//and its contents
+	pyui.Init()
 	spec_tree_vbox = gtk.NewVBox(false, 1)
 
 	ui_ctx = pyui.NewUiContext()
@@ -117,6 +119,15 @@ func main() {
 
 	right_box.PackStart(ui_ctx.CommsConfigVBox(), false, false, 12)
 
+	reset_console()
+	active_spec_frame = gtk.NewFrame("                 ")
+	active_spec_frame.SetName("spec_frame")
+	active_spec_frame.SetSizeRequest(400, 400)
+
+	right_box.PackStart(active_spec_frame, false, false, 5)
+	right_box.PackStart(swin_console, false, false, 5)
+	right_box.ShowAll()
+
 	iso8583.ReadDemoSpecDefs()
 	make_and_populate_spec_tree()
 
@@ -152,6 +163,7 @@ func make_and_populate_spec_tree() {
 	}
 
 	spec_tree_view.SetHeadersVisible(false)
+	
 	spec_tree_view.Connect("button-release-event", func(ctx *glib.CallbackContext) {
 
 		event := (*gdk.EventButton)(unsafe.Pointer(ctx.Args(0)))
@@ -179,10 +191,11 @@ func make_and_populate_spec_tree() {
 	status_bar.Push(status_bar_context_id, fmt.Sprintf("%d specs loaded. OK.", n))
 
 	swin_spec_tree = gtk.NewScrolledWindow(nil, nil)
-	swin_spec_tree.SetSizeRequest(250, 800)
+	swin_spec_tree.SetSizeRequest(200, 800)
 	swin_spec_tree.AddWithViewPort(spec_tree_view)
 
 	spec_tree_vbox.PackStart(swin_spec_tree, true, true, 2)
+
 	spec_tree_vbox.ShowAll()
 
 }
@@ -198,10 +211,13 @@ func show_spec_layout(spec_name string) {
 		right_box.Remove(active_spec_frame)
 		right_box.Remove(h_box)
 	}
+	//right_box.Remove(swin_console)
 
 	spec_msg_tree := pyui.NewPaysimSpecMsgTree()
 
 	spec_lyt_tree := spec_msg_tree.View()
+	//ctr:=spec_lyt_tree.(*gtk.Widget);
+	//ctr.GetSettings().SetStringProperty
 	spec_lyt_store := spec_msg_tree.Store()
 
 	var i1 gtk.TreeIter
@@ -326,7 +342,7 @@ func show_spec_layout(spec_name string) {
 		} else {
 			//hoo-hah! response received
 			//display it as a dialog to the user
-			pyui.ShowIsoResponseMsgDialog(resp_iso_msg);
+			pyui.ShowIsoResponseMsgDialog(resp_iso_msg.TabularFormat())
 
 		}
 
@@ -336,12 +352,16 @@ func show_spec_layout(spec_name string) {
 	h_box.PackStart(load_trace_btn, false, false, 1)
 	h_box.PackStart(assemble_trace_btn, false, false, 1)
 	h_box.PackStart(send_trace_btn, false, false, 1)
-
+	
+	align:=gtk.NewAlignment(0.5,0.5,0.0,0.0);
+	align.Add(h_box);
 	spec_lyt_tree.ShowAll()
 	active_spec_frame = gtk.NewFrame("       [" + spec_name + "]        ")
 	active_spec_frame.SetName("spec_frame")
-	active_spec_frame.SetSizeRequest(400, 400)
+	active_spec_frame.SetSizeRequest(300, 300)
 
+	//add a scrolled winow containing
+	//the spec_lty_tree
 	swin := gtk.NewScrolledWindow(nil, nil)
 	swin.AddWithViewPort(spec_lyt_tree)
 	hbox_tmp := gtk.NewHBox(false, 10)
@@ -349,11 +369,21 @@ func show_spec_layout(spec_name string) {
 
 	active_spec_frame.Add(hbox_tmp)
 
-	right_box.SetSizeRequest(400, 400)
-	right_box.PackStart(active_spec_frame, false, false, 40)
-	right_box.PackStart(h_box, true, false, 0)
+	right_box.SetSizeRequest(400, 200)
+	right_box.PackStart(active_spec_frame, false, false, 20)
+	right_box.PackStart(align, false, false, 0)
+	//reset_console()
+	right_box.ReorderChild(swin_console,-1); //.PackStart(swin_console, false, false, 0)
 
 	right_box.ShowAll()
+
+}
+
+func reset_console() {
+
+	swin_console = gtk.NewScrolledWindow(nil, nil)
+	swin_console.AddWithViewPort(pyui.PaysimConsole.TextView())
+	swin_console.SetSizeRequest(400,150);
 
 }
 
