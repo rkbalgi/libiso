@@ -5,12 +5,13 @@ import (
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/rkbalgi/go/paysim"
-	"fmt"
+	_"fmt"
 )
 
 func ShowIsoResponseMsgDialog(tab_data_list *list.List) {
 
 	dialog := gtk.NewDialog()
+	dialog.SetTitle("Message Response");
 
 	t_view := gtk.NewTreeView()
 	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Name", gtk.NewCellRendererText(),"text",0))
@@ -21,7 +22,7 @@ func ShowIsoResponseMsgDialog(tab_data_list *list.List) {
 	for l := tab_data_list.Front(); l != nil; l = l.Next() {
 		t_store.Append(&tree_iter)
 		tuple := l.Value.(*paysim.Tuple)
-		fmt.Println("???",tuple.String());
+		//fmt.Println("???",tuple.String());
 		t_store.SetValue(&tree_iter, 0, tuple.Nth(0))
 		t_store.SetValue(&tree_iter, 1, tuple.Nth(1))
 	}

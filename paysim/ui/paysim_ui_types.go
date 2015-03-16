@@ -21,10 +21,25 @@ type PaysimUiContext struct {
 	port_entry        *gtk.Entry
 	mli_types_cb      *gtk.ComboBox
 	comms_config_vbox *gtk.VBox
+
+	_btn_ld       *gtk.Button
+	_btn_assemble *gtk.Button
+	_btn_send     *gtk.Button
+	_btn_box      *gtk.HBox
 }
 
 func (ctx *PaysimUiContext) Window() *gtk.Window {
 	return ctx._window
+}
+
+func (ctx *PaysimUiContext) LoadButton() *gtk.Button {
+	return ctx._btn_ld
+}
+func (ctx *PaysimUiContext) AssembleButton() *gtk.Button {
+	return ctx._btn_assemble
+}
+func (ctx *PaysimUiContext) SendButton() *gtk.Button {
+	return ctx._btn_send
 }
 
 /*func (ctx *PaysimUiContext) MliTypesComboBox() *gtk.ComboBox {
@@ -68,6 +83,7 @@ func NewUiContext() *PaysimUiContext {
 	ctx.mli_types_cb.SetActiveIter(&iter)
 
 	ctx.construct_comms_config_vbox()
+	ctx.create_buttons_and_box()
 
 	return ctx
 }

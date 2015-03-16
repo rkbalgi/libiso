@@ -9,6 +9,7 @@ import (
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/rkbalgi/go/iso8583"
+	pylog "github.com/rkbalgi/go/paysim/log"
 	pynet "github.com/rkbalgi/go/paysim/net"
 	pyui "github.com/rkbalgi/go/paysim/ui"
 	"log"
@@ -35,7 +36,7 @@ var comms_config_bx *gtk.VBox
 func main() {
 
 	gtk.Init(nil)
-	gtk.SettingsGetDefault().SetStringProperty("gtk-font-name", "Dejavu Sans 10", "")
+	gtk.SettingsGetDefault().SetStringProperty("gtk-font-name", "Dejavu Sans 8", "")
 	//a vbox that will hold the spec tree
 	//and its contents
 	pyui.Init()
@@ -65,7 +66,7 @@ func main() {
 		filechooserdialog.Response(func() {
 			iso8583.ReadSpecDefs(filechooserdialog.GetFilename())
 			make_and_populate_spec_tree()
-			filechooserdialog.Destroy()
+			filechooserdialog.Destroy() 
 		})
 		filechooserdialog.Run()
 
@@ -76,6 +77,22 @@ func main() {
 		gtk.MainQuit()
 	})
 	file_menu.Add(quit_mi)
+
+	cascade_utils_mi := gtk.NewMenuItemWithMnemonic("_Utils")
+	utils_menu := gtk.NewMenu()
+	cascade_utils_mi.SetSubmenu(utils_menu)
+
+	mac_mi := gtk.NewMenuItemWithMnemonic("_MAC")
+	utils_menu.Add(mac_mi)
+	mac_mi.Connect("activate", func() {
+		pyui.ComputeMacDialog(ui_ctx.Window(), "")
+	})
+
+	pin_mi := gtk.NewMenuItemWithMnemonic("_PIN")
+	utils_menu.Add(pin_mi)
+	pin_mi.Connect("activate", func() {})
+
+	menu_bar.Append(cascade_utils_mi)
 
 	cascade_about_mi := gtk.NewMenuItemWithMnemonic("_About")
 
@@ -102,6 +119,7 @@ func main() {
 	vbox.Add(h_pane)
 
 	frame1 := gtk.NewFrame("")
+	frame1.SetSizeRequest(100, 600)
 	frame1.Add(spec_tree_vbox)
 
 	frame2 := gtk.NewFrame("")
@@ -128,6 +146,8 @@ func main() {
 	right_box.PackStart(swin_console, false, false, 5)
 	right_box.ShowAll()
 
+	pylog.Log("Paysim v1.00 starting...\n#********************************#")
+
 	iso8583.ReadDemoSpecDefs()
 	make_and_populate_spec_tree()
 
@@ -150,7 +170,6 @@ func make_and_populate_spec_tree() {
 	spec_tree_view.SetModel(tree_store.ToTreeModel())
 
 	spec_tree_view.SetSizeRequest(250, 800)
-	spec_tree_view.ModifyFontEasy("Dejavu Sans 9")
 
 	var ti_1, ti_2 gtk.TreeIter
 	tree_store.Append(&ti_1, nil)
@@ -163,7 +182,7 @@ func make_and_populate_spec_tree() {
 	}
 
 	spec_tree_view.SetHeadersVisible(false)
-	
+
 	spec_tree_view.Connect("button-release-event", func(ctx *glib.CallbackContext) {
 
 		event := (*gdk.EventButton)(unsafe.Pointer(ctx.Args(0)))
@@ -216,11 +235,9 @@ func show_spec_layout(spec_name string) {
 	spec_msg_tree := pyui.NewPaysimSpecMsgTree()
 
 	spec_lyt_tree := spec_msg_tree.View()
-	//ctr:=spec_lyt_tree.(*gtk.Widget);
-	//ctr.GetSettings().SetStringProperty
 	spec_lyt_store := spec_msg_tree.Store()
 
-	var i1 gtk.TreeIter
+	var i1 gtk.TreeIter 
 
 	spec_lyt := iso8583.GetSpecLayout(spec_name)
 	for _, field_def := range spec_lyt {
@@ -228,7 +245,7 @@ func show_spec_layout(spec_name string) {
 		spec_lyt_store.SetValue(&i1, 0, false)
 		spec_lyt_store.SetValue(&i1, 1, field_def.BitPosition)
 		spec_lyt_store.SetValue(&i1, 2, field_def.Name)
-		spec_lyt_store.SetValue(&i1, 3, "")
+		spec_lyt_store.SetValue(&i1, 3, "") 
 		spec_lyt_store.SetValue(&i1, 4, field_def.Id)
 		if field_def.Name == "Bitmap" || field_def.Name == "Message Type" {
 			spec_lyt_store.SetValue(&i1, 0, true)
@@ -301,8 +318,7 @@ func show_spec_layout(spec_name string) {
 
 		})
 
-	load_trace_btn := gtk.NewButtonWithLabel(" Load Trace ")
-	load_trace_btn.Connect("clicked", func() {
+	ui_ctx.LoadButton().Connect("clicked", func() {
 
 		trace_data, err := ui_ctx.GetUsrTrace()
 		log.Println("user trace: ", hex.EncodeToString(trace_data))
@@ -318,15 +334,12 @@ func show_spec_layout(spec_name string) {
 
 	})
 
-	assemble_trace_btn := gtk.NewButtonWithLabel(" Assemble Trace ")
-	assemble_trace_btn.Connect("clicked", func() {
+	ui_ctx.AssembleButton().Connect("clicked", func() {
 
 		trace_data := req_iso_msg.Bytes()
 		ui_ctx.ShowUsrTrace(trace_data)
 	})
-
-	send_trace_btn := gtk.NewButtonWithLabel(" Send  ")
-	send_trace_btn.Connect("clicked", func() {
+	ui_ctx.SendButton().Connect("clicked", func() {
 
 		tcp_addr, mli_type_str, err := ui_ctx.GetCommsConfig()
 		if err != nil {
@@ -347,14 +360,9 @@ func show_spec_layout(spec_name string) {
 		}
 
 	})
-	h_box = gtk.NewHBox(false, 5)
 
-	h_box.PackStart(load_trace_btn, false, false, 1)
-	h_box.PackStart(assemble_trace_btn, false, false, 1)
-	h_box.PackStart(send_trace_btn, false, false, 1)
-	
-	align:=gtk.NewAlignment(0.5,0.5,0.0,0.0);
-	align.Add(h_box);
+	align := gtk.NewAlignment(0.5, 0.5, 0.0, 0.0)
+	align.Add(ui_ctx.ButtonBox())
 	spec_lyt_tree.ShowAll()
 	active_spec_frame = gtk.NewFrame("       [" + spec_name + "]        ")
 	active_spec_frame.SetName("spec_frame")
@@ -373,7 +381,7 @@ func show_spec_layout(spec_name string) {
 	right_box.PackStart(active_spec_frame, false, false, 20)
 	right_box.PackStart(align, false, false, 0)
 	//reset_console()
-	right_box.ReorderChild(swin_console,-1); //.PackStart(swin_console, false, false, 0)
+	right_box.ReorderChild(swin_console, -1) //.PackStart(swin_console, false, false, 0)
 
 	right_box.ShowAll()
 
@@ -383,7 +391,7 @@ func reset_console() {
 
 	swin_console = gtk.NewScrolledWindow(nil, nil)
 	swin_console.AddWithViewPort(pyui.PaysimConsole.TextView())
-	swin_console.SetSizeRequest(400,150);
+	swin_console.SetSizeRequest(400, 150)
 
 }
 

@@ -28,7 +28,7 @@ func _new_console() *PaysimUiConsole {
 	self._txt_buf = gtk.NewTextBuffer(gtk.NewTextTagTable())
 	self._txt_view = gtk.NewTextViewWithBuffer(*self._txt_buf)
 	self._txt_view.SetEditable(false)
-	self._txt_view.ModifyFontEasy("consolas 10");
+	self._txt_view.ModifyFontEasy("consolas 8");
 	return self
 }
 

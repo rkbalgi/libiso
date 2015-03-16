@@ -1,4 +1,4 @@
-{ "Specs":[{"SpecName": "ISO8583_1 v1 (ASCII)", "Fields": [{"BitPosition":0,"Name": "Message Type", "Type":"Fixed", "Attrs":{"Key":false,"FieldLength":4,"DataEncoding":"ascii","Padding":"default"}},
+{ "Specs":[{"SpecName": "ISO8583_1_v1__DEMO_", "Fields": [{"BitPosition":0,"Name": "Message Type", "Type":"Fixed", "Attrs":{"Key":false,"FieldLength":4,"DataEncoding":"ascii","Padding":"default"}},
                                                            {"BitPosition":0,"Name": "Bitmap", "Type":"Bitmapped", "Attrs":{"DataEncoding":"binary"},"Children":
                                                           [{"BitPosition":2,"Name": "PAN", "Type":"Variable", "Attrs":{"Key":false,"FieldIndicatorLength":2,"FieldIndicatorEncoding":"ascii","DataEncoding":"ascii","Padding":"default"}},
                                                            {"BitPosition":3,"Name": "Processing Code", "Type":"Fixed", "Attrs":{"Key":false,"FieldLength":6,"DataEncoding":"ascii","Padding":"default"}}, 
