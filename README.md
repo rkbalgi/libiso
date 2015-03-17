@@ -1,5 +1,5 @@
 # Paysim
-My open ISO8583 Simulator :-)
+An open ISO8583 Simulator
 
 <ul>
 <li>The application is built using go and GTK+2 bindings made available at github.com/mattn/go-gtk (Thanks a ton Yashuhiro Matsumoto!)</li>
@@ -18,3 +18,4 @@ My open ISO8583 Simulator :-)
 ## After a response is received
 ![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_With_Response.png)
 
+# A brief presentation
