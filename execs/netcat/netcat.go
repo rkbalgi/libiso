@@ -5,11 +5,9 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	//"github.com/rkbalgi/utils"
 	"os"
 	"strconv"
 )
-
 
 func main() {
 
@@ -47,11 +45,9 @@ func main() {
 	err := nt.OpenConnection()
 	mynet.HandleError(err)
 
-	
-
 	//fmt.Println("-->\n",hex.Dump(hex_ba),"\n")
 	//write data
-	bin_data,_:=hex.DecodeString(data)
+	bin_data, _ := hex.DecodeString(data)
 	nt.Write(bin_data)
 
 	//read response
@@ -64,7 +60,7 @@ func readResponse(nt *mynet.NetCatClient) {
 	var responseData [512]byte
 	n, err := nt.Read(responseData[:])
 	mynet.HandleError(err)
-    
-	fmt.Println("<--\n",hex.Dump(responseData[:n]),"\n")
+
+	fmt.Println("<--\n", hex.Dump(responseData[:n]), "\n")
 
 }

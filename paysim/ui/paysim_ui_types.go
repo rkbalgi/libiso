@@ -121,12 +121,12 @@ func (ctx *PaysimUiContext) construct_comms_config_vbox() {
 	ctx.ip_addr_entry.SetText("127.0.0.1")
 	ctx.port_entry.SetText("5656")
 
-	ctx.comms_config_vbox = gtk.NewVBox(false, 5)
+	ctx.comms_config_vbox = gtk.NewVBox(true, 5)
 	//ip addr box
 	tmp_hbox := gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 2)
+	tmp_hbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 5)
 	tmp_hbox.PackStart(ctx.ip_addr_entry, false, false, 5)
-	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
+	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 5)
 
 	//port box
 	tmp_hbox = gtk.NewHBox(false, 5)
@@ -135,8 +135,8 @@ func (ctx *PaysimUiContext) construct_comms_config_vbox() {
 	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
 
 	tmp_hbox = gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 5)
-	tmp_hbox.PackStart(ctx.mli_types_cb, false, false, 5)
+	tmp_hbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 10)
+	tmp_hbox.PackStart(ctx.mli_types_cb, false, false, 15)
 	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
 
 }
@@ -156,7 +156,7 @@ func (ctx *PaysimUiContext) GetUsrTrace() ([]byte, error) {
 	text_view := gtk.NewTextView()
 	text_view.SetEditable(true)
 	text_view.SetWrapMode(gtk.WRAP_CHAR)
-	text_view.GetBuffer().SetText("31313030702000000000000131353337313131313131313131313131343030343830303030303030303030303132323132333435360000000000000000")
+	text_view.GetBuffer().SetText("31313030702000000000000131353131313131313131313131313131343030343830303030303030303030303132323132333435360000000000000000")
 	swin := gtk.NewScrolledWindow(nil, nil)
 	swin.AddWithViewPort(text_view)
 

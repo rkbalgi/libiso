@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/rkbalgi/go/iso_host"
 	"github.com/rkbalgi/go/iso8583"
 	_ "github.com/rkbalgi/go/iso8583/services"
 	"log"
@@ -57,7 +58,7 @@ func (handler *SendMessageHandlerHandler) ServeHTTP(w http.ResponseWriter, req *
 	req_data:=iso_msg.Bytes();
 	log.Println("req: \n",hex.EncodeToString(req_data));
 	msg_buf:=bytes.NewBuffer(req_data);
-	resp_iso_msg,err:=iso8583.Handle(snd_req.Spec,msg_buf);
+	resp_iso_msg,err:=iso_host.Handle(snd_req.Spec,msg_buf);
 	log.Println("processed response: \n",resp_iso_msg.Dump());
 	
 	if(err!=nil){

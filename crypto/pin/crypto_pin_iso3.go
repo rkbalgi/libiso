@@ -24,11 +24,7 @@ func (pin_block *PinBlock_Iso3) Encrypt(pan_12digits string, clear_pin string, k
 	fill_random(buf)
 
 	pin_block_data_a, _ := hex.DecodeString(buf.String())
-	//log.Printf(" pin block (a) =", buf.String())
-
-	//pan_12digits := pan[len(pan)-13 : len(pan)-1]
 	pin_block_data_b, _ := hex.DecodeString("0000" + pan_12digits)
-	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
 
 	for i, v := range pin_block_data_b {
 		pin_block_data_a[i] = pin_block_data_a[i] ^ v

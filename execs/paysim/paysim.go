@@ -13,6 +13,7 @@ import (
 	pynet "github.com/rkbalgi/go/paysim/net"
 	pyui "github.com/rkbalgi/go/paysim/ui"
 	"log"
+	"net"
 	"unsafe"
 )
 
@@ -66,7 +67,7 @@ func main() {
 		filechooserdialog.Response(func() {
 			iso8583.ReadSpecDefs(filechooserdialog.GetFilename())
 			make_and_populate_spec_tree()
-			filechooserdialog.Destroy() 
+			filechooserdialog.Destroy()
 		})
 		filechooserdialog.Run()
 
@@ -90,7 +91,9 @@ func main() {
 
 	pin_mi := gtk.NewMenuItemWithMnemonic("_PIN")
 	utils_menu.Add(pin_mi)
-	pin_mi.Connect("activate", func() {})
+	pin_mi.Connect("activate", func() {
+		pyui.ComputePinBlockDialog(ui_ctx.Window(), "")
+	})
 
 	menu_bar.Append(cascade_utils_mi)
 
@@ -237,7 +240,7 @@ func show_spec_layout(spec_name string) {
 	spec_lyt_tree := spec_msg_tree.View()
 	spec_lyt_store := spec_msg_tree.Store()
 
-	var i1 gtk.TreeIter 
+	var i1 gtk.TreeIter
 
 	spec_lyt := iso8583.GetSpecLayout(spec_name)
 	for _, field_def := range spec_lyt {
@@ -245,7 +248,7 @@ func show_spec_layout(spec_name string) {
 		spec_lyt_store.SetValue(&i1, 0, false)
 		spec_lyt_store.SetValue(&i1, 1, field_def.BitPosition)
 		spec_lyt_store.SetValue(&i1, 2, field_def.Name)
-		spec_lyt_store.SetValue(&i1, 3, "") 
+		spec_lyt_store.SetValue(&i1, 3, "")
 		spec_lyt_store.SetValue(&i1, 4, field_def.Id)
 		if field_def.Name == "Bitmap" || field_def.Name == "Message Type" {
 			spec_lyt_store.SetValue(&i1, 0, true)
@@ -351,7 +354,13 @@ func show_spec_layout(spec_name string) {
 		//the response
 		resp_iso_msg, err = pynet.SendIsoMsg(tcp_addr.String(), mli_type_str, req_iso_msg)
 		if err != nil {
-			pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+
+			net_err, ok := err.(net.Error)
+			if ok && net_err.Timeout() {
+				pyui.ShowErrorDialog(ui_ctx.Window(), "Message Timed Out.")
+			} else {
+				pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+			}
 		} else {
 			//hoo-hah! response received
 			//display it as a dialog to the user

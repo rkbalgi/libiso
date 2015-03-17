@@ -13,8 +13,6 @@ import (
 	"strconv"
 )
 
-
-
 const (
 	ebcdic_encoding = iota
 	ascii_encoding  = iota + 1
@@ -33,8 +31,10 @@ const (
 	ISO_MSG_1814 = "1814"
 
 	ISO_RESP_DECLINE  = "100"
+	ISO_RESP_PICKUP   = "200"
 	ISO_RESP_APPROVAL = "000"
 	ISO_FORMAT_ERROR  = "909"
+	ISO_RESP_DROP  = "999"
 )
 
 var spec_map map[string]*Iso8583MessageDef
@@ -83,8 +83,8 @@ type IsoField interface {
 	EncodedLength(int) []byte
 	to_string([]byte) string
 	get_data_encoding() int
-	Def() string 
-	
+	Def() string
+
 	BitPosition() int
 	SetBitPosition(int)
 }
@@ -124,7 +124,7 @@ func (iso_def *Iso8583MessageDef) add_field(field interface{}) {
 	iso_def.fields_def_list.PushBack(field)
 }
 
-func (iso_def *Iso8583MessageDef) Name() string{
+func (iso_def *Iso8583MessageDef) Name() string {
 	return iso_def.spec_name
 }
 

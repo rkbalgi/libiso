@@ -4,27 +4,33 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"flag"
+	"fmt"
+	"github.com/rkbalgi/go/iso_host"
 	"github.com/rkbalgi/go/iso8583"
 	bnet "github.com/rkbalgi/go/net"
-
 	"log"
 	"net"
 	"os"
 )
 
-var logger = log.New(os.Stdout, "##iso8583## ", log.LstdFlags)
+var logger = log.New(os.Stdout, "##iso_host## ", log.LstdFlags)
 
 type IsoMessageHandler struct {
+	spec_name string
 }
+
+
 
 func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn, msg_data []byte) {
 
 	logger.Println("handling request = \n", hex.Dump(msg_data))
 
 	buf := bytes.NewBuffer(msg_data)
-	resp_iso_msg, err := iso8583.Handle("ISO8583_1 v1 (ASCII)",buf)
+	resp_iso_msg, err := iso_host.Handle(iso_msg_handler.spec_name, buf)
 	if err != nil {
-		log.Printf("error handling message from client -[Err: %s]\n", err.Error)
+		log.Printf("error handling message from client -[Err: %s]\n", err.Error())
+		return;
 	}
 
 	resp_data := resp_iso_msg.Bytes()
@@ -41,16 +47,35 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 }
 
 func main() {
-	
-	iso8583.ReadDemoSpecDefs();
+
+	port := flag.Int("port", 5656, "port to listen at")
+	spec_name := flag.String("spec", "ISO8583_1_v1__DEMO_", "specification from the spec file")
+	spec_def_file_name := flag.String("spec-file", "", "file to read the specifications from")
+
+	flag.Parse()
+	if len(*spec_def_file_name) == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
+	file_handle, err := os.Open(*spec_def_file_name)
+	if err != nil {
+		fmt.Println("unable to open spec-file")
+		flag.Usage()
+		os.Exit(1)
+	}
+	file_handle.Close()
+
+	iso8583.ReadSpecDefs(*spec_def_file_name)
 
 	tcp_addr := new(net.TCPAddr)
-	tcp_addr.IP = net.ParseIP("127.0.0.1")
-	tcp_addr.Port = 5656
+	tcp_addr.IP = net.ParseIP("")
+	tcp_addr.Port = *port
 
 	iso_host := bnet.NewTcpHost(bnet.MLI_2I, tcp_addr)
-	iso_host.SetHandler(new(IsoMessageHandler))
-
+	handler:=new(IsoMessageHandler)
+	handler.spec_name=*spec_name
+	iso_host.SetHandler(handler)
+	
 	iso_host.Start()
 
 }

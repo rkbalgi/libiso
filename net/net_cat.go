@@ -3,11 +3,7 @@ package net
 import (
 	"encoding/binary"
 	"net"
-	//"bytes"
-	//mynet "github.com/rkbalgi/net"
-	//"os"
 	"time"
-	_"fmt"
 )
 
 type MliType string
@@ -52,23 +48,27 @@ func (nt *NetCatClient) Read(data []byte) (n int, err error) {
 	return n, err
 }
 
-func (nt *NetCatClient) IsConnected() (bool) {
-	
-	defer func(){
-		nt.conn.SetReadDeadline(time.Time{});
-	}();
-	nt.conn.SetReadDeadline(time.Now().Add(time.Duration(10)*time.Millisecond));
-	_,err:=nt.conn.Read(make([]byte,0));
-	if err!=nil{
+func (nt *NetCatClient) IsConnected() bool {
+
+	defer func() {
+		nt.conn.SetReadDeadline(time.Time{})
+	}()
+	nt.conn.SetReadDeadline(time.Now().Add(time.Duration(10) * time.Millisecond))
+	_, err := nt.conn.Read(make([]byte, 0))
+	if err != nil {
 		return false
 	}
-	
-	return true;
+
+	return true
 }
 
 func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 
-	//first read the 2E mli
+	defer func() {
+		nt.conn.SetReadDeadline(time.Time{})
+	}()
+	nt.conn.SetReadDeadline(time.Now().Add(time.Duration(5) * time.Second))
+
 	tmp := make([]byte, 2)
 	_, err := nt.conn.Read(tmp)
 	if err != nil {
@@ -78,8 +78,8 @@ func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 	}
 
 	msg_len := binary.BigEndian.Uint16(tmp)
-	if(nt.mliType==MLI_2I){
-		msg_len-=2;
+	if nt.mliType == MLI_2I {
+		msg_len -= 2
 	}
 	//read data
 	msg_data := make([]byte, msg_len)
@@ -89,7 +89,7 @@ func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 		//return
 		return nil, err
 	}
-	
-	return msg_data,err
+
+	return msg_data, err
 
 }

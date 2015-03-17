@@ -5,6 +5,8 @@ import (
 	_ "fmt"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/rkbalgi/go/crypto/mac"
+	"github.com/rkbalgi/go/crypto"
+	
 )
 
 func ComputeMacDialog(widget gtk.IWidget, msg string) {
@@ -20,7 +22,7 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 	key_entry := gtk.NewEntry()
 	key_entry.SetText("90897656d3e4de56")
 
-	ok_btn := dialog.AddButton("OK", gtk.BUTTONS_OK)
+	ok_btn := dialog.AddButton("Generate", gtk.BUTTONS_OK)
 	cancel_btn := dialog.AddButton("Cancel", gtk.BUTTONS_CANCEL)
 
 	mac_algo_cb := gtk.NewComboBoxText()
@@ -76,7 +78,7 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 
 	ok_btn.Connect("clicked", func() {
 
-		key_data, err := hex.DecodeString(mac_entry.GetText())
+		key_data, err := hex.DecodeString(key_entry.GetText())
 		if err != nil {
 			ShowErrorDialog(dialog, "Invalid Key!")
 			return
@@ -84,7 +86,7 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 
 		var start_iter, end_iter gtk.TextIter
 		mac_buf_tv.GetBuffer().GetStartIter(&start_iter)
-		mac_buf_tv.GetBuffer().GetStartIter(&end_iter)
+		mac_buf_tv.GetBuffer().GetEndIter(&end_iter)
 		mac_data_str := mac_buf_tv.GetBuffer().GetText(&start_iter, &end_iter, true)
 
 		mac_data, err := hex.DecodeString(mac_data_str)
@@ -92,14 +94,35 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 			ShowErrorDialog(dialog, "Invalid Data (should be hex)")
 			return
 		}
-		
 
+		println("supplied key length -",len(key_data))
+		if mac_algo_cb.GetActiveText() == "X9.19" {
+			if len(key_data) != 16 {
+				ShowErrorDialog(dialog, "Invalid key. A double length DES key expected.")
+				return
+			}
+		} else {
+			//X9.9
+			if len(key_data) != 8 {
+				ShowErrorDialog(dialog, "Invalid key. A single length DES key expected.")
+				return
+			}
+		}
+		
+		var padded_data []byte;
+		if padding_type_cb.GetActiveText()=="9797-1"{
+			padded_data=crypto.Iso9797M1Padding.Pad(mac_data);
+		}else{
+			padded_data=crypto.Iso9797M2Padding.Pad(mac_data);
+		} 
+		
+		
 
 		var mac_val []byte
 		if len(key_data) == 8 {
-			mac_val = mac.GenerateMac_X99(mac_data, key_data)
+			mac_val = mac.GenerateMac_X99(padded_data, key_data)
 		} else {
-			mac_val = mac.GenerateMac_X919(mac_data, key_data)
+			mac_val = mac.GenerateMac_X919(padded_data, key_data)
 		}
 		mac_entry.SetText(hex.EncodeToString(mac_val))
 

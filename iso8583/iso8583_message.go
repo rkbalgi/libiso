@@ -53,7 +53,7 @@ func (iso_msg *Iso8583Message) ToWebMsg(is_req bool) *WebMsgData {
 		switch obj := l.Value.(type) {
 		case IsoField:
 			{
-				iso_field := iso_msg.get_field_by_name(obj.String())
+				iso_field := iso_msg.GetFieldByName(obj.String())
 				if iso_field.field_data != nil {
 					json_msg.DataArray[iso_field.field_def.GetId()] = iso_field.String()
 				}
@@ -85,7 +85,7 @@ func (iso_msg *Iso8583Message) SetData(data []string) {
 		switch obj := l.Value.(type) {
 		case IsoField:
 			{
-				iso_field := iso_msg.get_field_by_name(obj.String())
+				iso_field := iso_msg.GetFieldByName(obj.String())
 				iso_field.SetData(data[iso_field.field_def.GetId()])
 
 			}
@@ -139,7 +139,7 @@ func (iso_msg *Iso8583Message) IsSelected(position int) bool {
 //GetFieldData returns the data associated with the 'position'
 //in the iso_msg
 func (iso_msg *Iso8583Message) GetFieldData(position int) (data string, err error) {
-	field_data, err := iso_msg.get_field(position)
+	field_data, err := iso_msg.Field(position)
 	if err == nil {
 		data = field_data.String()
 	}
@@ -227,7 +227,7 @@ func (iso_msg *Iso8583Message) handle_error(err error) {
 	}
 }
 
-func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
+func (iso_msg *Iso8583Message) Field(pos int) (*FieldData, error) {
 
 	if iso_msg.bit_map.IsOn(pos) {
 		return iso_msg.bit_map.sub_field_data[pos], nil
@@ -238,7 +238,7 @@ func (iso_msg *Iso8583Message) get_field(pos int) (*FieldData, error) {
 }
 
 //set field
-func (iso_msg *Iso8583Message) set_field(pos int, value string) {
+func (iso_msg *Iso8583Message) SetField(pos int, value string) {
 
 	iso_msg.bit_map.SetOn(pos)
 	iso_msg.bit_map.sub_field_data[pos].SetData(value)
@@ -246,7 +246,7 @@ func (iso_msg *Iso8583Message) set_field(pos int, value string) {
 }
 
 //set field
-func (iso_msg *Iso8583Message) get_field_by_name(name string) *FieldData {
+func (iso_msg *Iso8583Message) GetFieldByName(name string) *FieldData {
 
 	f_data := iso_msg.name_to_data_map[name]
 	return f_data
@@ -254,7 +254,7 @@ func (iso_msg *Iso8583Message) get_field_by_name(name string) *FieldData {
 }
 
 //copy all data from request to response message
-func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
+func CopyRequestToResponse(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 
 	iso_resp.bit_map.copy_bits(iso_req.bit_map)
 	for k, v := range iso_req.name_to_data_map {
@@ -269,49 +269,6 @@ func copy_iso_req_to_resp(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 
 }
 
-//this method handles an incoming ISO8583 message, doing the parsing, processing
-//and response creation
-func Handle(spec_name string, buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
-
-	req_iso_msg := NewIso8583Message(spec_name)
-
-	//parse incoming message
-	err = req_iso_msg.Parse(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	req_iso_msg.log.Println("parsed incoming message: ", req_iso_msg.Dump())
-
-	//continue handling
-
-	resp_iso_msg = NewIso8583Message(spec_name)
-	msg_type := req_iso_msg.GetMessageType()
-	switch msg_type {
-	case ISO_MSG_1100:
-		{
-			handle_auth_req(req_iso_msg, resp_iso_msg)
-		}
-	case ISO_MSG_1804:
-		{
-			handle_network_req(req_iso_msg, resp_iso_msg)
-		}
-	case ISO_MSG_1420:
-		{
-			handle_reversal_req(req_iso_msg, resp_iso_msg)
-		}
-	default:
-		{
-			err = errors.New("unsupported message type -" + req_iso_msg.GetMessageType())
-
-		}
-	}
-
-	req_iso_msg.log.Println("outgoing message: ", resp_iso_msg.Dump())
-
-	return resp_iso_msg, err
-
-}
 
 //create a string dump of the iso message
 func (iso_msg *Iso8583Message) Dump() string {

@@ -6,6 +6,7 @@ package mac
 
 import (
 	"github.com/rkbalgi/go/crypto"
+	"encoding/hex"
 )
 
 //generate a X9.9 MAC using a single length key
@@ -16,9 +17,13 @@ func GenerateMac_X99(in_mac_data []byte, key_data []byte) []byte {
 	mac_data := make([]byte, len(in_mac_data))
 	copy(mac_data, in_mac_data)
 
+    println(hex.EncodeToString(in_mac_data),hex.EncodeToString(mac_data));
+   println(len(mac_data));
+   
 	//add 0 padding
 	if len(mac_data) < 8 || len(mac_data)%8 != 0 {
 		pads := make([]byte, 8-(len(mac_data)%8))
+		println("pads " ,len(pads));
 		mac_data = append(mac_data, pads...)
 	}
 
