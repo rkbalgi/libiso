@@ -11,9 +11,9 @@ An open ISO8583 Simulator
 
 
 # Some Screenshots
-## The main opening page
+## The Main Application Screen
 ![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_MainScreen.png)
-## Some Cryptographic Utilities
+## Some Cryptographic Utilities (MAC'ing / PIN)
 ![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_Utils.png)
 ## After a response is received
 ![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_With_Response.png)
