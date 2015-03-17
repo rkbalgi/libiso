@@ -19,3 +19,4 @@ An open ISO8583 Simulator
 ![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_With_Response.png)
 
 # A brief presentation
+I have put together a brief presentation which is available here - https://docs.google.com/presentation/d/1UxxL4f_SO3NGpnx_N_v21RJoADOVK8YLrJYXRVnLw-4/edit?usp=sharing
