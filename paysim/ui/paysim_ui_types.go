@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"errors"
 	_ "fmt"
+
+	_"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"net"

@@ -204,6 +204,7 @@ func make_and_populate_spec_tree() {
 			if tree_store.GetIter(&t_iter, path) {
 				tree_store.GetValue(&t_iter, 0, val)
 				show_spec_layout(val.GetString())
+
 			}
 
 		}
@@ -365,7 +366,6 @@ func show_spec_layout(spec_name string) {
 			//hoo-hah! response received
 			//display it as a dialog to the user
 			pyui.ShowIsoResponseMsgDialog(resp_iso_msg.TabularFormat())
-
 		}
 
 	})
