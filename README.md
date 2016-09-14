@@ -1,3 +1,5 @@
+# A library of utilities related to ISO message processing 
+
 # Paysim
 An open ISO8583 Simulator
 
