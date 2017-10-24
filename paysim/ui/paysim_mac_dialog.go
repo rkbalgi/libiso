@@ -22,8 +22,8 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 	key_entry := gtk.NewEntry()
 	key_entry.SetText("90897656d3e4de56")
 
-	ok_btn := dialog.AddButton("Generate", gtk.BUTTONS_OK)
-	cancel_btn := dialog.AddButton("Cancel", gtk.BUTTONS_CANCEL)
+	ok_btn := dialog.AddButton("Generate", gtk.RESPONSE_OK)
+	cancel_btn := dialog.AddButton("Cancel", gtk.RESPONSE_CANCEL)
 
 	mac_algo_cb := gtk.NewComboBoxText()
 	mac_algo_cb.AppendText("X9.9")

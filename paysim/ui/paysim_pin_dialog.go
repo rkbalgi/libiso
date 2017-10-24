@@ -25,8 +25,8 @@ func ComputePinBlockDialog(widget gtk.IWidget, msg string) {
 	pan_entry := gtk.NewEntry()
 	pan_entry.SetText("5400000000000006")
 
-	ok_btn := dialog.AddButton("Generate", gtk.BUTTONS_OK)
-	cancel_btn := dialog.AddButton("Cancel", gtk.BUTTONS_CANCEL)
+	ok_btn := dialog.AddButton("Generate", gtk.RESPONSE_OK)
+	cancel_btn := dialog.AddButton("Cancel", gtk.RESPONSE_CANCEL)
 
 	pin_algo_cb := gtk.NewComboBoxText()
 	pin_algo_cb.AppendText("IBM-3264")
