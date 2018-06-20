@@ -2,7 +2,6 @@ package ebcdic
 
 import (
 	"bytes"
-	"fmt"
 	"strconv"
 	_ "strings"
 )
@@ -55,8 +54,7 @@ TOASTABL DC    X'000102030405060708090A0B0C0D0E0F'  00-0F
 
 **/
 
-var ebcdic_to_ascii = 
-    "000102030405060708090A0B0C0D0E0F" +
+var ebcdic_to_ascii = "000102030405060708090A0B0C0D0E0F" +
 	"101112131415161718191A1B1C1D1E1F" +
 	"202122232425262728292A2B2C2D2E2F" +
 	"303132333435363738393A3B3C3D3E3F" +
@@ -97,10 +95,8 @@ func EncodeToString(data []byte) string {
 
 	for _, b := range data {
 		var x uint32 = uint32(b)
-		fmt.Println("x",x);
 		tmp := ebcdic_to_ascii[(x * 2) : (x*2)+2]
 		i, _ := strconv.ParseUint(tmp, 16, 8)
-		fmt.Println("i",i);
 		buf.WriteString(string(i))
 
 	}
