@@ -6,60 +6,61 @@ import (
 )
 
 //for double length keys
-var __variant_dbl_len_1 byte = 0xa6
-var __variant_dbl_len_2 byte = 0x5a
+var variantDblLen1 byte = 0xa6
+var variantDblLen2 byte = 0x5a
 
 //for triple length keys
-var __variant_triple_len_1 byte = 0x6a
-var __variant_triple_len_2 byte = 0xde
-var __variant_triple_len_3 byte = 0x2b
-
-//lmk variants (position 0 is dummy - only 1 through 9 are used)
-var __variants = [...]byte{0x00, 0xa6, 0x5a, 0x6a, 0xde, 0x2b, 0x50, 0x74, 0x9c, 0xfa}
+var variantTripleLen1 byte = 0x6a
+var variantTripleLen2 byte = 0xde
+var variantTripleLen3 byte = 0x2b
+var (
+	//lmk variants (position 0 is dummy - only 1 through 9 are used)
+	__variants = [...]byte{0x00, 0xa6, 0x5a, 0x6a, 0xde, 0x2b, 0x50, 0x74, 0x9c, 0xfa}
+)
 
 //test lmk keys
 
-var __lmk_0_1__, _ = hex.DecodeString("01010101010101017902CD1FD36EF8BA")
-var __lmk_2_3__, _ = hex.DecodeString("20202020202020203131313131313131")
-var __lmk_4_5__, _ = hex.DecodeString("40404040404040405151515151515151")
-var __lmk_6_7__, _ = hex.DecodeString("61616161616161617070707070707070")
-var __lmk_8_9__, _ = hex.DecodeString("80808080808080809191919191919191")
-var __lmk_10_11__, _ = hex.DecodeString("A1A1A1A1A1A1A1A1B0B0B0B0B0B0B0B0")
-var __lmk_12_13__, _ = hex.DecodeString("C1C1010101010101D0D0010101010101")
-var __lmk_14_15__, _ = hex.DecodeString("E0E0010101010101F1F1010101010101")
-var __lmk_16_17__, _ = hex.DecodeString("1C587F1C13924FEF0101010101010101")
-var __lmk_18_19__, _ = hex.DecodeString("01010101010101010101010101010101")
-var __lmk_20_21__, _ = hex.DecodeString("02020202020202020404040404040404")
-var __lmk_22_23__, _ = hex.DecodeString("07070707070707071010101010101010")
-var __lmk_24_25__, _ = hex.DecodeString("13131313131313131515151515151515")
-var __lmk_26_27__, _ = hex.DecodeString("16161616161616161919191919191919")
-var __lmk_28_29__, _ = hex.DecodeString("1A1A1A1A1A1A1A1A1C1C1C1C1C1C1C1C")
-var __lmk_30_31__, _ = hex.DecodeString("23232323232323232525252525252525")
-var __lmk_32_33__, _ = hex.DecodeString("26262626262626262929292929292929")
-var __lmk_34_35__, _ = hex.DecodeString("2A2A2A2A2A2A2A2A2C2C2C2C2C2C2C2C")
-var __lmk_36_37__, _ = hex.DecodeString("2F2F2F2F2F2F2F2F3131313131313131")
-var __lmk_38_39__, _ = hex.DecodeString("01010101010101010101010101010101")
+var lmk01, _ = hex.DecodeString("01010101010101017902CD1FD36EF8BA")
+var lmk23, _ = hex.DecodeString("20202020202020203131313131313131")
+var lmk45, _ = hex.DecodeString("40404040404040405151515151515151")
+var lmk67, _ = hex.DecodeString("61616161616161617070707070707070")
+var lmk89, _ = hex.DecodeString("80808080808080809191919191919191")
+var lmk1011, _ = hex.DecodeString("A1A1A1A1A1A1A1A1B0B0B0B0B0B0B0B0")
+var lmk1213, _ = hex.DecodeString("C1C1010101010101D0D0010101010101")
+var lmk1415, _ = hex.DecodeString("E0E0010101010101F1F1010101010101")
+var lmk1617, _ = hex.DecodeString("1C587F1C13924FEF0101010101010101")
+var lmk1819, _ = hex.DecodeString("01010101010101010101010101010101")
+var lmk2021, _ = hex.DecodeString("02020202020202020404040404040404")
+var lmk2223, _ = hex.DecodeString("07070707070707071010101010101010")
+var lmk2425, _ = hex.DecodeString("13131313131313131515151515151515")
+var lmk2627, _ = hex.DecodeString("16161616161616161919191919191919")
+var lmk2829, _ = hex.DecodeString("1A1A1A1A1A1A1A1A1C1C1C1C1C1C1C1C")
+var lmk3031, _ = hex.DecodeString("23232323232323232525252525252525")
+var lmk3233, _ = hex.DecodeString("26262626262626262929292929292929")
+var lmk3435, _ = hex.DecodeString("2A2A2A2A2A2A2A2A2C2C2C2C2C2C2C2C")
+var lmk3637, _ = hex.DecodeString("2F2F2F2F2F2F2F2F3131313131313131")
+var lmk3839, _ = hex.DecodeString("01010101010101010101010101010101")
 
-var key_type_table map[string][]byte
+var keyTypeTable map[string][]byte
 
 func init() {
-	key_type_table = make(map[string][]byte, 2)
-	key_type_table["00"] = __lmk_4_5__
-	key_type_table["01"] = __lmk_6_7__
-	key_type_table["02"] = __lmk_14_15__
-	key_type_table["03"] = __lmk_16_17__
-	key_type_table["04"] = __lmk_18_19__
-	key_type_table["05"] = __lmk_20_21__
-	key_type_table["06"] = __lmk_22_23__
-	key_type_table["07"] = __lmk_24_25__
-	key_type_table["08"] = __lmk_26_27__
-	key_type_table["09"] = __lmk_28_29__
+	keyTypeTable = make(map[string][]byte, 2)
+	keyTypeTable["00"] = lmk45
+	keyTypeTable["01"] = lmk67
+	keyTypeTable["02"] = lmk1415
+	keyTypeTable["03"] = lmk1617
+	keyTypeTable["04"] = lmk1819
+	keyTypeTable["05"] = lmk2021
+	keyTypeTable["06"] = lmk2223
+	keyTypeTable["07"] = lmk2425
+	keyTypeTable["08"] = lmk2627
+	keyTypeTable["09"] = lmk2829
 	//
-	key_type_table["0A"] = __lmk_30_31__
-	key_type_table["0B"] = __lmk_32_33__
-	key_type_table["0C"] = __lmk_34_35__
-	key_type_table["0D"] = __lmk_36_37__
-	key_type_table["0E"] = __lmk_38_39__
+	keyTypeTable["0A"] = lmk3031
+	keyTypeTable["0B"] = lmk3233
+	keyTypeTable["0C"] = lmk3435
+	keyTypeTable["0D"] = lmk3637
+	keyTypeTable["0E"] = lmk3839
 
-	log.Printf("[%d] lmk keys loaded.", len(key_type_table))
+	log.Printf("[%d] lmk keys loaded.", len(keyTypeTable))
 }

@@ -6,7 +6,7 @@ import (
 )
 
 var _3des_lmk []byte //check value 165126
-var _aes_lmk []byte //9D04A0
+var _aes_lmk []byte  //9D04A0
 
 func init() {
 	_3des_lmk, _ = hex.DecodeString(strings.Replace("01 23 45 67 89 AB CD EF 80 80 80 80 80 80 80 80 FE DC BA 98 76 54 32 10", " ", "", -1))

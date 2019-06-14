@@ -34,7 +34,7 @@ func handle_auth_req(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 
 	l_amount, err := strconv.ParseUint(f_amount.String(), 10, 64)
 	if err != nil {
-		logger.Println("invalid amount -",f_amount.String());
+		logger.Println("invalid amount -", f_amount.String())
 		do_format_error_response(iso_resp)
 		return
 	}

@@ -1,42 +1,48 @@
 package crypto
 
 import (
-	//"crypto/rand"
-	"encoding/hex"
+	"crypto/rand"
+
+	"errors"
 )
 
 //596b0abc958120f62a7edc6896c99144
 
-func GenerateDesKey(key_len int) []byte {
-	
-	if(key_len%8!=0){
-		panic("invalid keylen for generation")
+var ErrInvalidKeyLength = errors.New("invalid key length")
+
+// Generates a DES key, keyLen should be specified in multiple of 8
+func GenerateDesKey(keyLen int) ([]byte, error) {
+
+	if keyLen%8 != 0 {
+		return nil, ErrInvalidKeyLength
 	}
-	
-	key := make([]byte, key_len)
-	tmp,_:=hex.DecodeString("596b0abc958120f62a7edc6896c991442a7edc6896c99144");
-	if(key_len==8){
-		return tmp[0:8] 
-	}else if(key_len==16){
-		return tmp[:16]
-	}else{
-		return tmp[:24]
+
+	key := make([]byte, keyLen)
+	_, err := rand.Read(key) // hex.DecodeString("596b0abc958120f62a7edc6896c991442a7edc6896c99144")
+	if err != nil {
+		return nil, err
 	}
-	
-	to_odd_parity(key)
-	
-	return key
+	//if keyLen == 8 {
+	//	key = tmp[0:8]
+	//} else if keyLen == 16 {
+	//	key = tmp[:16]
+	//} else {
+	//	key = tmp[:24]
+	//}
+
+	toOddParity(key)
+
+	return key, nil
 
 }
 
-
 /*
 func GenerateDesKey(key_len int) []byte {
-	
+
 	if(key_len%8!=0){
 		panic("invalid keylen for generation")
 	}
-	
+
 	key := make([]byte, key_len)
 	n, err := rand.Read(key)
 	if n != key_len || err != nil {

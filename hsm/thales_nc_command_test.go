@@ -10,22 +10,22 @@ import (
 
 func Test_Thales_NC(t *testing.T) {
 
-	cmd_str := "303030303030303030303032;4e43;"
-	cmd_str = strings.Replace(cmd_str, ";", "", -1)
-	msg_data, _ := hex.DecodeString(cmd_str)
+	cmdStr := "303030303030303030303032;4e43;"
+	cmdStr = strings.Replace(cmdStr, ";", "", -1)
+	msgData, _ := hex.DecodeString(cmdStr)
 
-	fmt.Println(hex.Dump(msg_data))
+	fmt.Println(hex.Dump(msgData))
 
-	hsm_client := net.NewNetCatClient("127.0.0.1:1500", net.MLI_2E)
-	err := hsm_client.OpenConnection()
-	fail_on_err(t, err)
-	defer hsm_client.Close();
-	err = hsm_client.Write(msg_data)
-	
-	fail_on_err(t, err)
+	hsmClient := net.NewNetCatClient("127.0.0.1:1500", net.Mli2e)
+	err := hsmClient.OpenConnection()
+	failOnErr(t, err)
+	defer hsmClient.Close()
+	err = hsmClient.Write(msgData)
 
-	response_data, err := hsm_client.ReadNextPacket()
-	fail_on_err(t, err)
-	fmt.Println(hex.Dump(response_data))
+	failOnErr(t, err)
+
+	responseData, err := hsmClient.ReadNextPacket()
+	failOnErr(t, err)
+	fmt.Println(hex.Dump(responseData))
 
 }

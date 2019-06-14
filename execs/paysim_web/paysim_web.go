@@ -15,7 +15,6 @@ func main() {
 	http.Handle("/paysim/get_layout", new(handlers.PaysimDefaultHandler))
 	http.Handle("/paysim/parse_trace", new(handlers.ParseTraceHandlerHandler))
 	http.Handle("/paysim/send_message", new(handlers.SendMessageHandlerHandler))
-	
 
 	//start and listen at 8080
 	http.ListenAndServe(":8080", nil)

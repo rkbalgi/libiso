@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/rkbalgi/go/iso_host"
 	"github.com/rkbalgi/go/iso8583"
+	"github.com/rkbalgi/go/iso_host"
 	bnet "github.com/rkbalgi/go/net"
 	"log"
 	"net"
@@ -20,8 +20,6 @@ type IsoMessageHandler struct {
 	spec_name string
 }
 
-
-
 func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn, msg_data []byte) {
 
 	logger.Println("handling request = \n", hex.Dump(msg_data))
@@ -30,7 +28,7 @@ func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn
 	resp_iso_msg, err := iso_host.Handle(iso_msg_handler.spec_name, buf)
 	if err != nil {
 		log.Printf("error handling message from client -[Err: %s]\n", err.Error())
-		return;
+		return
 	}
 
 	resp_data := resp_iso_msg.Bytes()
@@ -71,11 +69,11 @@ func main() {
 	tcp_addr.IP = net.ParseIP("")
 	tcp_addr.Port = *port
 
-	iso_host := bnet.NewTcpHost(bnet.MLI_2I, tcp_addr)
-	handler:=new(IsoMessageHandler)
-	handler.spec_name=*spec_name
+	iso_host := bnet.NewTcpHost(bnet.Mli2i, tcp_addr)
+	handler := new(IsoMessageHandler)
+	handler.spec_name = *spec_name
 	iso_host.SetHandler(handler)
-	
+
 	iso_host.Start()
 
 }

@@ -6,67 +6,69 @@ import (
 	"log"
 )
 
-var thales_pinfmt_map map[int]pin.PinBlocker
+var thalesPinfmtMap map[int]pin.PinBlocker
 
-type pin_handler struct {
-	pan            string
-	in_pinblk_fmt  int
-	out_pinblk_fmt int
-	in_key         []byte
-	out_key        []byte
-
-	clear_pin string
+type pinHandler struct {
+	pan          string
+	inPinblkFmt  int
+	outPinblkFmt int
+	inKey        []byte
+	outKey       []byte
+	clearPin     string
 }
 
 func init() {
-	thales_pinfmt_map = make(map[int]pin.PinBlocker, 5)
-	thales_pinfmt_map[1] = new(pin.PinBlock_Iso0)
-	thales_pinfmt_map[5] = new(pin.PinBlock_Iso1)
-	thales_pinfmt_map[47] = new(pin.PinBlock_Iso3)
-	thales_pinfmt_map[03] = new(pin.PinBlock_Ibm3264)
+	thalesPinfmtMap = make(map[int]pin.PinBlocker, 5)
+	thalesPinfmtMap[1] = new(pin.PinBlock_Iso0)
+	thalesPinfmtMap[5] = new(pin.PinBlock_Iso1)
+	thalesPinfmtMap[47] = new(pin.PinBlock_Iso3)
+	thalesPinfmtMap[03] = new(pin.PinBlock_Ibm3264)
 
-	log.Printf("[%d] pin block formats registered.", len(thales_pinfmt_map))
+	log.Printf("[%d] pin block formats registered.", len(thalesPinfmtMap))
 }
 
-func new_pin_handler(pan string, in_pinblk_fmt int, out_pinblk_fmt int, in_key []byte, out_key []byte) *pin_handler {
-	ph := new(pin_handler)
+func newPinHandler(pan string, inPinblkFmt int,
+	outPinblkFmt int, inKey []byte, outKey []byte) *pinHandler {
+	ph := new(pinHandler)
 	ph.pan = pan
-	ph.in_pinblk_fmt = in_pinblk_fmt
-	ph.out_pinblk_fmt = out_pinblk_fmt
-	ph.in_key = in_key
-	ph.out_key = out_key
+	ph.inPinblkFmt = inPinblkFmt
+	ph.outPinblkFmt = outPinblkFmt
+	ph.inKey = inKey
+	ph.outKey = outKey
 
 	return ph
 
 }
 
-func (ph *pin_handler) decrypt_and_extract_pin(in_pinblk []byte) {
+func (ph *pinHandler) decryptAndExtractPin(inPinblk []byte) error {
 
-	pin_blocker := thales_pinfmt_map[ph.in_pinblk_fmt]
+	pinBlocker := thalesPinfmtMap[ph.inPinblkFmt]
 
-	if pin_blocker == nil {
-		panic(fmt.Sprintf("unsupported pin block format - %d", ph.in_pinblk_fmt))
+	if pinBlocker == nil {
+		return fmt.Errorf("unsupported pin block format - %d", ph.inPinblkFmt)
 	} else {
-		ph.clear_pin = pin_blocker.GetPin(ph.pan, in_pinblk, ph.in_key)
+		ph.clearPin = pinBlocker.GetPin(ph.pan, inPinblk, ph.inKey)
 	}
 }
 
-func (ph *pin_handler) get_clear_pin() string {
-	return ph.clear_pin
+func (ph *pinHandler) getClearPin() string {
+	return ph.clearPin
 }
 
-func (ph *pin_handler) create_pin_block() []byte {
+func (ph *pinHandler) createPinBlock() []byte {
 
-	pin_blocker := thales_pinfmt_map[ph.out_pinblk_fmt]
-	dest_pin_block := pin_blocker.Encrypt(ph.pan, ph.clear_pin, ph.out_key)
-	return (dest_pin_block)
+	pinBlocker := thalesPinfmtMap[ph.outPinblkFmt]
+	destPinBlock := pinBlocker.Encrypt(ph.pan, ph.clearPin, ph.outKey)
+	return destPinBlock
 
 }
 
-func (ph *pin_handler) translate(in_pin_block []byte) []byte {
+func (ph *pinHandler) translate(inPinBlock []byte) ([]byte, error) {
 
-	ph.decrypt_and_extract_pin(in_pin_block)
-	dest_pin_block := ph.create_pin_block()
-	return (dest_pin_block)
+	if err := ph.decryptAndExtractPin(inPinBlock); err != nil {
+		return nil, err
+	}
+	destPinBlock := ph.createPinBlock()
+	return destPinBlock, nil
 
 }

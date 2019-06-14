@@ -26,10 +26,10 @@ func main() {
 	}*/
 
 	var mli mynet.MliType
-	if mli_str == string(mynet.MLI_2I) {
-		mli = mynet.MLI_2I
-	} else if mli_str == string(mynet.MLI_2E) {
-		mli = mynet.MLI_2E
+	if mli_str == string(mynet.Mli2i) {
+		mli = mynet.Mli2i
+	} else if mli_str == string(mynet.Mli2e) {
+		mli = mynet.Mli2e
 	}
 
 	if len(ip) == 0 || port == 0 {

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/rkbalgi/go/iso_host"
 	"github.com/rkbalgi/go/iso8583"
 	_ "github.com/rkbalgi/go/iso8583/services"
+	"github.com/rkbalgi/go/iso_host"
 	"log"
 	"net/http"
 )
@@ -15,8 +15,6 @@ type SendMessageHandlerHandler struct {
 }
 
 func (handler *SendMessageHandlerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-
-
 
 	buf := make([]byte, 100)
 	json_buf := bytes.NewBufferString("")
@@ -49,33 +47,31 @@ func (handler *SendMessageHandlerHandler) ServeHTTP(w http.ResponseWriter, req *
 	//iso_msg_def:=iso8583.GetMessageDefByName(snd_req.Spec);
 
 	iso_msg := iso8583.NewIso8583Message(snd_req.Spec)
-	
-	iso_msg.SetData(snd_req.DataArray)
-	
-	log.Println("received request : ", iso_msg.Dump())
-	
-	//handle the incoming message
-	req_data:=iso_msg.Bytes();
-	log.Println("req: \n",hex.EncodeToString(req_data));
-	msg_buf:=bytes.NewBuffer(req_data);
-	resp_iso_msg,err:=iso_host.Handle(snd_req.Spec,msg_buf);
-	log.Println("processed response: \n",resp_iso_msg.Dump());
-	
-	if(err!=nil){
-		w.Write([]byte("error"));
-		return;
-	}
 
-	
+	iso_msg.SetData(snd_req.DataArray)
+
+	log.Println("received request : ", iso_msg.Dump())
+
+	//handle the incoming message
+	req_data := iso_msg.Bytes()
+	log.Println("req: \n", hex.EncodeToString(req_data))
+	msg_buf := bytes.NewBuffer(req_data)
+	resp_iso_msg, err := iso_host.Handle(snd_req.Spec, msg_buf)
+	log.Println("processed response: \n", resp_iso_msg.Dump())
+
+	if err != nil {
+		w.Write([]byte("error"))
+		return
+	}
 
 	web_msg_data := resp_iso_msg.ToWebMsg(false)
 	json_data, err := json.Marshal(web_msg_data)
 	if err == nil {
-		log.Println("writing json ", string(json_data));
-		w.Write(json_data);
+		log.Println("writing json ", string(json_data))
+		w.Write(json_data)
 	} else {
-		log.Println("error marshalling json -", err.Error());
-		w.Write([]byte("error"));
+		log.Println("error marshalling json -", err.Error())
+		w.Write([]byte("error"))
 
 	}
 

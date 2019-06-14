@@ -9,53 +9,53 @@ import (
 )
 
 type TcpMessageHandler interface {
-	HandleMessage(client_con *net.TCPConn, msg_data []byte)
+	HandleMessage(clientCon *net.TCPConn, msgData []byte)
 }
 
 type TcpHost struct {
-	mli_type MliType
-	addr     *net.TCPAddr
-	handler  TcpMessageHandler
-	log      *log.Logger
+	mliType MliType
+	addr    *net.TCPAddr
+	handler TcpMessageHandler
+	log     *log.Logger
 }
 
-func NewTcpHost(mli_type MliType, tcp_addr *net.TCPAddr) *TcpHost {
-	new_tcp_host := new(TcpHost)
-	new_tcp_host.addr = tcp_addr
-	new_tcp_host.mli_type = mli_type
-	new_tcp_host.log = log.New(os.Stdout, "tcp_host ## ", log.LstdFlags)
+func NewTcpHost(mliType MliType, tcpAddr *net.TCPAddr) *TcpHost {
+	newTcpHost := new(TcpHost)
+	newTcpHost.addr = tcpAddr
+	newTcpHost.mliType = mliType
+	newTcpHost.log = log.New(os.Stdout, "tcp_host ## ", log.LstdFlags)
 
-	return new_tcp_host
+	return newTcpHost
 
 }
 
-func (tcp_host *TcpHost) SetHandler(handler TcpMessageHandler) {
-	tcp_host.handler = handler
+func (tcpHost *TcpHost) SetHandler(handler TcpMessageHandler) {
+	tcpHost.handler = handler
 }
 
-func (tcp_host *TcpHost) Start() {
+func (tcpHost *TcpHost) Start() {
 
-	tcp_listener, err := net.ListenTCP("tcp4", tcp_host.addr)
+	tcpListener, err := net.ListenTCP("tcp4", tcpHost.addr)
 	if err != nil {
-		fmt.Println("error listening at port -", tcp_host.addr.String(), err.Error())
+		fmt.Println("error listening at port -", tcpHost.addr.String(), err.Error())
 		return
 	}
-	logger.Printf("started tcp-ip host @ %s", tcp_listener.Addr().String())
+	logger.Printf("started tcp-ip host @ %s", tcpListener.Addr().String())
 
 	for {
-		client_conn, err := tcp_listener.AcceptTCP()
+		clientConn, err := tcpListener.AcceptTCP()
 		if err != nil {
 			fmt.Println("error accepting client connection - ", err.Error())
 		}
-		logger.Printf("new connection from %s", client_conn.RemoteAddr().String())
+		logger.Printf("new connection from %s", clientConn.RemoteAddr().String())
 
-		go tcp_host.handle_client(client_conn)
+		go tcpHost.handleClient(clientConn)
 
 	}
 
 }
 
-func (tcp_host *TcpHost) handle_client(client_conn *net.TCPConn) {
+func (tcpHost *TcpHost) handleClient(clientConn *net.TCPConn) {
 
 	//if any errors/panics handling the client, just recover and let
 	//others connected continue
@@ -63,7 +63,7 @@ func (tcp_host *TcpHost) handle_client(client_conn *net.TCPConn) {
 
 		str := recover()
 		if str != nil {
-			tcp_host.log.Printf("panic recovered. client connection will be closed.")
+			tcpHost.log.Printf("panic recovered. client connection will be closed.")
 			return
 		}
 
@@ -73,44 +73,44 @@ func (tcp_host *TcpHost) handle_client(client_conn *net.TCPConn) {
 
 	for {
 
-		n, err := client_conn.Read(mli)
+		n, err := clientConn.Read(mli)
 		if err != nil {
-			handle_network_error(err, client_conn.RemoteAddr().String())
-			client_conn.Close()
+			handleNetworkError(err, clientConn.RemoteAddr().String())
+			_ = clientConn.Close()
 			return
 		}
 
-		req_len := binary.BigEndian.Uint16(mli)
-		if tcp_host.mli_type == MLI_2I {
-			req_len = req_len - 2
+		reqLen := binary.BigEndian.Uint16(mli)
+		if tcpHost.mliType == Mli2i {
+			reqLen = reqLen - 2
 		}
-		tcp_host.log.Printf("reading incoming message with %d bytes...\n", req_len)
+		tcpHost.log.Printf("reading incoming message with %d bytes...\n", reqLen)
 
 		//all good, read rest of the message data
-		msg_data := make([]byte, req_len)
-		n, err = client_conn.Read(msg_data)
+		msgData := make([]byte, reqLen)
+		n, err = clientConn.Read(msgData)
 		if err != nil {
-			handle_network_error(err, client_conn.RemoteAddr().String())
-			client_conn.Close()
+			handleNetworkError(err, clientConn.RemoteAddr().String())
+			_ = clientConn.Close()
 			return
 		}
 
-		if uint16(n) != req_len {
-			logger.Printf("not enough data - required: %d != actual %d\n", req_len, n)
+		if uint16(n) != reqLen {
+			logger.Printf("not enough data - required: %d != actual %d\n", reqLen, n)
 			continue
 		}
 
-		go tcp_host.handler.HandleMessage(client_conn, msg_data)
+		go tcpHost.handler.HandleMessage(clientConn, msgData)
 
 	}
 }
 
-func handle_network_error(err error, ref_msg string) {
+func handleNetworkError(err error, refMsg string) {
 
 	if err != nil {
 
 		if err.Error() == "EOF" {
-			log.Printf("client connection closed -[ref: %s]", ref_msg)
+			log.Printf("client connection closed -[ref: %s]", refMsg)
 		} else {
 
 			logger.Printf("error on client connection. closing connection [Err: %s]\n", err.Error())

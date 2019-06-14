@@ -4,9 +4,8 @@ import (
 	"encoding/hex"
 	_ "fmt"
 	"github.com/mattn/go-gtk/gtk"
-	"github.com/rkbalgi/go/crypto/mac"
 	"github.com/rkbalgi/go/crypto"
-	
+	"github.com/rkbalgi/go/crypto/mac"
 )
 
 func ComputeMacDialog(widget gtk.IWidget, msg string) {
@@ -95,7 +94,7 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 			return
 		}
 
-		println("supplied key length -",len(key_data))
+		println("supplied key length -", len(key_data))
 		if mac_algo_cb.GetActiveText() == "X9.19" {
 			if len(key_data) != 16 {
 				ShowErrorDialog(dialog, "Invalid key. A double length DES key expected.")
@@ -108,15 +107,13 @@ func ComputeMacDialog(widget gtk.IWidget, msg string) {
 				return
 			}
 		}
-		
-		var padded_data []byte;
-		if padding_type_cb.GetActiveText()=="9797-1"{
-			padded_data=crypto.Iso9797M1Padding.Pad(mac_data);
-		}else{
-			padded_data=crypto.Iso9797M2Padding.Pad(mac_data);
-		} 
-		
-		
+
+		var padded_data []byte
+		if padding_type_cb.GetActiveText() == "9797-1" {
+			padded_data = crypto.Iso9797M1Padding.Pad(mac_data)
+		} else {
+			padded_data = crypto.Iso9797M2Padding.Pad(mac_data)
+		}
 
 		var mac_val []byte
 		if len(key_data) == 8 {

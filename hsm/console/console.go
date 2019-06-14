@@ -13,18 +13,18 @@ import (
 	"sync"
 )
 
-var start_cmd_regexp *regexp.Regexp
+var startCmdRegexp *regexp.Regexp
 
 func init() {
 	var err error
-	start_cmd_regexp, err = regexp.Compile("start_hsm[ ]+-port[ ]+([0-9]+)")
+	startCmdRegexp, err = regexp.Compile("start_hsm[ ]+-port[ ]+([0-9]+)")
 	if err != nil {
 		panic(err.Error())
 	}
 }
 
 type Console struct {
-	thales_hsm *hsm.ThalesHsm
+	thalesHsm *hsm.ThalesHsm
 }
 
 const (
@@ -33,43 +33,43 @@ const (
 )
 
 func New() *Console {
-	return (&Console{})
+	return &Console{}
 }
 
-func (console *Console) Show(wait_group *sync.WaitGroup) {
+func (console *Console) Show(waitGroup *sync.WaitGroup) {
 	var line string
-	stdin_reader := bufio.NewReader(os.Stdin)
+	stdinReader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("console# ")
-		line, _ = stdin_reader.ReadString('\n')
+		line, _ = stdinReader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
 		if line == QUIT || line == EXIT {
 			break
 
 		} else {
-			console.handle_command(line)
+			console.handleCommand(line)
 
 		}
 
 	}
-	wait_group.Done()
+	waitGroup.Done()
 }
 
-func (console *Console) handle_command(cmd string) {
-	
-	if(len(cmd)==0){
-		return;
+func (console *Console) handleCommand(cmd string) {
+
+	if len(cmd) == 0 {
+		return
 	}
 
-	if start_cmd_regexp.MatchString(cmd) {
-		sub_matches := start_cmd_regexp.FindStringSubmatch(cmd)
-		port, _ := strconv.ParseInt(sub_matches[1], 10, 32)
-		console.thales_hsm = hsm.NewThalesHsm("127.0.0.1", int(port), hsm.AsciiEncoding)
-		go console.thales_hsm.Start()
+	if startCmdRegexp.MatchString(cmd) {
+		subMatches := startCmdRegexp.FindStringSubmatch(cmd)
+		port, _ := strconv.ParseInt(subMatches[1], 10, 32)
+		console.thalesHsm = hsm.NewThalesHsm("127.0.0.1", int(port), hsm.AsciiEncoding)
+		go console.thalesHsm.Start()
 		fmt.Println("done.")
 	} else if cmd == "stop_hsm" {
-		console.thales_hsm.Stop()
+		console.thalesHsm.Stop()
 		fmt.Println("done.")
 	} else {
 		fmt.Println("bad command.")

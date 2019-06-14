@@ -12,8 +12,8 @@ import (
 var cmdLineArgs = make(map[string]string, 10)
 
 const (
-	portArg="-port"
-	ipArg="-ip"
+	portArg = "-port"
+	ipArg   = "-ip"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 	echoServ := new(mynet.EchoServ)
 	echoServ.TcpAddr = new(net.TCPAddr)
 	echoServ.TcpAddr.IP = net.ParseIP(cmdLineArgs[ipArg])
-	echoServ.TcpAddr.Port,_ = strconv.Atoi(cmdLineArgs[portArg])
+	echoServ.TcpAddr.Port, _ = strconv.Atoi(cmdLineArgs[portArg])
 	echoServ.ListenAndAccept()
 
 }

@@ -87,9 +87,9 @@ func ComputePinBlockDialog(widget gtk.IWidget, msg string) {
 			ShowErrorDialog(dialog, "Invalid PAN.")
 			return
 		}
-		
+
 		//get only rightmost 12
-		pan=pan[len(pan)-1-12:len(pan)-1]
+		pan = pan[len(pan)-1-12 : len(pan)-1]
 
 		clear_pin := clear_pin_entry.GetText()
 		if len(clear_pin) < 4 || len(clear_pin) > 12 {
@@ -108,19 +108,19 @@ func ComputePinBlockDialog(widget gtk.IWidget, msg string) {
 			}
 		case "ISO-0":
 			{
-				pin_block_type := &pin.PinBlock_Iso0{};
+				pin_block_type := &pin.PinBlock_Iso0{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
 			}
 		case "ISO-1":
 			{
-				pin_block_type := &pin.PinBlock_Iso1{};
+				pin_block_type := &pin.PinBlock_Iso1{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
-			}	
+			}
 		case "ISO-3":
 			{
-				pin_block_type := &pin.PinBlock_Iso3{};
+				pin_block_type := &pin.PinBlock_Iso3{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
-			}							
+			}
 		default:
 			{
 				pin_block = make([]byte, 8)

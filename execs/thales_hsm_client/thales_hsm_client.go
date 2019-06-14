@@ -12,7 +12,7 @@ import (
 //every 5 seconds
 func main() {
 
-	client := net.NewNetCatClient("127.0.0.1:1500", net.MLI_2E)
+	client := net.NewNetCatClient("127.0.0.1:1500", net.Mli2e)
 	err := client.OpenConnection()
 	if err != nil {
 		fmt.Println("error", err.Error())
@@ -26,7 +26,7 @@ func main() {
 		fmt.Printf("%s\n", hdr)
 		data := make([]byte, 0)
 		data = append(data, []byte(hdr)...)
-		
+
 		//NC command data
 		cmd_data, _ := hex.DecodeString("4e43")
 		data = append(data, cmd_data...)

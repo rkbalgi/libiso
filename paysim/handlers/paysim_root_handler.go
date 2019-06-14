@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-
-
 var doc_dir = "C:\\Users\\132968\\git\\paysim-web"
 
 var RootHandler = func(w http.ResponseWriter, r *http.Request) {

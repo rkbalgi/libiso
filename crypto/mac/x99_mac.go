@@ -1,33 +1,32 @@
 /**
 **/
 
-
 package mac
 
 import (
-	"github.com/rkbalgi/go/crypto"
 	"encoding/hex"
+	"github.com/rkbalgi/go/crypto"
 )
 
 //generate a X9.9 MAC using a single length key
 //data will be zero padded if required
 
-func GenerateMac_X99(in_mac_data []byte, key_data []byte) []byte {
+func GenerateMacX99(inMacData []byte, keyData []byte) []byte {
 
-	mac_data := make([]byte, len(in_mac_data))
-	copy(mac_data, in_mac_data)
+	macData := make([]byte, len(inMacData))
+	copy(macData, inMacData)
 
-    println(hex.EncodeToString(in_mac_data),hex.EncodeToString(mac_data));
-   println(len(mac_data));
-   
+	println(hex.EncodeToString(inMacData), hex.EncodeToString(macData))
+	println(len(macData))
+
 	//add 0 padding
-	if len(mac_data) < 8 || len(mac_data)%8 != 0 {
-		pads := make([]byte, 8-(len(mac_data)%8))
-		println("pads " ,len(pads));
-		mac_data = append(mac_data, pads...)
+	if len(macData) < 8 || len(macData)%8 != 0 {
+		pads := make([]byte, 8-(len(macData)%8))
+		println("pads ", len(pads))
+		macData = append(macData, pads...)
 	}
 
-	result := crypto.EncryptDesCbc(mac_data, key_data)
-	return (result[len(result)-8:])
+	result := crypto.EncryptDesCbc(macData, keyData)
+	return result[len(result)-8:]
 
 }

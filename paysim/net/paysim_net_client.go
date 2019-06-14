@@ -7,11 +7,12 @@ import (
 	"github.com/rkbalgi/go/iso8583"
 	p_nc "github.com/rkbalgi/go/net"
 	pylog "github.com/rkbalgi/go/paysim/log"
-//	"log"
-//	"os"
+	//	"log"
+	//	"os"
 )
 
 var nc_map map[string]*p_nc.NetCatClient
+
 //var net_logger *log.Logger;
 
 func init() {
@@ -30,20 +31,20 @@ func SendIsoMsg(connection_str string,
 	var mli_type p_nc.MliType
 
 	if mli == "2I" {
-		mli_type = p_nc.MLI_2I
+		mli_type = p_nc.Mli2i
 	} else {
-		mli_type = p_nc.MLI_2E
+		mli_type = p_nc.Mli2e
 	}
 
 	nc, ok := nc_map[connection_str]
 	//lets check if nc is still connected
-	if ok && !nc.IsConnected(){
-		pylog.Printf("an existing connection [%s] has been closed. opening new connection.",connection_str);
-		delete(nc_map,connection_str)
-		nc.Close();
-		ok=false;
+	if ok && !nc.IsConnected() {
+		pylog.Printf("an existing connection [%s] has been closed. opening new connection.", connection_str)
+		delete(nc_map, connection_str)
+		nc.Close()
+		ok = false
 	}
-	
+
 	if !ok {
 		nc = p_nc.NewNetCatClient(connection_str, mli_type)
 		err := nc.OpenConnection()
@@ -51,7 +52,7 @@ func SendIsoMsg(connection_str string,
 			return nil, err
 		}
 		pylog.Log("new tcp/ip connection opened to -", connection_str)
-		nc_map[connection_str]=nc;
+		nc_map[connection_str] = nc
 	}
 
 	//we have a client  now

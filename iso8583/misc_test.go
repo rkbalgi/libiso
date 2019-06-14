@@ -31,10 +31,9 @@ func Test_Iso8583Message(t *testing.T) {
 
 	buf := bytes.NewBuffer(data)
 	t.Log(hex.EncodeToString(buf.Bytes()))
-	_, err := Handle("",buf)
+	_, err := Handle("", buf)
 	if err != nil {
 		t.Fail()
 	}
 
 }
-

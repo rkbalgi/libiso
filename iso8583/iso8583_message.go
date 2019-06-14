@@ -7,8 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	pylog "github.com/rkbalgi/go/paysim/log"
 	"github.com/rkbalgi/go/paysim"
+	pylog "github.com/rkbalgi/go/paysim/log"
 	"log"
 	"os"
 	_ "reflect"
@@ -268,7 +268,6 @@ func CopyRequestToResponse(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
 	}
 
 }
-
 
 //create a string dump of the iso message
 func (iso_msg *Iso8583Message) Dump() string {

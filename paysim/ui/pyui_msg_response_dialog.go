@@ -2,20 +2,20 @@ package ui
 
 import (
 	"container/list"
+	_ "fmt"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/rkbalgi/go/paysim"
-	_"fmt"
 )
 
 func ShowIsoResponseMsgDialog(tab_data_list *list.List) {
 
 	dialog := gtk.NewDialog()
-	dialog.SetTitle("Message Response");
+	dialog.SetTitle("Message Response")
 
 	t_view := gtk.NewTreeView()
-	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Name", gtk.NewCellRendererText(),"text",0))
-	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Value", gtk.NewCellRendererText(),"text",1))
+	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Name", gtk.NewCellRendererText(), "text", 0))
+	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Value", gtk.NewCellRendererText(), "text", 1))
 	t_store := gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
 
 	tree_iter := gtk.TreeIter{}
@@ -26,17 +26,16 @@ func ShowIsoResponseMsgDialog(tab_data_list *list.List) {
 		t_store.SetValue(&tree_iter, 0, tuple.Nth(0))
 		t_store.SetValue(&tree_iter, 1, tuple.Nth(1))
 	}
-	
-	t_view.GetColumn(0).SetClickable(true);
+
+	t_view.GetColumn(0).SetClickable(true)
 	t_view.GetColumn(1).SetClickable(true)
-	t_view.GetColumn(0).SetExpand(true);
+	t_view.GetColumn(0).SetExpand(true)
 	t_view.GetColumn(1).SetExpand(true)
-	
-	t_view.SetModel(t_store);
+
+	t_view.SetModel(t_store)
 
 	swin := gtk.NewScrolledWindow(nil, nil)
 	swin.AddWithViewPort(t_view)
-
 
 	dialog.GetVBox().Add(swin)
 	dialog.SetSizeRequest(400, 300)

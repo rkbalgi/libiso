@@ -3,11 +3,11 @@ package net
 import (
 	"encoding/hex"
 	//"fmt"
+	"bytes"
+	bin "encoding/binary"
 	"log"
 	"net"
 	"os"
-	"bytes"
-	bin "encoding/binary"
 )
 
 var logger = log.New(os.Stdout, "", log.LstdFlags)
@@ -80,7 +80,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 
 	switch mliType {
 
-	case MLI_2E:
+	case Mli2e:
 		{
 			var mli []byte = make([]byte, 2)
 			bin.BigEndian.PutUint16(mli, uint16(len(data)))
@@ -88,7 +88,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			buf.Write(data)
 			return (buf.Bytes())
 		}
-	case MLI_2I:
+	case Mli2i:
 		{
 			var mli []byte = make([]byte, 2)
 			bin.BigEndian.PutUint16(mli, uint16(len(data)+2))
@@ -96,7 +96,8 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			buf.Write(data)
 			return (buf.Bytes())
 		}
-		default:{
+	default:
+		{
 			return nil
 		}
 	}
@@ -107,6 +108,5 @@ func HandleError(err error) {
 
 	if err != nil {
 		logger.Panicf("panic! - %s ", err)
-		os.Exit(1)
 	}
 }

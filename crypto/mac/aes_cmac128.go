@@ -14,20 +14,20 @@ import (
 	_ "math/big"
 )
 
-var const_zero = make([]byte, 16)
-var const_rb = make([]byte, 16)
-var zero_iv = make([]byte, 16)
+var constZero = make([]byte, 16)
+var constRb = make([]byte, 16)
+var zeroIv = make([]byte, 16)
 
 const (
-	AES_BLOCK_SIZE = 16
+	AesBlockSize = 16
 )
 
 func init() {
-	const_rb[len(const_rb)-1] = 0x87
+	constRb[len(constRb)-1] = 0x87
 
 }
 
-func left_shift(in_data []byte) []byte {
+func leftShift(in_data []byte) []byte {
 
 	data := make([]byte, len(in_data))
 	copy(data, in_data)
@@ -51,16 +51,16 @@ func left_shift(in_data []byte) []byte {
 
 }
 
-func add_padding(data []byte) []byte {
-	n_pads := 0
+func addPadding(data []byte) []byte {
+	nPads := 0
 
 	if len(data) < 16 {
-		n_pads = 16 - len(data)
+		nPads = 16 - len(data)
 	} else if len(data) > 16 {
-		n_pads = len(data) % AES_BLOCK_SIZE
+		nPads = len(data) % AesBlockSize
 	}
 
-	pads := make([]byte, n_pads)
+	pads := make([]byte, nPads)
 	pads[0] = 0x80
 
 	data = append(data, pads...)
@@ -71,26 +71,26 @@ func add_padding(data []byte) []byte {
 
 func sub_keys(key []byte) ([]byte, []byte) {
 
-	l := aes_encrypt(key, const_zero)
+	l := aesEncrypt(key, constZero)
 	k1, k2 := make([]byte, 16), make([]byte, 16)
 
 	//is msb of l=0 then K1= l<<1 else K1= const_rb ^ (l<<1)
 	if l[0]&0x80 == 0x80 {
 		copy(k1, l)
-		k1 = left_shift(k1)
-		k1 = xor(k1, const_rb)
+		k1 = leftShift(k1)
+		k1 = xor(k1, constRb)
 	} else {
 		copy(k1, l)
-		k1 = left_shift(k1)
+		k1 = leftShift(k1)
 	}
 	//is msb of k1=0 then K2= k1<<1 else K2= const_rb ^ (k1<<1)
 	if k1[0]&0x80 == 0x80 {
 		copy(k2, k1)
-		k2 = left_shift(k2)
-		k2 = xor(k2, const_rb)
+		k2 = leftShift(k2)
+		k2 = xor(k2, constRb)
 	} else {
 		copy(k2, k1)
-		left_shift(k2)
+		leftShift(k2)
 	}
 	return k1, k2
 
@@ -103,40 +103,40 @@ func AesCmac128(key []byte, in_data []byte) []byte {
 
 	var data []byte
 	flag := false
-	if len(in_data) < AES_BLOCK_SIZE {
-		data = add_padding(in_data)
-	} else if len(in_data)%AES_BLOCK_SIZE != 0 {
-		data = add_padding(in_data)
+	if len(in_data) < AesBlockSize {
+		data = addPadding(in_data)
+	} else if len(in_data)%AesBlockSize != 0 {
+		data = addPadding(in_data)
 	} else {
 		//flag is true
 		flag = true
 		data = in_data
 	}
-	var last_block []byte
+	var lastBlock []byte
 
 	if flag {
 		//a complete block was detected
-		last_block = xor(data[len(data)-16:], k1)
+		lastBlock = xor(data[len(data)-16:], k1)
 	} else {
 		//a block requiring padding was detected
-		last_block = xor(data[len(data)-16:], k2)
+		lastBlock = xor(data[len(data)-16:], k2)
 	}
 
-	aes_block, _ := aes.NewCipher(key)
-	aes_encryptor := cipher.NewCBCEncrypter(aes_block, zero_iv)
+	aesBlock, _ := aes.NewCipher(key)
+	aesEncryptor := cipher.NewCBCEncrypter(aesBlock, zeroIv)
 
-	var enc_block []byte = make([]byte, 16)
+	var encBlock []byte = make([]byte, 16)
 
-	if len(data)/AES_BLOCK_SIZE > 1 {
-		enc_block = make([]byte, len(data)-16)
-		aes_encryptor.CryptBlocks(enc_block, data[:len(data)-16])
+	if len(data)/AesBlockSize > 1 {
+		encBlock = make([]byte, len(data)-16)
+		aesEncryptor.CryptBlocks(encBlock, data[:len(data)-16])
 	} else {
-		enc_block = make([]byte, 16)
+		encBlock = make([]byte, 16)
 	}
 
-	y := xor(enc_block[len(enc_block)-16:], last_block)
+	y := xor(encBlock[len(encBlock)-16:], lastBlock)
 	t := make([]byte, 16)
-	aes_block.Encrypt(t, y)
+	aesBlock.Encrypt(t, y)
 	return (t)
 
 }
@@ -150,15 +150,15 @@ func xor(a []byte, b []byte) []byte {
 	return result
 }
 
-func aes_encrypt(key []byte, data []byte) []byte {
+func aesEncrypt(key []byte, data []byte) ([]byte, error) {
 
-	aes_block, err := aes.NewCipher(key)
+	aesBlock, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
-	enc_data := make([]byte, len(data))
+	encData := make([]byte, len(data))
 
-	aes_block.Encrypt(enc_data, data)
-	return enc_data
+	aesBlock.Encrypt(encData, data)
+	return encData, nil
 
 }

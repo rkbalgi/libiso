@@ -1,8 +1,6 @@
 package crypto
 
-
 var english_alpha = []uint8{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
-
 
 /**
  This function rotates the input string by n
@@ -10,7 +8,7 @@ var english_alpha = []uint8{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k
 **/
 func RotN(n int, val string) string {
 
-	rot_n_val := make([]byte, len(val))
+	rotNVal := make([]byte, len(val))
 	n = n % 26
 
 	for i := 0; i < len(val); i++ {
@@ -21,11 +19,11 @@ func RotN(n int, val string) string {
 			if tmp == english_alpha[j] {
 				found = true
 				if (j + n) < len(english_alpha) {
-					rot_n_val[i] = english_alpha[j+n]
+					rotNVal[i] = english_alpha[j+n]
 				} else {
 					//how many beyond the length of english_alpha?
 					iters := (j + n) - len(english_alpha)
-					rot_n_val[i] = english_alpha[iters]
+					rotNVal[i] = english_alpha[iters]
 				}
 				break
 
@@ -38,5 +36,5 @@ func RotN(n int, val string) string {
 
 	}
 
-	return (string(rot_n_val[:]))
+	return string(rotNVal[:])
 }

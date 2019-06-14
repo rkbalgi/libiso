@@ -8,9 +8,9 @@ import "encoding/hex"
 /**
 converts a string containing hexadecimal digits into a byte array of unsigned bytes
 **/
-func StringToHex(hex_str string) []byte {
-	
-	val,_:=hex.DecodeString(hex_str);
+func StringToHex(hexStr string) []byte {
+
+	val, _ := hex.DecodeString(hexStr)
 	return val
 
 	/*var hex_data []byte = make([]byte, len(hex_str)/2)
@@ -30,9 +30,9 @@ func StringToHex(hex_str string) []byte {
 /**
 convert a byte array of unsigned bytes to a String
 **/
-func HexToString(hex_array []byte) string {
-	
-	return hex.EncodeToString(hex_array)
+func HexToString(hexArray []byte) string {
+
+	return hex.EncodeToString(hexArray)
 
 	/*var buf bytes.Buffer
 
@@ -44,4 +44,3 @@ func HexToString(hex_array []byte) string {
 	return buf.String()
 	*/
 }
-

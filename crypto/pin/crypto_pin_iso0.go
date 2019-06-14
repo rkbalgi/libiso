@@ -1,6 +1,5 @@
 package pin
 
-
 import (
 	"bytes"
 	_ "crypto/rand"
@@ -13,7 +12,6 @@ import (
 type PinBlock_Iso0 struct {
 	PinBlocker
 }
-
 
 func (pin_block *PinBlock_Iso0) Encrypt(pan_12digits string, clear_pin string, key []byte) []byte {
 

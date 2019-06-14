@@ -14,12 +14,12 @@ func Test_Ebcdic(t *testing.T) {
 
 	data = Decode("AGNS0001")
 	t.Log(hex.EncodeToString(data), "\n")
-	
-	fromBytes:=EncodeToString([]byte{0xF0,0xF1,0xF0,0xF0});
-	t.Log(fromBytes);
-	
-	fromBytes=EncodeToString([]byte("AGNS"));
-	t.Log(fromBytes);
-	t.Log(hex.EncodeToString([]byte("AGNS")));
+
+	fromBytes := EncodeToString([]byte{0xF0, 0xF1, 0xF0, 0xF0})
+	t.Log(fromBytes)
+
+	fromBytes = EncodeToString([]byte("AGNS"))
+	t.Log(fromBytes)
+	t.Log(hex.EncodeToString([]byte("AGNS")))
 
 }

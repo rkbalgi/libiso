@@ -111,8 +111,8 @@ func Decode(str string) []byte {
 
 	for i := 0; i < len(str); i++ {
 		b := uint32(str[i])
-		b_val, _ := strconv.ParseUint(ascii_to_ebcdic[b*2:b*2+2], 16, 8)
-		data[i] = byte(b_val)
+		bVal, _ := strconv.ParseUint(ascii_to_ebcdic[b*2:b*2+2], 16, 8)
+		data[i] = byte(bVal)
 	}
 
 	return data

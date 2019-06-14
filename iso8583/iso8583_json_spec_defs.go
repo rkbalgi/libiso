@@ -162,7 +162,7 @@ func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 	}
 
 	for _, spec := range spec_defs.Specs {
-		
+
 		iso8583_msg_def := new(Iso8583MessageDef)
 		iso8583_msg_def.spec_name = spec.SpecName
 		iso8583_msg_def.field_seq = 0

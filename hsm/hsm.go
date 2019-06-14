@@ -16,29 +16,30 @@ import (
 	"time"
 )
 
+// ThalesHsm represents a software Thales HSM
 type ThalesHsm struct {
-	ip            string
-	port          int
-	encoding_type EncodingType
-	header_length int
-	stop          bool
-	listener *net.TCPListener
-	log           *log.Logger
+	ip           string
+	port         int
+	encodingType EncodingType
+	headerLength int
+	stop         bool
+	listener     *net.TCPListener
+	log          *log.Logger
 }
 
-func NewThalesHsm(ip string, port int, encoding_type EncodingType) *ThalesHsm {
+func NewThalesHsm(ip string, port int, encodingType EncodingType) *ThalesHsm {
 	th := new(ThalesHsm)
-	th.header_length = 12
+	th.headerLength = 12
 	th.port = port
 	//th.ip = ip
-	th.encoding_type = encoding_type
+	th.encodingType = encodingType
 	th.log = log.New(os.Stdout, "## thales_hsm (8000/9000) ## ", log.LstdFlags)
 	return th
 }
 
 func (th *ThalesHsm) Stop() {
 	th.stop = true
-	th.listener.Close();
+	_ = th.listener.Close()
 }
 func (th *ThalesHsm) Start() {
 
@@ -54,14 +55,14 @@ func (th *ThalesHsm) Start() {
 		th.log.Panicf("failed to start thales hsm - [%s]", err.Error())
 		return
 	}
-	
+
 	for !th.stop {
 
 		tcpConn, err := th.listener.AcceptTCP()
 		if err != nil {
-			if strings.Contains(err.Error(),"closed network connection"){
-				th.log.Print("hsm being stopped..\n");
-				return;
+			if strings.Contains(err.Error(), "closed network connection") {
+				th.log.Print("hsm being stopped..\n")
+				return
 			}
 			th.log.Panicf("failed to start thales hsm - [%s]", err.Error())
 			return
@@ -71,126 +72,126 @@ func (th *ThalesHsm) Start() {
 		//start a new goroutine to read data off the
 		//connection and create appropriate responses
 
-		go th.msg_reader(tcpConn)
+		go th.msgReader(tcpConn)
 
 	}
 
 }
 
-func (hsm_handle *ThalesHsm) handle_client_msg(tcp_conn *net.TCPConn, msg_data []byte) {
+func (th *ThalesHsm) handleClientMsg(tcpConn *net.TCPConn, msgData []byte) {
 
-    if(msg_data==nil || len(msg_data)==0){
-    	hsm_handle.log.Printf("invalid request from client")
-    	return;
-    }
+	if msgData == nil || len(msgData) == 0 {
+		th.log.Printf("invalid request from client")
+		return
+	}
 
-	hsm_handle.log.Printf("request from client - \n%s", hex.Dump(msg_data))
-	command_name := string(msg_data[12 : 12+2])
+	th.log.Printf("request from client - \n%s", hex.Dump(msgData))
+	commandName := string(msgData[12 : 12+2])
 
-	var response_data []byte
+	var responseData []byte
 
-	switch command_name {
+	switch commandName {
 	case "NC":
 		{
-			response_data = hsm_handle.Handle_NC(msg_data)
+			responseData = th.HandleNC(msgData)
 			break
 		}
 	case "MS":
 		{
-			response_data = hsm_handle.Handle_MS(msg_data)
+			responseData = th.HandleMS(msgData)
 			break
 		}
 	case "CC":
 		{
-			response_data = hsm_handle.handle_cc_command(msg_data)
+			responseData = th.handleCcCommand(msgData)
 			break
 		}
 	default:
 		{
-			hsm_handle.log.Printf("unsupported command [%s] received. message dropped", command_name)
+			th.log.Printf("unsupported command [%s] received. message dropped", commandName)
 			return
 		}
 	}
 
-	if response_data != nil {
-		hsm_handle.log.Printf("writing response to client - \n%s\n", hex.Dump(response_data))
+	if responseData != nil {
+		th.log.Printf("writing response to client - \n%s\n", hex.Dump(responseData))
 	} else {
-		hsm_handle.log.Printf("no response to write.")
+		th.log.Printf("no response to write.")
 	}
-	response_data = _net.AddMLI(_net.MLI_2E, response_data)
-	_, err := tcp_conn.Write(response_data)
-	if hsm_handle.check_error(err) {
+	responseData = _net.AddMLI(_net.Mli2e, responseData)
+	_, err := tcpConn.Write(responseData)
+	if th.checkError(err) {
 		return
 	}
 
 }
 
-func (th *ThalesHsm) msg_reader(tcp_conn *net.TCPConn) {
+func (th *ThalesHsm) msgReader(tcpConn *net.TCPConn) {
 
-	var reader io.Reader = tcp_conn
-	defer func(){
-		str:=recover()
-		if(str!=nil){
-			th.log.Println("(recovered)",str)
+	var reader io.Reader = tcpConn
+	defer func() {
+		str := recover()
+		if str != nil {
+			th.log.Println("(recovered)", str)
 		}
-	}();
-	
+	}()
+
 	for {
 		//time.Sleep(time.Second * 2)
 
 		//first read the 2E mli
 		tmp := make([]byte, 2)
 		_, err := reader.Read(tmp)
-		if th.check_error(err) {
+		if th.checkError(err) {
 			//if connection has been closed
 			//return
 			return
 		}
 
-		msg_len := binary.BigEndian.Uint16(tmp)
+		msgLen := binary.BigEndian.Uint16(tmp)
 		//read data
-		msg_data := make([]byte, msg_len)
-		_, err = reader.Read(msg_data)
-		if th.check_error(err) {
+		msgData := make([]byte, msgLen)
+		_, err = reader.Read(msgData)
+		if th.checkError(err) {
 			//if connection has been closed
 			//return
 			return
 		}
 
 		//new goroutine will handle the message
-		go th.handle_client_msg(tcp_conn, msg_data)
+		go th.handleClientMsg(tcpConn, msgData)
 
 	}
 
 }
 
-func (th *ThalesHsm) buffered_msg_reader(reader io.Reader) {
-	buf_msg_reader := bufio.NewReader(reader)
+func (th *ThalesHsm) bufferedMsgReader(reader io.Reader) {
+	bufMsgReader := bufio.NewReader(reader)
 
 	for {
 		time.Sleep(time.Second * 2)
 
-		buffered_data_len := buf_msg_reader.Buffered()
-		if buffered_data_len > 2 {
+		bufferedDataLen := bufMsgReader.Buffered()
+		if bufferedDataLen > 2 {
 
-			th.log.Println("buffered bytes3 ", buffered_data_len)
-			tmp, err := buf_msg_reader.Peek(5)
+			th.log.Println("buffered bytes3 ", bufferedDataLen)
+			tmp, err := bufMsgReader.Peek(5)
 			if err != nil {
-				th.check_error(err)
+				th.checkError(err)
 			}
 			th.log.Println(tmp)
 
-			msg_len := binary.BigEndian.Uint16(tmp)
-			th.log.Printf("message len - %s", msg_len)
-			complete_msg_len := 2 + int(msg_len)
-			if buffered_data_len >= complete_msg_len {
+			msgLen := binary.BigEndian.Uint16(tmp)
+			th.log.Printf("message len - %s", msgLen)
+			completeMsgLen := 2 + int(msgLen)
+			if bufferedDataLen >= completeMsgLen {
 				//we have enough bytes to make a
 				//complete message
-				msg := make([]byte, complete_msg_len)
-				n, _ := buf_msg_reader.Read(msg)
+				msg := make([]byte, completeMsgLen)
+				n, _ := bufMsgReader.Read(msg)
 				th.log.Printf("new msg from client - \n%s", hex.Dump(msg))
-				if n != complete_msg_len {
-					th.log.Printf("read error, expected to read [%d] bytes., found only [%d]", complete_msg_len, n)
+				if n != completeMsgLen {
+					th.log.Printf("read error, expected to read [%d] bytes., found only [%d]", completeMsgLen, n)
 				}
 
 			}
@@ -202,17 +203,17 @@ func (th *ThalesHsm) buffered_msg_reader(reader io.Reader) {
 //check if err is not nil and return true if the client
 //connection has been closed
 
-func (th *ThalesHsm) check_error(err error) bool {
+func (th *ThalesHsm) checkError(err error) bool {
 	if err != nil {
-		
-		if(err.Error()=="EOF"){
+
+		if err.Error() == "EOF" {
 			//closed connection, close silently
-			th.log.Println("connection closed by client (EOF).");
+			th.log.Println("connection closed by client (EOF).")
 			return true
 		}
-		
+
 		th.log.Printf("error -%s", err.Error())
-		if strings.Contains(err.Error(), "forcibly closed"){
+		if strings.Contains(err.Error(), "forcibly closed") {
 			return true
 		}
 

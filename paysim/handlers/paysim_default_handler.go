@@ -88,11 +88,11 @@ func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *h
 	}
 
 	field_def_exp_sl := iso8583.GetSpecLayout(req_obj.Spec_name)
-	
+
 	//0 and 1 should be 'Message Type' and 'Bitmap'
-	field_def_exp_sl[0].Data=iso_msg.GetMessageType();
-	field_def_exp_sl[1].Data=iso_msg.GetBinaryBitmap();
-	
+	field_def_exp_sl[0].Data = iso_msg.GetMessageType()
+	field_def_exp_sl[1].Data = iso_msg.GetBinaryBitmap()
+
 	for _, field_def_exp := range field_def_exp_sl {
 		if field_def_exp.BitPosition > 0 {
 
@@ -115,8 +115,8 @@ func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *h
 		w.Write([]byte("Error: Parse Failure"))
 		return
 	}
-	
-	log.Println("writing response ",string(parsed_data_json));
+
+	log.Println("writing response ", string(parsed_data_json))
 
 	w.Write(parsed_data_json)
 }

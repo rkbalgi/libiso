@@ -4,177 +4,185 @@ import (
 	"bytes"
 	"encoding/hex"
 	"github.com/rkbalgi/go/crypto/mac"
+	"log"
 	//_ "github.com/rkbalgi/hsm"
 )
 
 type ThalesMsRequest struct {
-	_prologue            prologue
-	message_block_number uint
-	key_type             uint
-	key_length           uint
-	message_type         uint
-	key                  string
-	iv                   string
-	message_length       uint
-	message_block        []byte
-	_epilogue            epilogue
+	_prologue          prologue
+	messageBlockNumber uint
+	keyType            uint
+	keyLength          uint
+	messageType        uint
+	key                string
+	iv                 string
+	messageLength      uint
+	messageBlock       []byte
+	_epilogue          epilogue
 }
 
 type ThalesMsResponse struct {
-	message_header        []byte
-	response_code         []byte
-	error_code            []byte
-	MAB                   []byte
-	end_message_delimiter string
-	message_trailer       string
+	messageHeader       []byte
+	responseCode        []byte
+	errorCode           []byte
+	MAB                 []byte
+	endMessageDelimiter string
+	messageTrailer      string
 }
 
-func (hsm_handle *ThalesHsm) Handle_MS(msg_data []byte) []byte {
+func (th *ThalesHsm) HandleMS(msgData []byte) []byte {
 
 	defer func() {
 		str := recover()
 		if str != nil {
-			hsm_handle.log.Println("unexpected system error", str)
+			th.log.Println("unexpected system error", str)
 		}
 	}()
 
-	ms_req_struct := new(ThalesMsRequest)
-	ms_resp_struct := new(ThalesMsResponse)
+	msReqStruct := new(ThalesMsRequest)
+	msRespStruct := new(ThalesMsResponse)
 
-	msg_buf := bytes.NewBuffer(msg_data)
+	msgBuf := bytes.NewBuffer(msgData)
 	//at every step this boolean will be updated
 	//if false, respond with a 15 error code
-	parse_ok := true
+	parseOk := true
 
-	parse_prologue(msg_buf, &ms_req_struct._prologue, hsm_handle.header_length)
+	parsePrologue(msgBuf, &msReqStruct._prologue, th.headerLength)
 
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.message_block_number, 1, DecimalInt)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.messageBlockNumber, 1, DecimalInt)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.key_type, 1, DecimalInt)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.keyType, 1, DecimalInt)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.key_length, 1, DecimalInt)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.keyLength, 1, DecimalInt)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
 	//message type
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.message_type, 1, DecimalInt)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.messageType, 1, DecimalInt)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
 	//key
-	parse_ok = read_key(msg_buf, &ms_req_struct.key)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readKey(msgBuf, &msReqStruct.key)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
 	//iv
-	if ms_req_struct.message_block_number == 2 || ms_req_struct.message_block_number == 3 {
-		parse_ok = read_fixed_field(msg_buf, &ms_req_struct.iv, 16, String)
-		if !parse_ok {
-			return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	if msReqStruct.messageBlockNumber == 2 || msReqStruct.messageBlockNumber == 3 {
+		parseOk = readFixedField(msgBuf, &msReqStruct.iv, 16, String)
+		if !parseOk {
+			return msReqStruct.InvalidDataResponse(msRespStruct)
 		}
 
 	}
 
 	//message length
 
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.message_length, 4, HexadecimalInt)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.messageLength, 4, HexadecimalInt)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
 	//message block
 
-	parse_ok = read_fixed_field(msg_buf, &ms_req_struct.message_block, ms_req_struct.message_length, Binary)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = readFixedField(msgBuf, &msReqStruct.messageBlock, msReqStruct.messageLength, Binary)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	parse_ok = parse_epilogue(msg_buf, &ms_req_struct._epilogue)
-	if !parse_ok {
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	parseOk = parseEpilogue(msgBuf, &msReqStruct._epilogue)
+	if !parseOk {
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	if __hsm_debug_enabled {
-		hsm_handle.log.Printf(Dump(*ms_req_struct))
+	if hsmDebugEnabled {
+		th.log.Printf(Dump(*msReqStruct))
 	}
 
 	//decrypt the key under the appropriate LMK
-	key_type := "000"
-	if ms_req_struct.key_type == 0 {
+	keyType := "000"
+	if msReqStruct.keyType == 0 {
 		//TAK
-		key_type = "003"
-	} else if ms_req_struct.key_type == 1 {
+		keyType = "003"
+	} else if msReqStruct.keyType == 1 {
 		//ZAK
-		key_type = "008"
+		keyType = "008"
 	} else {
 		//error
-		hsm_handle.log.Printf("invalid key type - %s\n", key_type)
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+		th.log.Printf("invalid key type - %s\n", keyType)
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	mac_key := decrypt_key(ms_req_struct.key, key_type)
-
-	if (ms_req_struct.key_length == 0 && (len(mac_key) == 16 || len(mac_key) == 24)) || (ms_req_struct.key_length == 1 && len(mac_key) == 8) {
-		hsm_handle.log.Println("key length and actual size mismatch.")
-		return (ms_req_struct.invalid_data_response(ms_resp_struct))
+	var (
+		macKey []byte
+		err    error
+	)
+	if macKey, err = decryptKey(msReqStruct.key, keyType); err != nil {
+		log.Print("Error decrypting ", err)
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
 
-	if __hsm_debug_enabled {
-		hsm_handle.log.Println("mac key", hex.EncodeToString(mac_key))
+	if (msReqStruct.keyLength == 0 && (len(macKey) == 16 || len(macKey) == 24)) || (msReqStruct.keyLength == 1 && len(macKey) == 8) {
+		th.log.Println("key length and actual size mismatch.")
+		return msReqStruct.InvalidDataResponse(msRespStruct)
 	}
-	var gen_mac []byte
-	if len(mac_key) == 16 || len(mac_key) == 24 {
+
+	if hsmDebugEnabled {
+		th.log.Println("mac key", hex.EncodeToString(macKey))
+	}
+	var genMac []byte
+	if len(macKey) == 16 || len(macKey) == 24 {
 		//generate X9.19 mac
-		gen_mac = mac.GenerateMac_X919(ms_req_struct.message_block, mac_key)
+		genMac = mac.GenerateMac_X919(msReqStruct.messageBlock, macKey)
 	} else {
 		//x9.9
-		gen_mac = mac.GenerateMac_X99(ms_req_struct.message_block, mac_key)
+		genMac = mac.GenerateMac_X99(msReqStruct.messageBlock, macKey)
 
 	}
-	ms_resp_struct.MAB = gen_mac
-	ms_resp_struct.error_code = []byte("00")
+	msRespStruct.MAB = genMac
+	msRespStruct.errorCode = []byte("00")
 
-	if __hsm_debug_enabled {
-		hsm_handle.log.Printf("MAC: %s", hex.EncodeToString(gen_mac))
+	if hsmDebugEnabled {
+		th.log.Printf("MAC: %s", hex.EncodeToString(genMac))
 	}
 
 	//send response
-	return ms_resp_struct.generate_response(ms_req_struct)
+	return msRespStruct.generateResponse(msReqStruct)
 
 }
 
-func (ms_req_struct *ThalesMsRequest) invalid_data_response(ms_resp_struct *ThalesMsResponse) []byte {
-	set_fixed_field(&ms_resp_struct.error_code, 2, uint(15), DecimalInt)
-	return ms_resp_struct.generate_response(ms_req_struct)
+func (resp *ThalesMsRequest) InvalidDataResponse(msRespStruct *ThalesMsResponse) []byte {
+	setFixedField(&msRespStruct.errorCode, 2, uint(15), DecimalInt)
+	return msRespStruct.generateResponse(resp)
 
 }
 
-func (ms_resp_struct *ThalesMsResponse) generate_response(ms_req_struct *ThalesMsRequest) []byte {
+func (resp *ThalesMsResponse) generateResponse(msReqStruct *ThalesMsRequest) []byte {
 
-	ms_resp_buf := bytes.NewBuffer([]byte(ms_req_struct._prologue.header))
-	resp_cmd_code := []byte(ms_req_struct._prologue.command_name)
-	resp_cmd_code[1] = resp_cmd_code[1] + 1
-	ms_resp_buf.Write(resp_cmd_code)
+	msRespBuf := bytes.NewBuffer([]byte(msReqStruct._prologue.header))
+	respCmdCode := []byte(msReqStruct._prologue.commandName)
+	respCmdCode[1] = respCmdCode[1] + 1
+	msRespBuf.Write(respCmdCode)
 
-	ms_resp_buf.Write(ms_resp_struct.error_code)
-	if ms_resp_struct.MAB != nil {
-		ms_resp_buf.Write(to_ascii(ms_resp_struct.MAB))
+	msRespBuf.Write(resp.errorCode)
+	if resp.MAB != nil {
+		msRespBuf.Write(toASCII(resp.MAB))
 	}
 
-	if ms_req_struct._epilogue.end_message_delimiter == 0x19 {
-		ms_resp_buf.WriteByte(ms_req_struct._epilogue.end_message_delimiter)
-		ms_resp_buf.Write(ms_req_struct._epilogue.message_trailer)
+	if msReqStruct._epilogue.endMessageDelimiter == 0x19 {
+		msRespBuf.WriteByte(msReqStruct._epilogue.endMessageDelimiter)
+		msRespBuf.Write(msReqStruct._epilogue.messageTrailer)
 	}
 
-	return ms_resp_buf.Bytes()
+	return msRespBuf.Bytes()
 
 }

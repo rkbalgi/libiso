@@ -3,10 +3,10 @@ package iso_host
 import (
 	"bytes"
 	//"github.com/rkbalgi/go/iso8583"
+	"errors"
 	. "github.com/rkbalgi/go/iso8583"
 	"log"
 	"os"
-	"errors"
 )
 
 var logger *log.Logger = log.New(os.Stdout, "##iso_handler##", log.LstdFlags)
@@ -48,12 +48,12 @@ func Handle(spec_name string, buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, 
 
 		}
 	}
-	
-	f39,err:=resp_iso_msg.Field(39);
-	
-	if f39.String()==ISO_RESP_DROP{
-		logger.Println("drop response code, not sending response..");
-		return nil,errors.New("dropped response!");
+
+	f39, err := resp_iso_msg.Field(39)
+
+	if f39.String() == ISO_RESP_DROP {
+		logger.Println("drop response code, not sending response..")
+		return nil, errors.New("dropped response!")
 	}
 
 	logger.Println("outgoing message: ", resp_iso_msg.Dump())

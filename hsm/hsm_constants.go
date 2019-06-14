@@ -1,6 +1,6 @@
 package hsm
 
-var __hsm_debug_enabled bool = true
+var hsmDebugEnabled bool = true
 
 const (
 	String = iota + 1
@@ -17,15 +17,15 @@ const (
 )
 
 type prologue struct {
-	header       string `size:"12"`
-	command_name string `size:"2"`
+	header      string `size:"12"`
+	commandName string `size:"2"`
 }
 
 type epilogue struct {
-	delimiter             byte
-	lmk_identifier        uint
-	end_message_delimiter byte
-	message_trailer       []byte
+	delimiter           byte
+	lmkIdentifier       uint
+	endMessageDelimiter byte
+	messageTrailer      []byte
 }
 
 const (
@@ -37,4 +37,3 @@ const (
 	ZMK_KEY_TYPE = "000"
 	TMK_KEY_TYPE = "002"
 )
-

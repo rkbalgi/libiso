@@ -3,43 +3,37 @@ package ui
 import (
 	_ "github.com/mattn/go-gtk/gdkpixbuf"
 	"github.com/mattn/go-gtk/gtk"
-	
 )
 
-
-
 type PaysimUiConsole struct {
-	_txt_buf  *gtk.TextBuffer
-	_txt_view *gtk.TextView
+	txtBuf  *gtk.TextBuffer
+	txtView *gtk.TextView
 }
 
-var PaysimConsole *PaysimUiConsole=nil
 var init_ bool = false
 
 func Init() {
 	if !init_ {
-		PaysimConsole = _new_console()
+
 		init_ = true
 	}
 }
-func _new_console() *PaysimUiConsole {
+func newConsole() *PaysimUiConsole {
 
 	self := new(PaysimUiConsole)
-	self._txt_buf = gtk.NewTextBuffer(gtk.NewTextTagTable())
-	self._txt_view = gtk.NewTextViewWithBuffer(*self._txt_buf)
-	self._txt_view.SetEditable(false)
-	self._txt_view.ModifyFontEasy("consolas 8");
+	self.txtBuf = gtk.NewTextBuffer(gtk.NewTextTagTable())
+	self.txtView = gtk.NewTextViewWithBuffer(*self.txtBuf)
+	self.txtView.SetEditable(false)
+	self.txtView.ModifyFontEasy("consolas 8")
 	return self
 }
 
-func (self *PaysimUiConsole) TextView() *gtk.TextView {
-	return self._txt_view
+func (pc *PaysimUiConsole) TextView() *gtk.TextView {
+	return pc.txtView
 }
 
-func (self *PaysimUiConsole) Log(log string) {
-	var end_iter gtk.TextIter
-	self._txt_buf.GetEndIter(&end_iter)
-	self._txt_buf.Insert(&end_iter, log)
+func (pc *PaysimUiConsole) Log(log string) {
+	var endIter gtk.TextIter
+	pc.txtBuf.GetEndIter(&endIter)
+	pc.txtBuf.Insert(&endIter, log)
 }
-
-

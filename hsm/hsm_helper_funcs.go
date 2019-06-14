@@ -11,26 +11,26 @@ import (
 )
 
 const (
-	PERCENT_SIGN = '%'
+	PercentSign = '%'
 )
 
-var hex_regexp, _ = regexp.Compile("[0-9a-fA-F]")
-var key_scheme_regexp, _ = regexp.Compile("[UTZ]")
+var hexRegexp, _ = regexp.Compile("[0-9a-fA-F]")
+var keySchemeRegexp, _ = regexp.Compile("[UTZ]")
 
-func to_ascii(data []byte) []byte {
+func toASCII(data []byte) []byte {
 
-	return ([]byte(hex.EncodeToString(data)))
+	return []byte(hex.EncodeToString(data))
 
 }
 
-func parse_prologue(msg_buf *bytes.Buffer, pro *prologue, header_len int) bool {
+func parsePrologue(msgBuf *bytes.Buffer, pro *prologue, headerLen int) bool {
 
-	parse_ok := read_fixed_field(msg_buf, &pro.header, uint(header_len), String)
-	if !parse_ok {
+	ok := readFixedField(msgBuf, &pro.header, uint(headerLen), String)
+	if !ok {
 		return false
 	} else {
-		parse_ok := read_fixed_field(msg_buf, &pro.command_name, 2, String)
-		if !parse_ok {
+		ok := readFixedField(msgBuf, &pro.commandName, 2, String)
+		if !ok {
 			return false
 		}
 	}
@@ -39,23 +39,23 @@ func parse_prologue(msg_buf *bytes.Buffer, pro *prologue, header_len int) bool {
 
 }
 
-func parse_epilogue(msg_buf *bytes.Buffer, epi *epilogue) bool {
+func parseEpilogue(msgBuf *bytes.Buffer, epi *epilogue) bool {
 
-	if msg_buf.Len() > 0 {
+	if msgBuf.Len() > 0 {
 		//we have some data
-		epi.delimiter, _ = msg_buf.ReadByte()
-		if epi.delimiter == PERCENT_SIGN {
-			parsed_ok := read_fixed_field(msg_buf, &epi.lmk_identifier, 2, DecimalInt)
-			if !parsed_ok {
+		epi.delimiter, _ = msgBuf.ReadByte()
+		if epi.delimiter == PercentSign {
+			parsedOk := readFixedField(msgBuf, &epi.lmkIdentifier, 2, DecimalInt)
+			if !parsedOk {
 				return false
 			}
-			if msg_buf.Len() > 0 {
+			if msgBuf.Len() > 0 {
 				//end delimiter present
-				epi.end_message_delimiter, _ = msg_buf.ReadByte()
-				if epi.end_message_delimiter == 0x19 {
-					tmp := make([]byte, msg_buf.Len())
-					msg_buf.Read(tmp)
-					epi.message_trailer = tmp
+				epi.endMessageDelimiter, _ = msgBuf.ReadByte()
+				if epi.endMessageDelimiter == 0x19 {
+					tmp := make([]byte, msgBuf.Len())
+					_, _ = msgBuf.Read(tmp)
+					epi.messageTrailer = tmp
 				} else {
 					return false
 				}
@@ -69,29 +69,29 @@ func parse_epilogue(msg_buf *bytes.Buffer, epi *epilogue) bool {
 
 }
 
-func read_key(msg_buf *bytes.Buffer, req_struct interface{}) bool {
+func readKey(msgBuf *bytes.Buffer, reqStruct interface{}) bool {
 
-	first_byte, _ := msg_buf.ReadByte()
-	if key_scheme_regexp.MatchString(string(first_byte)) {
+	firstByte, _ := msgBuf.ReadByte()
+	if keySchemeRegexp.MatchString(string(firstByte)) {
 		var tmp []byte
-		if first_byte == 'Z' {
+		if firstByte == 'Z' {
 			tmp = make([]byte, 16+1)
-		} else if first_byte == 'U' {
+		} else if firstByte == 'U' {
 			tmp = make([]byte, 32+1)
-		} else if first_byte == 'T' {
+		} else if firstByte == 'T' {
 			tmp = make([]byte, 48+1)
 		} else {
 			return false
 		}
-		msg_buf.UnreadByte()
-		msg_buf.Read(tmp)
-		reflect.ValueOf(req_struct).Elem().SetString(string(tmp))
+		msgBuf.UnreadByte()
+		msgBuf.Read(tmp)
+		reflect.ValueOf(reqStruct).Elem().SetString(string(tmp))
 
-	} else if hex_regexp.MatchString(string(first_byte)) {
-		msg_buf.UnreadByte()
+	} else if hexRegexp.MatchString(string(firstByte)) {
+		msgBuf.UnreadByte()
 		tmp := make([]byte, 16)
-		msg_buf.Read(tmp)
-		reflect.ValueOf(req_struct).Elem().SetString(string(tmp))
+		msgBuf.Read(tmp)
+		reflect.ValueOf(reqStruct).Elem().SetString(string(tmp))
 
 	} else {
 		return false
@@ -101,110 +101,111 @@ func read_key(msg_buf *bytes.Buffer, req_struct interface{}) bool {
 
 }
 
-func Dump(struct_var interface{}) string {
+func Dump(v interface{}) string {
 
-	str_builder := bytes.NewBufferString("\n")
+	strBuilder := bytes.NewBufferString("\n")
 
-	value_of := reflect.ValueOf(struct_var)
-	type_of := reflect.TypeOf(struct_var)
-	for i := 0; i < value_of.NumField(); i++ {
-		switch value_of.Field(i).Kind() {
-			
-			default:{
-				fmt.Println(value_of.Field(i).String());
+	valueOf := reflect.ValueOf(v)
+	typeOf := reflect.TypeOf(v)
+	for i := 0; i < valueOf.NumField(); i++ {
+		switch valueOf.Field(i).Kind() {
+
+		default:
+			{
+				fmt.Println(valueOf.Field(i).String())
 			}
 
 		case reflect.Struct:
 			{
-				str_builder.WriteString(Dump(value_of.Field(i)))
-				break;
+				strBuilder.WriteString(Dump(valueOf.Field(i)))
+				break
 			}
 		case reflect.String:
 			{
 
-				str_builder.WriteString(fmt.Sprintf("[%-20s] : [%s]\n", type_of.Field(i).Name, value_of.Field(i).String()))
+				strBuilder.WriteString(fmt.Sprintf("[%-20s] : [%s]\n", typeOf.Field(i).Name, valueOf.Field(i).String()))
 				break
 			}
 		case reflect.Slice:
 			{
-				str_builder.WriteString(fmt.Sprintf("[%-20s] : [%s]\n", type_of.Field(i).Name, hex.EncodeToString(value_of.Field(i).Bytes())))
+				strBuilder.WriteString(fmt.Sprintf("[%-20s] : [%s]\n", typeOf.Field(i).Name, hex.EncodeToString(valueOf.Field(i).Bytes())))
 				break
 			}
 		case reflect.Uint:
 			{
 
-				str_builder.WriteString(fmt.Sprintf("[%-20s] : [%d]\n", type_of.Field(i).Name, value_of.Field(i).Uint()))
+				strBuilder.WriteString(fmt.Sprintf("[%-20s] : [%d]\n", typeOf.Field(i).Name, valueOf.Field(i).Uint()))
 				break
 			}
 		}
 	}
 
-	return (string(str_builder.Bytes()))
+	return string(strBuilder.Bytes())
 }
 
-func set_fixed_field(struct_field interface{}, field_size uint, field_value interface{}, data_type int) {
+func setFixedField(sf interface{}, fieldSize uint, fieldValue interface{}, dataType int) {
 
-	switch data_type {
+	switch dataType {
 	case DecimalInt:
 		{
-			fmt_spec := fmt.Sprintf("%%0%dd", field_size)
-			field_data := fmt.Sprintf(fmt_spec, reflect.ValueOf(field_value).Uint())
+			fmtSpec := fmt.Sprintf("%%0%dd", fieldSize)
+			fieldData := fmt.Sprintf(fmtSpec, reflect.ValueOf(fieldValue).Uint())
 			//fmt.Println("format spec",fmt_spec,field_data);
-			field_val := []byte(field_data)
-			reflect.ValueOf(struct_field).Elem().SetBytes(field_val)
+			fieldVal := []byte(fieldData)
+			reflect.ValueOf(sf).Elem().SetBytes(fieldVal)
 			break
 		}
 	default:
 		{
-			panic(fmt.Sprintf("set_fixed_field not implemented for this type - %d", data_type))
+			panic(fmt.Sprintf("set_fixed_field not implemented for this type - %d", dataType))
 		}
 	}
 
 }
 
-func read_fixed_field(msg_buf *bytes.Buffer, struct_field interface{}, size uint, data_type int) bool {
+func readFixedField(msgBuf *bytes.Buffer, sf interface{}, size uint, dataType int) bool {
 
-	var tmp_data_buf []byte = make([]byte, size)
-	_, err := msg_buf.Read(tmp_data_buf)
-	if check_parse_error(err) {
+	var tmpDataBuf []byte = make([]byte, size)
+	_, err := msgBuf.Read(tmpDataBuf)
+	if checkParseError(err) {
 		return false
 	}
 
-	switch data_type {
+	switch dataType {
 	case String:
 		{
 
-			reflect.ValueOf(struct_field).Elem().SetString(string(tmp_data_buf))
+			reflect.ValueOf(sf).Elem().SetString(string(tmpDataBuf))
 			break
 
 		}
 
 	case Binary:
 		{
-			reflect.ValueOf(struct_field).Elem().SetBytes(tmp_data_buf)
+			reflect.ValueOf(sf).Elem().SetBytes(tmpDataBuf)
 			break
 		}
 
 	case DecimalInt:
 		{
 
-			decimal_val, err := strconv.ParseUint(string(tmp_data_buf), 10, 32)
-			if check_format_error(err) {
+			decimalVal, err := strconv.ParseUint(string(tmpDataBuf), 10, 32)
+			if checkFormatError(err) {
 				return false
 			}
 
-			reflect.ValueOf(struct_field).Elem().SetUint(uint64(decimal_val))
+			reflect.ValueOf(sf).Elem().SetUint(uint64(decimalVal))
 			break
 		}
 
 	case HexadecimalInt:
 		{
 
-			decimal_val, err := strconv.ParseUint(string(tmp_data_buf), 16, 32)
-			if check_format_error(err) {
+			decimalVal, err := strconv.ParseUint(string(tmpDataBuf), 16, 32)
+			if checkFormatError(err) {
 				return false
 			}
-			reflect.ValueOf(struct_field).Elem().SetUint(decimal_val)
+			reflect.ValueOf(sf).Elem().SetUint(decimalVal)
 			break
 		}
 	}
@@ -212,21 +213,20 @@ func read_fixed_field(msg_buf *bytes.Buffer, struct_field interface{}, size uint
 	return true
 }
 
-func check_parse_error(err error) bool {
+func checkParseError(err error) bool {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "parsing error - %s", err.Error())
-		return (true)
+		_, _ = fmt.Fprintf(os.Stderr, "parsing error - %s", err.Error())
+		return true
 	}
 
-	return (false)
+	return false
 }
 
-func check_format_error(err error) bool {
+func checkFormatError(err error) bool {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "format error - %s", err.Error())
-		panic("")
-		return (true)
+		_, _ = fmt.Fprintf(os.Stderr, "format error - %s", err.Error())
+		return true
 	}
 
-	return (false)
+	return false
 }

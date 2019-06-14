@@ -1,7 +1,9 @@
 package ui
-import(
-		"github.com/mattn/go-gtk/gtk"
+
+import (
+	"github.com/mattn/go-gtk/gtk"
 )
+
 func ShowInfoDialog(widget gtk.IWidget, msg string) {
 
 	dialog := gtk.NewMessageDialog(
@@ -16,7 +18,6 @@ func ShowInfoDialog(widget gtk.IWidget, msg string) {
 	})
 	dialog.Run()
 }
-
 
 func ShowErrorDialog(widget gtk.IWidget, msg string) {
 

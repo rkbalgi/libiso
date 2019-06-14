@@ -11,7 +11,7 @@ type FixedFieldDef struct {
 	data_encoding int
 	data_size     int //in bytes
 	id            int
-	b_pos int //bit position in bitmap
+	b_pos         int //bit position in bitmap
 }
 
 //create a new fixed field definition
@@ -91,7 +91,7 @@ func (f_def *FixedFieldDef) GetId() int {
 }
 
 func (f_def *FixedFieldDef) SetBitPosition(id int) {
-	f_def.b_pos=id;
+	f_def.b_pos = id
 }
 
 func (f_def *FixedFieldDef) BitPosition() int {

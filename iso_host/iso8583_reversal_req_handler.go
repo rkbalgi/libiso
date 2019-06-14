@@ -1,7 +1,7 @@
 package iso_host
 
-import(
-. "github.com/rkbalgi/go/iso8583"
+import (
+	. "github.com/rkbalgi/go/iso8583"
 )
 
 func handle_reversal_req(iso_req *Iso8583Message, iso_resp *Iso8583Message) {

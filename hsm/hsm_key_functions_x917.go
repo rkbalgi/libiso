@@ -5,25 +5,20 @@ import (
 )
 
 //encrypt a key under the kek using x917
-func encrypt_key_kek_x917(key_str string, kek []byte, key_type string) []byte {
+func encryptKeyKekX917(keyStr string, kek []byte) ([]byte, error) {
 
-	key_data := extract_key_data(key_str)
-	return (encrypt_key_x917(key_data, kek, key_type))
+	keyData := extractKeyData(keyStr)
+	return encryptKeyX917(keyData, kek)
 }
 
-func encrypt_key_x917(key_data []byte, kek []byte, key_type string) []byte {
+func encryptKeyX917(keyData []byte, kek []byte) ([]byte, error) {
 
-	return (crypto.EncryptTripleDes(key_data, kek))
+	return crypto.EncryptTripleDes(keyData, kek)
 }
 
 //decrypt a key from under the kek using x917
-func decrypt_key_kek_x917(key_str string, kek []byte, key_type string) []byte {
 
-	key_data := extract_key_data(key_str)
-	return (decrypt_key_x917(key_data, kek, key_type))
-}
+func decryptKeyX917(keyData []byte, kek []byte) []byte {
 
-func decrypt_key_x917(key_data []byte, kek []byte, key_type string) []byte {
-
-	return (crypto.DecryptTripleDes(key_data, kek))
+	return crypto.DecryptTripleDes(keyData, kek)
 }

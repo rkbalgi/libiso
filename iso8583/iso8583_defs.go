@@ -34,7 +34,7 @@ const (
 	ISO_RESP_PICKUP   = "200"
 	ISO_RESP_APPROVAL = "000"
 	ISO_FORMAT_ERROR  = "909"
-	ISO_RESP_DROP  = "999"
+	ISO_RESP_DROP     = "999"
 )
 
 var spec_map map[string]*Iso8583MessageDef

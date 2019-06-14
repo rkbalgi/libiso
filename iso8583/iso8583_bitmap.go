@@ -43,9 +43,8 @@ type BitmappedField interface {
 	Def() string
 }
 
-
-func (bmp *BitMap) Def() string{
-	return fmt.Sprintf("Name: Bitmap ; Id: %04d",bmp.GetId());
+func (bmp *BitMap) Def() string {
+	return fmt.Sprintf("Name: Bitmap ; Id: %04d", bmp.GetId())
 }
 
 //add a new  fixed field to the bitmap
@@ -218,19 +217,19 @@ func (bmp *BitMap) Bytes() []byte {
 
 }
 
-func (bmp *BitMap) bit_string() string{
-	
-	buf:=bytes.NewBufferString("");
-	for i:=1;i<129;i++{
-		if bmp.IsOn(i){
-			buf.Write([]byte("1"));
-		}else{
-			buf.Write([]byte("0"));
+func (bmp *BitMap) bit_string() string {
+
+	buf := bytes.NewBufferString("")
+	for i := 1; i < 129; i++ {
+		if bmp.IsOn(i) {
+			buf.Write([]byte("1"))
+		} else {
+			buf.Write([]byte("0"))
 		}
 	}
-	
-	return buf.String();
-	
+
+	return buf.String()
+
 }
 
 func (bmp *BitMap) copy_bits(src_bmp *BitMap) {
