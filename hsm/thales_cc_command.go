@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-type thalesCcReq struct {
+type thalesCCReq struct {
 	_pro                 prologue
 	sourceZpk            string
 	destinationZpk       string
@@ -19,7 +19,7 @@ type thalesCcReq struct {
 	_epi epilogue
 }
 
-type thalesCcResp struct {
+type thalesCCResp struct {
 	_pro prologue
 
 	responseCode         string
@@ -37,8 +37,8 @@ func (th *ThalesHsm) handleCcCommand(msgData []byte) []byte {
 		msgBuf = bytes.NewBuffer(msgData)
 		err    error
 	)
-	req := new(thalesCcReq)
-	resp := new(thalesCcResp)
+	req := new(thalesCCReq)
+	resp := new(thalesCCResp)
 
 	if parsePrologue(msgBuf, &req._pro, th.headerLength) {
 		parseOk := readKey(msgBuf, &req.sourceZpk)
@@ -127,14 +127,14 @@ func (th *ThalesHsm) handleCcCommand(msgData []byte) []byte {
 
 }
 
-func (req *thalesCcReq) invalidDataResponse(resp *thalesCcResp) []byte {
+func (req *thalesCCReq) invalidDataResponse(resp *thalesCCResp) []byte {
 
 	resp.errorCode = HSM_PARSE_ERROR
 	return req.generateResponse(resp)
 
 }
 
-func (req *thalesCcReq) generateResponse(resp *thalesCcResp) []byte {
+func (req *thalesCCReq) generateResponse(resp *thalesCCResp) []byte {
 
 	respBuf := bytes.NewBuffer([]byte(req._pro.header))
 	respCmdCode := []byte(req._pro.commandName)

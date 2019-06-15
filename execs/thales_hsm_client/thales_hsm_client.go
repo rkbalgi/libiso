@@ -28,8 +28,8 @@ func main() {
 		data = append(data, []byte(hdr)...)
 
 		//NC command data
-		cmd_data, _ := hex.DecodeString("4e43")
-		data = append(data, cmd_data...)
+		cmdData, _ := hex.DecodeString("4e43")
+		data = append(data, cmdData...)
 
 		err := client.Write(data)
 		if err != nil {

@@ -8,12 +8,12 @@ import (
 
 func main() {
 
-	wait_group := new(sync.WaitGroup)
-	wait_group.Add(1)
+	waitGroup := new(sync.WaitGroup)
+	waitGroup.Add(1)
 
-	thales_console := console.New()
-	go thales_console.Show(wait_group)
+	thalesConsole := console.New()
+	go thalesConsole.Show(waitGroup)
 
-	wait_group.Wait()
+	waitGroup.Wait()
 
 }

@@ -11,6 +11,7 @@ import (
 	"crypto/cipher"
 	_ "encoding/hex"
 	_ "fmt"
+	"log"
 	_ "math/big"
 )
 
@@ -27,10 +28,10 @@ func init() {
 
 }
 
-func leftShift(in_data []byte) []byte {
+func leftShift(inData []byte) []byte {
 
-	data := make([]byte, len(in_data))
-	copy(data, in_data)
+	data := make([]byte, len(inData))
+	copy(data, inData)
 
 	var carry bool = false
 	for i := len(data) - 1; i >= 0; i-- {
@@ -40,7 +41,7 @@ func leftShift(in_data []byte) []byte {
 		if carry {
 			data[i] = data[i] | 0x01
 		}
-		if in_data[i]&0x80 == 0x80 {
+		if inData[i]&0x80 == 0x80 {
 			carry = true
 		} else {
 			carry = false
@@ -69,9 +70,13 @@ func addPadding(data []byte) []byte {
 
 }
 
-func sub_keys(key []byte) ([]byte, []byte) {
+func subKeys(key []byte) ([]byte, []byte) {
 
-	l := aesEncrypt(key, constZero)
+	var err error
+	l, err := aesEncrypt(key, constZero)
+	if err != nil {
+		log.Print(err)
+	}
 	k1, k2 := make([]byte, 16), make([]byte, 16)
 
 	//is msb of l=0 then K1= l<<1 else K1= const_rb ^ (l<<1)
@@ -97,20 +102,20 @@ func sub_keys(key []byte) ([]byte, []byte) {
 }
 
 //compute AES 128 CMAC using key and message M (in_data)
-func AesCmac128(key []byte, in_data []byte) []byte {
+func AesCmac128(key []byte, inData []byte) []byte {
 
-	k1, k2 := sub_keys(key)
+	k1, k2 := subKeys(key)
 
 	var data []byte
 	flag := false
-	if len(in_data) < AesBlockSize {
-		data = addPadding(in_data)
-	} else if len(in_data)%AesBlockSize != 0 {
-		data = addPadding(in_data)
+	if len(inData) < AesBlockSize {
+		data = addPadding(inData)
+	} else if len(inData)%AesBlockSize != 0 {
+		data = addPadding(inData)
 	} else {
 		//flag is true
 		flag = true
-		data = in_data
+		data = inData
 	}
 	var lastBlock []byte
 

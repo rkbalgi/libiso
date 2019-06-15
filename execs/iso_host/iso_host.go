@@ -17,63 +17,63 @@ import (
 var logger = log.New(os.Stdout, "##iso_host## ", log.LstdFlags)
 
 type IsoMessageHandler struct {
-	spec_name string
+	specName string
 }
 
-func (iso_msg_handler *IsoMessageHandler) HandleMessage(client_conn *net.TCPConn, msg_data []byte) {
+func (isoMsgHandler *IsoMessageHandler) HandleMessage(clientConn *net.TCPConn, msgData []byte) {
 
-	logger.Println("handling request = \n", hex.Dump(msg_data))
+	logger.Println("handling request = \n", hex.Dump(msgData))
 
-	buf := bytes.NewBuffer(msg_data)
-	resp_iso_msg, err := iso_host.Handle(iso_msg_handler.spec_name, buf)
+	buf := bytes.NewBuffer(msgData)
+	respIsoMsg, err := iso_host.Handle(isoMsgHandler.specName, buf)
 	if err != nil {
 		log.Printf("error handling message from client -[Err: %s]\n", err.Error())
 		return
 	}
 
-	resp_data := resp_iso_msg.Bytes()
+	respData := respIsoMsg.Bytes()
 
 	//add mli + resp_data into buffer
 	mli := make([]byte, 2)
-	binary.BigEndian.PutUint16(mli, uint16(len(resp_data)+2))
-	resp_buf := bytes.NewBuffer(mli)
-	resp_buf.Write(resp_data)
+	binary.BigEndian.PutUint16(mli, uint16(len(respData)+2))
+	respBuf := bytes.NewBuffer(mli)
+	respBuf.Write(respData)
 
-	logger.Println("writing response = \n", hex.Dump(resp_buf.Bytes()))
-	client_conn.Write(resp_buf.Bytes())
+	logger.Println("writing response = \n", hex.Dump(respBuf.Bytes()))
+	_, _ = clientConn.Write(respBuf.Bytes())
 
 }
 
 func main() {
 
 	port := flag.Int("port", 5656, "port to listen at")
-	spec_name := flag.String("spec", "ISO8583_1_v1__DEMO_", "specification from the spec file")
-	spec_def_file_name := flag.String("spec-file", "", "file to read the specifications from")
+	specName := flag.String("spec", "ISO8583_1_v1__DEMO_", "specification from the spec file")
+	specDefFileName := flag.String("spec-file", "", "file to read the specifications from")
 
 	flag.Parse()
-	if len(*spec_def_file_name) == 0 {
+	if len(*specDefFileName) == 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
-	file_handle, err := os.Open(*spec_def_file_name)
+	fileHandle, err := os.Open(*specDefFileName)
 	if err != nil {
 		fmt.Println("unable to open spec-file")
 		flag.Usage()
 		os.Exit(1)
 	}
-	file_handle.Close()
+	err = fileHandle.Close()
 
-	iso8583.ReadSpecDefs(*spec_def_file_name)
+	iso8583.ReadSpecDefs(*specDefFileName)
 
-	tcp_addr := new(net.TCPAddr)
-	tcp_addr.IP = net.ParseIP("")
-	tcp_addr.Port = *port
+	tcpAddr := new(net.TCPAddr)
+	tcpAddr.IP = net.ParseIP("")
+	tcpAddr.Port = *port
 
-	iso_host := bnet.NewTcpHost(bnet.Mli2i, tcp_addr)
+	isoHost := bnet.NewTcpHost(bnet.Mli2i, tcpAddr)
 	handler := new(IsoMessageHandler)
-	handler.spec_name = *spec_name
-	iso_host.SetHandler(handler)
+	handler.specName = *specName
+	isoHost.SetHandler(handler)
 
-	iso_host.Start()
+	isoHost.Start()
 
 }

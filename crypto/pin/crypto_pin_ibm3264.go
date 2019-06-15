@@ -10,29 +10,30 @@ import (
 	"strings"
 )
 
-type PinBlock_Ibm3264 struct {
+type PinblockIbm3264 struct {
 	PinBlocker
 }
 
-func (pin_block *PinBlock_Ibm3264) Encrypt(pan string, clear_pin string, key []byte) []byte {
+func (pinBlock *PinblockIbm3264) Encrypt(pan string, clearPin string, key []byte) ([]byte, error) {
 
-	buf := bytes.NewBufferString(clear_pin)
+	var buf = bytes.NewBufferString(clearPin)
 	for i := buf.Len(); i < 16; i++ {
 		buf.WriteString("F")
 	}
 
-	pin_block_data, _ := hex.DecodeString(buf.String())
-	enc_pin_block := EncryptPinBlock(pin_block_data, key)
-	return (enc_pin_block)
+	pinBlockData, _ := hex.DecodeString(buf.String())
+	encPinBlock, err := EncryptPinBlock(pinBlockData, key)
+	return encPinBlock, err
 
 }
 
-func (pin_block *PinBlock_Ibm3264) GetPin(pan string, pin_block_data []byte, key []byte) string {
+func (pinBlock *PinblockIbm3264) GetPin(pan string, pinBlockData []byte, key []byte) (res string, err error) {
 
-	clear_pin_block := DecryptPinBlock(pin_block_data, key)
-	pin_block_str := hex.EncodeToString(clear_pin_block)
+	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
+	pinBlockStr := hex.EncodeToString(clearPinBlock)
 	//log.Printf("decrypted pin block =",pin_block_str)
-	index_f := strings.Index(pin_block_str, "f")
-	return (pin_block_str[:index_f])
+	indexF := strings.Index(pinBlockStr, "f")
+	res = pinBlockStr[:indexF]
+	return
 
 }

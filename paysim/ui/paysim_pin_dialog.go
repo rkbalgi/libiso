@@ -103,7 +103,7 @@ func ComputePinBlockDialog(widget gtk.IWidget, msg string) {
 		switch pin_algo_cb.GetActiveText() {
 		case "IBM-3264":
 			{
-				pin_block_type := &pin.PinBlock_Ibm3264{}
+				pin_block_type := &pin.PinblockIbm3264{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
 			}
 		case "ISO-0":
@@ -113,12 +113,12 @@ func ComputePinBlockDialog(widget gtk.IWidget, msg string) {
 			}
 		case "ISO-1":
 			{
-				pin_block_type := &pin.PinBlock_Iso1{}
+				pin_block_type := &pin.PinblockIso1{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
 			}
 		case "ISO-3":
 			{
-				pin_block_type := &pin.PinBlock_Iso3{}
+				pin_block_type := &pin.PinblockIso3{}
 				pin_block = pin_block_type.Encrypt(pan, clear_pin, key_data)
 			}
 		default:

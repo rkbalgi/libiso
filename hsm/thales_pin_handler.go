@@ -20,9 +20,9 @@ type pinHandler struct {
 func init() {
 	thalesPinfmtMap = make(map[int]pin.PinBlocker, 5)
 	thalesPinfmtMap[1] = new(pin.PinBlock_Iso0)
-	thalesPinfmtMap[5] = new(pin.PinBlock_Iso1)
-	thalesPinfmtMap[47] = new(pin.PinBlock_Iso3)
-	thalesPinfmtMap[03] = new(pin.PinBlock_Ibm3264)
+	thalesPinfmtMap[5] = new(pin.PinblockIso1)
+	thalesPinfmtMap[47] = new(pin.PinblockIso3)
+	thalesPinfmtMap[03] = new(pin.PinblockIbm3264)
 
 	log.Printf("[%d] pin block formats registered.", len(thalesPinfmtMap))
 }
@@ -43,23 +43,31 @@ func newPinHandler(pan string, inPinblkFmt int,
 func (ph *pinHandler) decryptAndExtractPin(inPinblk []byte) error {
 
 	pinBlocker := thalesPinfmtMap[ph.inPinblkFmt]
-
+	var err error
 	if pinBlocker == nil {
 		return fmt.Errorf("unsupported pin block format - %d", ph.inPinblkFmt)
 	} else {
-		ph.clearPin = pinBlocker.GetPin(ph.pan, inPinblk, ph.inKey)
+		ph.clearPin, err = pinBlocker.GetPin(ph.pan, inPinblk, ph.inKey)
+		if err != nil {
+			return err
+		}
+
 	}
+	return err
 }
 
 func (ph *pinHandler) getClearPin() string {
 	return ph.clearPin
 }
 
-func (ph *pinHandler) createPinBlock() []byte {
+func (ph *pinHandler) createPinBlock() ([]byte, error) {
 
 	pinBlocker := thalesPinfmtMap[ph.outPinblkFmt]
-	destPinBlock := pinBlocker.Encrypt(ph.pan, ph.clearPin, ph.outKey)
-	return destPinBlock
+	destPinBlock, err := pinBlocker.Encrypt(ph.pan, ph.clearPin, ph.outKey)
+	if err != nil {
+		return nil, err
+	}
+	return destPinBlock, nil
 
 }
 
@@ -68,7 +76,7 @@ func (ph *pinHandler) translate(inPinBlock []byte) ([]byte, error) {
 	if err := ph.decryptAndExtractPin(inPinBlock); err != nil {
 		return nil, err
 	}
-	destPinBlock := ph.createPinBlock()
-	return destPinBlock, nil
+	destPinBlock, err := ph.createPinBlock()
+	return destPinBlock, err
 
 }

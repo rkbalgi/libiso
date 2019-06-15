@@ -14,7 +14,7 @@ func Test_A0ParseTest_GenOnly(t *testing.T) {
 	hsmHandle.log = log.New(os.Stdout, "##???## ", log.LstdFlags)
 	hsmHandle.headerLength = 12
 
-	respData := hsmHandle.handle_a0_command(formatHsmCommand(sHsmCmd))
+	respData := hsmHandle.handleA0Command(formatHsmCommand(sHsmCmd))
 	t.Log("response_data ", hex.EncodeToString(respData))
 	t.Log("response_data (ascii)", string(respData))
 
@@ -27,7 +27,7 @@ func Test_A0ParseTest_GenAndExport(t *testing.T) {
 	hsmHandle.log = log.New(os.Stdout, "##???## ", log.LstdFlags)
 	hsmHandle.headerLength = 12
 
-	respData := hsmHandle.handle_a0_command(formatHsmCommand(sHsmCmd))
+	respData := hsmHandle.handleA0Command(formatHsmCommand(sHsmCmd))
 	t.Log("response_data ", hex.EncodeToString(respData))
 	t.Log("response_data (ascii)", "\n", hex.Dump(respData))
 

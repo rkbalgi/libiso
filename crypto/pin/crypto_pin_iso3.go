@@ -8,52 +8,52 @@ import (
 	"strconv"
 )
 
-type PinBlock_Iso3 struct {
+type PinblockIso3 struct {
 	PinBlocker
 }
 
-func (pin_block *PinBlock_Iso3) Encrypt(pan_12digits string, clear_pin string, key []byte) []byte {
+func (pinBlock *PinblockIso3) Encrypt(pan12digits string, clearPin string, key []byte) (res []byte, err error) {
 
-	if len(clear_pin) > 12 {
+	if len(clearPin) > 12 {
 		panic("pin length > 12")
 	}
 
-	buf := bytes.NewBufferString(fmt.Sprintf("3%X%s", len(clear_pin), clear_pin))
+	buf := bytes.NewBufferString(fmt.Sprintf("3%X%s", len(clearPin), clearPin))
 
 	//random pads
-	fill_random(buf)
+	fillRandom(buf)
 
-	pin_block_data_a, _ := hex.DecodeString(buf.String())
-	pin_block_data_b, _ := hex.DecodeString("0000" + pan_12digits)
+	pinBlockDataA, err := hex.DecodeString(buf.String())
+	pinBlockDataB, err := hex.DecodeString("0000" + pan12digits)
 
-	for i, v := range pin_block_data_b {
-		pin_block_data_a[i] = pin_block_data_a[i] ^ v
+	for i, v := range pinBlockDataB {
+		pinBlockDataA[i] = pinBlockDataA[i] ^ v
 	}
 	//log.Printf(" xor'ed pin block =", hex.EncodeToString(pin_block_data_a))
 
-	enc_pin_block := EncryptPinBlock(pin_block_data_a, key)
-	return (enc_pin_block)
+	res, err = EncryptPinBlock(pinBlockDataA, key)
+	return
 
 }
 
-func (pin_block *PinBlock_Iso3) GetPin(pan_12digits string, pin_block_data []byte, key []byte) string {
+func (pinBlock *PinblockIso3) GetPin(pan12digits string, pinBlockData []byte, key []byte) (res string, err error) {
 
-	clear_pin_block := DecryptPinBlock(pin_block_data, key)
+	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
 
 	//pan_12digits := pan[len(pan)-13 : len(pan)-1]
-	pin_block_data_b, _ := hex.DecodeString("0000" + pan_12digits)
+	pinBlockDataB, _ := hex.DecodeString("0000" + pan12digits)
 	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
 
-	for i, v := range pin_block_data_b {
-		clear_pin_block[i] = clear_pin_block[i] ^ v
+	for i, v := range pinBlockDataB {
+		clearPinBlock[i] = clearPinBlock[i] ^ v
 	}
 
-	pin_block_str := hex.EncodeToString(clear_pin_block)
+	pinBlockStr := hex.EncodeToString(clearPinBlock)
 	//log.Printf(" clear pin block (b) =", pin_block_str)
 
-	n_pin_digits, _ := strconv.ParseInt(pin_block_str[1:2], 16, 16)
-	clear_pin := pin_block_str[2:(2 + n_pin_digits)]
+	nPinDigits, _ := strconv.ParseInt(pinBlockStr[1:2], 16, 16)
+	res = pinBlockStr[2:(2 + nPinDigits)]
 
-	return (clear_pin)
+	return
 
 }

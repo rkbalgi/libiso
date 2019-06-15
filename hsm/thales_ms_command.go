@@ -140,12 +140,21 @@ func (th *ThalesHsm) HandleMS(msgData []byte) []byte {
 		th.log.Println("mac key", hex.EncodeToString(macKey))
 	}
 	var genMac []byte
+
 	if len(macKey) == 16 || len(macKey) == 24 {
 		//generate X9.19 mac
-		genMac = mac.GenerateMac_X919(msReqStruct.messageBlock, macKey)
+		genMac, err = mac.GenerateMacX919(msReqStruct.messageBlock, macKey)
+		if err != nil {
+			th.log.Print("crypto error", err)
+			msReqStruct.InvalidDataResponse(msRespStruct)
+		}
 	} else {
 		//x9.9
-		genMac = mac.GenerateMac_X99(msReqStruct.messageBlock, macKey)
+		genMac, err = mac.GenerateMacX99(msReqStruct.messageBlock, macKey)
+		if err != nil {
+			th.log.Print("crypto error", err)
+			msReqStruct.InvalidDataResponse(msRespStruct)
+		}
 
 	}
 	msRespStruct.MAB = genMac

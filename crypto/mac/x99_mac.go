@@ -11,7 +11,7 @@ import (
 //generate a X9.9 MAC using a single length key
 //data will be zero padded if required
 
-func GenerateMacX99(inMacData []byte, keyData []byte) []byte {
+func GenerateMacX99(inMacData []byte, keyData []byte) ([]byte, error) {
 
 	macData := make([]byte, len(inMacData))
 	copy(macData, inMacData)
@@ -26,7 +26,11 @@ func GenerateMacX99(inMacData []byte, keyData []byte) []byte {
 		macData = append(macData, pads...)
 	}
 
-	result := crypto.EncryptDesCbc(macData, keyData)
-	return result[len(result)-8:]
+	var err error
+	result, err := crypto.EncryptDesCbc(macData, keyData)
+	if err != nil {
+		return nil, err
+	}
+	return result[len(result)-8:], nil
 
 }

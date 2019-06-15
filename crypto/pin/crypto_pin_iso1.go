@@ -9,31 +9,31 @@ import (
 	"strconv"
 )
 
-type PinBlock_Iso1 struct {
+type PinblockIso1 struct {
 	PinBlocker
 }
 
-func (pin_block *PinBlock_Iso1) Encrypt(pan string, clear_pin string, key []byte) []byte {
+func (pinBlock *PinblockIso1) Encrypt(pan string, clearPin string, key []byte) (res []byte, err error) {
 
-	buf := bytes.NewBufferString(fmt.Sprintf("1%X%s", len(clear_pin), clear_pin))
-	fill_random(buf)
+	buf := bytes.NewBufferString(fmt.Sprintf("1%X%s", len(clearPin), clearPin))
+	fillRandom(buf)
 
 	//log.Println("block =", buf.String())
 
-	pin_block_data, _ := hex.DecodeString(buf.String())
-	enc_pin_block := EncryptPinBlock(pin_block_data, key)
-	return (enc_pin_block)
+	pinBlockData, err := hex.DecodeString(buf.String())
+	res, err = EncryptPinBlock(pinBlockData, key)
+	return
 
 }
 
-func (pin_block *PinBlock_Iso1) GetPin(pan string, pin_block_data []byte, key []byte) string {
+func (pinBlock *PinblockIso1) GetPin(pan string, pinBlockData []byte, key []byte) (res string, err error) {
 
-	clear_pin_block := DecryptPinBlock(pin_block_data, key)
-	pin_block_str := hex.EncodeToString(clear_pin_block)
+	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
+	pinBlockStr := hex.EncodeToString(clearPinBlock)
 
-	n_pin_digits, _ := strconv.ParseInt(pin_block_str[1:2], 16, 16)
-	clear_pin := pin_block_str[2:(2 + n_pin_digits)]
+	nPinDigits, _ := strconv.ParseInt(pinBlockStr[1:2], 16, 16)
+	res = pinBlockStr[2:(2 + nPinDigits)]
 
-	return (clear_pin)
+	return
 
 }

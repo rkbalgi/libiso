@@ -7,158 +7,158 @@ import (
 	"github.com/rkbalgi/go/hsm/keys"
 )
 
-type thales_a0_req struct {
-	_pro                  prologue
-	mode                  uint //hex1
-	key_type              string
-	key_scheme_lmk        string
-	derive_key_mode       string
-	dukpt_master_key_type uint //hex1
-	dukpt_master_key      string
-	ksn                   string //15
-	delimiter             string
-	zmk_tmk_flag          uint //dec1
-	zmk_tmk               string
-	key_scheme_zmk        string //1
-	attalla_variant       string
+type thalesA0Req struct {
+	_pro               prologue
+	mode               uint //hex1
+	keyType            string
+	keySchemeLmk       string
+	deriveKeyMode      string
+	dukptMasterKeyType uint //hex1
+	dukptMasterKey     string
+	ksn                string //15
+	delimiter          string
+	zmkTmkFlag         uint //dec1
+	zmkTmk             string
+	keySchemeZmk       string //1
+	attallaVariant     string
 
 	_epi epilogue
 }
 
-type thales_a0_resp struct {
+type thalesA0Resp struct {
 	_pro prologue
 
-	response_code         string
-	error_code            string
-	key_under_lmk         []byte
-	key_under_zmk         []byte
-	key_check_value       []byte
-	end_message_delimiter byte
-	message_trailer       []byte
+	responseCode        string
+	errorCode           string
+	keyUnderLmk         []byte
+	keyUnderZmk         []byte
+	keyCheckValue       []byte
+	endMessageDelimiter byte
+	messageTrailer      []byte
 }
 
-func (th *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
+func (th *ThalesHsm) handleA0Command(msgData []byte) []byte {
 
-	zmk_tmk_present := false
-	msg_buf := bytes.NewBuffer(msg_data)
+	zmkTmkPresent := false
+	msgBuf := bytes.NewBuffer(msgData)
 
-	req := new(thales_a0_req)
-	resp := new(thales_a0_resp)
+	req := new(thalesA0Req)
+	resp := new(thalesA0Resp)
 
-	if parsePrologue(msg_buf, &req._pro, th.headerLength) {
+	if parsePrologue(msgBuf, &req._pro, th.headerLength) {
 
-		parse_ok := readFixedField(msg_buf, &req.mode, 1, HexadecimalInt)
-		parse_ok = readFixedField(msg_buf, &req.key_type, 3, String)
-		parse_ok = readFixedField(msg_buf, &req.key_scheme_lmk, 1, String)
+		ok := readFixedField(msgBuf, &req.mode, 1, HexadecimalInt)
+		ok = readFixedField(msgBuf, &req.keyType, 3, String)
+		ok = readFixedField(msgBuf, &req.keySchemeLmk, 1, String)
 
 		if req.mode == 0xa || req.mode == 0xb {
-			parse_ok = readFixedField(msg_buf, &req.derive_key_mode, 1, String)
-			if !parse_ok {
-				return (req.invalid_data_response(resp))
+			ok = readFixedField(msgBuf, &req.deriveKeyMode, 1, String)
+			if !ok {
+				return req.invalidDataResponse(resp)
 			} else {
 				//derive key mode should be 0
-				if req.derive_key_mode != "0" {
-					th.log.Printf("invalid derive key mode - ", req.derive_key_mode)
-					return (req.invalid_data_response(resp))
+				if req.deriveKeyMode != "0" {
+					th.log.Printf("invalid derive key mode - %s", req.deriveKeyMode)
+					return req.invalidDataResponse(resp)
 				} else {
 					//read dupkt master key type and key
-					parse_ok = readFixedField(msg_buf, &req.dukpt_master_key_type, 1, HexadecimalInt)
-					if !parse_ok {
-						return (req.invalid_data_response(resp))
+					ok = readFixedField(msgBuf, &req.dukptMasterKeyType, 1, HexadecimalInt)
+					if !ok {
+						return req.invalidDataResponse(resp)
 					} else {
-						if req.dukpt_master_key_type == 0x01 || req.dukpt_master_key_type == 0x02 {
-							parse_ok = readKey(msg_buf, &req.dukpt_master_key)
-							if !parse_ok {
-								return (req.invalid_data_response(resp))
+						if req.dukptMasterKeyType == 0x01 || req.dukptMasterKeyType == 0x02 {
+							ok = readKey(msgBuf, &req.dukptMasterKey)
+							if !ok {
+								return req.invalidDataResponse(resp)
 							} else {
 								//read ksn
-								parse_ok = readFixedField(msg_buf, &req.ksn, 15, String)
-								if !parse_ok {
-									return (req.invalid_data_response(resp))
+								ok = readFixedField(msgBuf, &req.ksn, 15, String)
+								if !ok {
+									return req.invalidDataResponse(resp)
 								}
 								//check if KSN is all hex, else throw error
 								if !hexRegexp.MatchString(req.ksn) {
-									th.log.Printf("invalid ksn - ", req.ksn)
-									return (req.invalid_data_response(resp))
+									th.log.Printf("invalid ksn - %s", req.ksn)
+									return req.invalidDataResponse(resp)
 								}
 
 							}
 						} else {
-							th.log.Printf("invalid dukpt master key type - ", req.dukpt_master_key_type)
-							return (req.invalid_data_response(resp))
+							th.log.Printf("invalid dukpt master key type - %d", req.dukptMasterKeyType)
+							return req.invalidDataResponse(resp)
 						}
 					}
 				}
 			}
 		}
 
-		if msg_buf.Len() > 0 {
+		if msgBuf.Len() > 0 {
 			if req.mode == 0x01 || req.mode == 0x0b {
 
-				parse_ok = readFixedField(msg_buf, &req.delimiter, 1, String)
-				if !parse_ok {
-					return (req.invalid_data_response(resp))
+				ok = readFixedField(msgBuf, &req.delimiter, 1, String)
+				if !ok {
+					return req.invalidDataResponse(resp)
 				}
 				if req.delimiter != ";" {
-					th.log.Printf("invalid delimiter - ", req.delimiter)
-					return (req.invalid_data_response(resp))
+					th.log.Printf("invalid delimiter - %s", req.delimiter)
+					return req.invalidDataResponse(resp)
 				}
-				parse_ok = readFixedField(msg_buf, &req.zmk_tmk_flag, 1, DecimalInt)
-				if !parse_ok {
-					return (req.invalid_data_response(resp))
+				ok = readFixedField(msgBuf, &req.zmkTmkFlag, 1, DecimalInt)
+				if !ok {
+					return req.invalidDataResponse(resp)
 				}
-				if req.zmk_tmk_flag == 0 || req.zmk_tmk_flag == 1 {
+				if req.zmkTmkFlag == 0 || req.zmkTmkFlag == 1 {
 					//ZMK or TMK
-					parse_ok = readKey(msg_buf, &req.zmk_tmk)
+					ok = readKey(msgBuf, &req.zmkTmk)
 
-					if !parse_ok {
-						return (req.invalid_data_response(resp))
+					if !ok {
+						return req.invalidDataResponse(resp)
 					}
-					zmk_tmk_present = true
-					parse_ok = readFixedField(msg_buf, &req.key_scheme_zmk, 1, String)
-					if !parse_ok {
-						return (req.invalid_data_response(resp))
+					zmkTmkPresent = true
+					ok = readFixedField(msgBuf, &req.keySchemeZmk, 1, String)
+					if !ok {
+						return req.invalidDataResponse(resp)
 					}
 					//there may be attalla variant optionally.
 					var b, b2 byte
-					if msg_buf.Len() > 0 {
-						b, _ = msg_buf.ReadByte()
+					if msgBuf.Len() > 0 {
+						b, _ = msgBuf.ReadByte()
 						if b == byte('%') {
-							msg_buf.UnreadByte()
+							_ = msgBuf.UnreadByte()
 						} else {
 							//there is attala variant
-							if msg_buf.Len() > 0 {
-								b2, _ = msg_buf.ReadByte()
+							if msgBuf.Len() > 0 {
+								b2, _ = msgBuf.ReadByte()
 								if b2 == byte('%') {
-									msg_buf.UnreadByte()
+									_ = msgBuf.UnreadByte()
 									//just a single digit variant
-									req.attalla_variant = string([]byte{b})
+									req.attallaVariant = string([]byte{b})
 								} else {
-									req.attalla_variant = string([]byte{b, b2})
+									req.attallaVariant = string([]byte{b, b2})
 								}
 							} else {
 								//eob - single digit atalla variant
-								req.attalla_variant = string([]byte{b})
+								req.attallaVariant = string([]byte{b})
 							}
 						}
 					}
 
 				} else {
-					th.log.Printf("invalid zmk/tmk flag - ", req.zmk_tmk_flag)
-					return (req.invalid_data_response(resp))
+					th.log.Printf("invalid zmk/tmk flag - %d", req.zmkTmkFlag)
+					return req.invalidDataResponse(resp)
 				}
 
 			}
 		}
 
-		parse_ok = parseEpilogue(msg_buf, &req._epi)
-		if !parse_ok {
-			return (req.invalid_data_response(resp))
+		ok = parseEpilogue(msgBuf, &req._epi)
+		if !ok {
+			return req.invalidDataResponse(resp)
 		}
 	} else {
 		//no prolog, message should be dropped
-		th.log.Println("[CC] prolog could not be parsed, dropping message")
-		return (nil)
+		th.log.Println("[A0] prolog could not be parsed, dropping message")
+		return nil
 	}
 
 	if hsmDebugEnabled {
@@ -168,124 +168,155 @@ func (th *ThalesHsm) handle_a0_command(msg_data []byte) []byte {
 	if req.mode == 0x0a || req.mode == 0x0b {
 		//we do not support it at the moment
 		th.log.Printf("derive mode (A, B) is not supported at the moment!")
-		return (req.invalid_data_response(resp))
+		return req.invalidDataResponse(resp)
 	}
 
-	var zmk_tmk_key []byte
+	var zmkTmkKey []byte
+	var err error
 
-	if zmk_tmk_present {
-		if req.zmk_tmk_flag == 0 {
+	if zmkTmkPresent {
+		if req.zmkTmkFlag == 0 {
 			//zmk
-			zmk_tmk_key = decryptKey(req.zmk_tmk, ZMK_KEY_TYPE)
+			zmkTmkKey, err = decryptKey(req.zmkTmk, ZMK_KEY_TYPE)
+			if err != nil {
+				th.log.Print("crypto error", err)
+				return req.invalidDataResponse(resp)
+			}
 		} else {
-			zmk_tmk_key = decryptKey(req.zmk_tmk, TMK_KEY_TYPE)
+			zmkTmkKey, err = decryptKey(req.zmkTmk, TMK_KEY_TYPE)
+			if err != nil {
+				th.log.Print("crypto error", err)
+				return req.invalidDataResponse(resp)
+			}
 		}
 	}
 
-	key_len := 0
-	switch req.key_scheme_lmk {
+	keyLen := 0
+	switch req.keySchemeLmk {
 	case keys.Z:
-		key_len = 8
+		keyLen = 8
 	case keys.U:
-		key_len = 16
+		keyLen = 16
 	case keys.T:
-		key_len = 24
+		keyLen = 24
 	default:
 		{
-			th.log.Printf("invalid lmk key scheme ", req.key_scheme_lmk)
-			return (req.invalid_data_response(resp))
+			th.log.Printf("invalid lmk key scheme - %s", req.keySchemeLmk)
+			return req.invalidDataResponse(resp)
 		}
 	}
 
 	//generate the required key and its check value
-	key := crypto.GenerateDesKey(key_len)
+	key, _ := crypto.GenerateDesKey(keyLen)
 	//generate check value
-	resp.key_check_value = genCheckValue(key)[:3]
+	resp.keyCheckValue, err = genCheckValue(key)
+
+	if err != nil {
+		th.log.Print("crypto error", err)
+		return req.invalidDataResponse(resp)
+	}
+	resp.keyCheckValue = resp.keyCheckValue[:3]
 
 	if hsmDebugEnabled {
-		th.log.Println("key value: ", hex.EncodeToString(key), "check value: ", hex.EncodeToString(resp.key_check_value))
+		th.log.Println("key value: ", hex.EncodeToString(key), "check value: ", hex.EncodeToString(resp.keyCheckValue))
 	}
 
 	//TODO:: odd parity enforcement
-	if req.key_scheme_lmk == keys.Z {
-		resp.key_under_lmk = encryptKey(hex.EncodeToString(key), req.key_type)
+	if req.keySchemeLmk == keys.Z {
+		resp.keyUnderLmk, err = encryptKey(hex.EncodeToString(key), req.keyType)
+		if err != nil {
+			th.log.Print("crypto error", err)
+			return req.invalidDataResponse(resp)
+		}
 	} else {
-		resp.key_under_lmk = encryptKey(req.key_scheme_lmk+hex.EncodeToString(key), req.key_type)
+		resp.keyUnderLmk, err = encryptKey(req.keySchemeLmk+hex.EncodeToString(key), req.keyType)
+		if err != nil {
+			th.log.Print("crypto error", err)
+			return req.invalidDataResponse(resp)
+		}
 	}
 
-	if zmk_tmk_present {
+	if zmkTmkPresent {
 		//key should also be encrypted under ZMK/TMK
 		switch {
-		case req.key_scheme_zmk == keys.Z || req.key_scheme_zmk == keys.U || req.key_scheme_zmk == keys.T:
+		case req.keySchemeZmk == keys.Z || req.keySchemeZmk == keys.U || req.keySchemeZmk == keys.T:
 			{
-				resp.key_under_zmk = encryptKeyKek(req.key_scheme_zmk+hex.EncodeToString(key), zmk_tmk_key, req.key_type)
+				resp.keyUnderZmk, err = encryptKeyKek(req.keySchemeZmk+hex.EncodeToString(key), zmkTmkKey, req.keyType)
+				if err != nil {
+					th.log.Print("crypto error", err)
+					return req.invalidDataResponse(resp)
+				}
 			}
-		case req.key_scheme_zmk == keys.X || req.key_scheme_zmk == keys.Y:
+		case req.keySchemeZmk == keys.X || req.keySchemeZmk == keys.Y:
 			{
-				resp.key_under_zmk = encryptKeyKekX917(hex.EncodeToString(key), zmk_tmk_key)
-				th.log.Println(hex.EncodeToString(resp.key_under_zmk), "??", hex.EncodeToString(key), "???", hex.EncodeToString(zmk_tmk_key))
+				resp.keyUnderZmk, err = encryptKeyKekX917(hex.EncodeToString(key), zmkTmkKey)
+				if err != nil {
+					th.log.Print("crypto error", err)
+					return req.invalidDataResponse(resp)
+				}
+				th.log.Println(hex.EncodeToString(resp.keyUnderZmk), "??", hex.EncodeToString(key), "???", hex.EncodeToString(zmkTmkKey))
 			}
 
 		default:
 			{
-				th.log.Printf("invalid zmk key scheme ", req.key_scheme_lmk)
-				return (req.invalid_data_response(resp))
+				th.log.Printf("invalid zmk key scheme - %s ", req.keySchemeLmk)
+				return req.invalidDataResponse(resp)
 			}
 		}
 	}
 
 	//keys should be ascii encoded
-	if req.key_scheme_lmk == keys.Z {
+	if req.keySchemeLmk == keys.Z {
 		//single length keys do not require
 		//a scheme identifier
-		resp.key_under_lmk = []byte(hex.EncodeToString(resp.key_under_lmk))
-		if zmk_tmk_present {
-			resp.key_under_zmk = []byte(hex.EncodeToString(resp.key_under_zmk))
+		resp.keyUnderLmk = []byte(hex.EncodeToString(resp.keyUnderLmk))
+		if zmkTmkPresent {
+			resp.keyUnderZmk = []byte(hex.EncodeToString(resp.keyUnderZmk))
 		}
 	} else {
-		resp.key_under_lmk = []byte(req.key_scheme_lmk + hex.EncodeToString(resp.key_under_lmk))
-		if zmk_tmk_present {
-			resp.key_under_zmk = []byte(req.key_scheme_zmk + hex.EncodeToString(resp.key_under_zmk))
+		resp.keyUnderLmk = []byte(req.keySchemeLmk + hex.EncodeToString(resp.keyUnderLmk))
+		if zmkTmkPresent {
+			resp.keyUnderZmk = []byte(req.keySchemeZmk + hex.EncodeToString(resp.keyUnderZmk))
 		}
 	}
-	resp.key_check_value = []byte(hex.EncodeToString(resp.key_check_value))
+	resp.keyCheckValue = []byte(hex.EncodeToString(resp.keyCheckValue))
 
-	resp.error_code = HSM_OK
+	resp.errorCode = HSM_OK
 
 	//generate response
-	return req.generate_response(resp)
+	return req.generateResponse(resp)
 
 }
 
-func (req *thales_a0_req) invalid_data_response(resp *thales_a0_resp) []byte {
+func (req *thalesA0Req) invalidDataResponse(resp *thalesA0Resp) []byte {
 
-	resp.error_code = HSM_PARSE_ERROR
-	return (req.generate_response(resp))
+	resp.errorCode = HSM_PARSE_ERROR
+	return req.generateResponse(resp)
 
 }
 
-func (req *thales_a0_req) generate_response(resp *thales_a0_resp) []byte {
+func (req *thalesA0Req) generateResponse(resp *thalesA0Resp) []byte {
 
-	resp_buf := bytes.NewBuffer([]byte(req._pro.header))
-	resp_cmd_code := []byte(req._pro.commandName)
-	resp_cmd_code[1] = resp_cmd_code[1] + 1
-	resp_buf.Write(resp_cmd_code)
+	respBuf := bytes.NewBuffer([]byte(req._pro.header))
+	respCmdCode := []byte(req._pro.commandName)
+	respCmdCode[1] = respCmdCode[1] + 1
+	respBuf.Write(respCmdCode)
 
-	resp_buf.WriteString(resp.error_code)
-	if resp.error_code == HSM_OK {
+	respBuf.WriteString(resp.errorCode)
+	if resp.errorCode == HSM_OK {
 
-		resp_buf.Write(resp.key_under_lmk)
+		respBuf.Write(resp.keyUnderLmk)
 		if req.mode == 0x01 || req.mode == 0x0b {
-			resp_buf.Write(resp.key_under_zmk)
+			respBuf.Write(resp.keyUnderZmk)
 		}
-		resp_buf.Write(resp.key_check_value)
+		respBuf.Write(resp.keyCheckValue)
 	}
 
 	if req._epi.endMessageDelimiter == 0x19 {
-		resp_buf.WriteByte(req._epi.endMessageDelimiter)
-		resp_buf.Write(req._epi.messageTrailer)
+		respBuf.WriteByte(req._epi.endMessageDelimiter)
+		respBuf.Write(req._epi.messageTrailer)
 	}
 
-	return resp_buf.Bytes()
+	return respBuf.Bytes()
 
 }

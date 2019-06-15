@@ -18,43 +18,41 @@ import (
 )
 
 type PinBlocker interface {
-	Encrypt(pan string, clear_pin string, key []byte) []byte
-	GetPin(pan string, pin_block_data []byte, key []byte) string
+	Encrypt(pan string, clearPin string, key []byte) ([]byte, error)
+	GetPin(pan string, pinBlockData []byte, key []byte) (string, error)
 }
 
-func fill_random(buf *bytes.Buffer) {
+func fillRandom(buf *bytes.Buffer) {
 
 	tmp := make([]byte, 1)
 	for buf.Len() < 16 {
-		rand.Read(tmp)
+		_, _ = rand.Read(tmp)
 		buf.WriteString(hex.EncodeToString(tmp))
 	}
 
 	buf.Truncate(16)
 }
 
-func EncryptPinBlock(pin_block []byte, key []byte) []byte {
+func EncryptPinBlock(pinBlock []byte, key []byte) (result []byte, err error) {
 
-	var result []byte
 	if len(key) == 8 {
-		result = _crypt.EncryptDes(pin_block, key)
+		result, err = _crypt.EncryptDes(pinBlock, key)
 	} else {
-		result = _crypt.EncryptTripleDes(pin_block, key)
+		result, err = _crypt.EncryptTripleDes(pinBlock, key)
 	}
 
-	return result
+	return
 
 }
 
-func DecryptPinBlock(pin_block []byte, key []byte) []byte {
+func DecryptPinBlock(pinBlock []byte, key []byte) (result []byte, err error) {
 
-	var result []byte
 	if len(key) == 8 {
-		result = _crypt.DecryptDes(pin_block, key)
+		result, err = _crypt.DecryptDes(pinBlock, key)
 	} else {
-		result = _crypt.DecryptTripleDes(pin_block, key)
+		result, err = _crypt.DecryptTripleDes(pinBlock, key)
 	}
 
-	return result
+	return
 
 }

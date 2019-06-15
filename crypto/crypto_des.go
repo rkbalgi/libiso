@@ -83,7 +83,7 @@ func EncryptTripleDes(data []byte, key []byte) ([]byte, error) {
 	return encrypt3des(data, key)
 }
 
-func DecryptTripleDes(data []byte, key []byte) []byte {
+func DecryptTripleDes(data []byte, key []byte) ([]byte, error) {
 	return decrypt3des(data, key)
 }
 
@@ -93,7 +93,7 @@ func decryptDes(data []byte, key []byte) ([]byte, error) {
 
 	desCipher, err := des.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	result := make([]byte, len(data))
@@ -140,7 +140,7 @@ func encryptDesCbc(data []byte, key []byte) ([]byte, error) {
 
 //triple des
 
-func decrypt3des(data []byte, key []byte) []byte {
+func decrypt3des(data []byte, key []byte) ([]byte, error) {
 
 	tripleDESKey := make([]byte, 0)
 
@@ -154,7 +154,7 @@ func decrypt3des(data []byte, key []byte) []byte {
 	}
 	tripleDESCipher, err := des.NewTripleDESCipher(tripleDESKey)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	result := make([]byte, len(data))
@@ -162,7 +162,7 @@ func decrypt3des(data []byte, key []byte) []byte {
 	for i := 0; i < len(data); i += 8 {
 		tripleDESCipher.Decrypt(result[i:], data[i:])
 	}
-	return result
+	return result, err
 
 }
 

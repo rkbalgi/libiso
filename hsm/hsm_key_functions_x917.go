@@ -18,7 +18,7 @@ func encryptKeyX917(keyData []byte, kek []byte) ([]byte, error) {
 
 //decrypt a key from under the kek using x917
 
-func decryptKeyX917(keyData []byte, kek []byte) []byte {
+func decryptKeyX917(keyData []byte, kek []byte) ([]byte, error) {
 
 	return crypto.DecryptTripleDes(keyData, kek)
 }

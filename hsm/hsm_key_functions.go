@@ -67,18 +67,25 @@ func encryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 	if len(keyData) == 24 {
 		//left
 		vKey[8] = vKey[8] ^ variantTripleLen1
-		left := crypto.EncryptTripleDes(keyData[0:8], vKey)
+		left, err := crypto.EncryptTripleDes(keyData[0:8], vKey)
+		if err != nil {
+			return nil, err
+		}
 
 		//now middle
 		vKey[8] = vKey[8] ^ variantTripleLen1
 		vKey[8] = vKey[8] ^ variantTripleLen2
-		middle := crypto.EncryptTripleDes(keyData[8:16], vKey)
-
+		middle, err := crypto.EncryptTripleDes(keyData[8:16], vKey)
+		if err != nil {
+			return nil, err
+		}
 		//right
 		vKey[8] = vKey[8] ^ variantTripleLen2
 		vKey[8] = vKey[8] ^ variantTripleLen3
-		right := crypto.EncryptTripleDes(keyData[16:], vKey)
-
+		right, err := crypto.EncryptTripleDes(keyData[16:], vKey)
+		if err != nil {
+			return nil, err
+		}
 		clearKey := make([]byte, 0)
 		clearKey = append(clearKey, left...)
 		clearKey = append(clearKey, middle...)
@@ -87,13 +94,17 @@ func encryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 
 	} else if len(keyData) == 16 {
 		vKey[8] = vKey[8] ^ variantDblLen1
-		leftHalf, _ := crypto.EncryptTripleDes(keyData[0:8], vKey)
-
+		leftHalf, err := crypto.EncryptTripleDes(keyData[0:8], vKey)
+		if err != nil {
+			return nil, err
+		}
 		//now right half
 		vKey[8] = vKey[8] ^ variantDblLen1
 		vKey[8] = vKey[8] ^ variantDblLen2
-		rightHalf, _ := crypto.EncryptTripleDes(keyData[8:], vKey)
-
+		rightHalf, err := crypto.EncryptTripleDes(keyData[8:], vKey)
+		if err != nil {
+			return nil, err
+		}
 		clearKey := make([]byte, 0)
 		clearKey = append(clearKey, leftHalf...)
 		clearKey = append(clearKey, rightHalf...)
@@ -137,18 +148,24 @@ func decryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 	if len(keyData) == 24 {
 		//left
 		vKey[8] = vKey[8] ^ variantTripleLen1
-		left := crypto.DecryptTripleDes(keyData[0:8], vKey)
-
+		left, err := crypto.DecryptTripleDes(keyData[0:8], vKey)
+		if err != nil {
+			return nil, err
+		}
 		//now middle
 		vKey[8] = vKey[8] ^ variantTripleLen1
 		vKey[8] = vKey[8] ^ variantTripleLen2
-		middle := crypto.DecryptTripleDes(keyData[8:16], vKey)
-
+		middle, err := crypto.DecryptTripleDes(keyData[8:16], vKey)
+		if err != nil {
+			return nil, err
+		}
 		//right
 		vKey[8] = vKey[8] ^ variantTripleLen2
 		vKey[8] = vKey[8] ^ variantTripleLen3
-		right := crypto.DecryptTripleDes(keyData[16:], vKey)
-
+		right, err := crypto.DecryptTripleDes(keyData[16:], vKey)
+		if err != nil {
+			return nil, err
+		}
 		clearKey := make([]byte, 0)
 		clearKey = append(clearKey, left...)
 		clearKey = append(clearKey, middle...)
@@ -157,13 +174,17 @@ func decryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 
 	} else if len(keyData) == 16 {
 		vKey[8] = vKey[8] ^ variantDblLen1
-		leftHalf := crypto.DecryptTripleDes(keyData[0:8], vKey)
-
+		leftHalf, err := crypto.DecryptTripleDes(keyData[0:8], vKey)
+		if err != nil {
+			return nil, err
+		}
 		//now right half
 		vKey[8] = vKey[8] ^ variantDblLen1
 		vKey[8] = vKey[8] ^ variantDblLen2
-		rightHalf := crypto.DecryptTripleDes(keyData[8:], vKey)
-
+		rightHalf, err := crypto.DecryptTripleDes(keyData[8:], vKey)
+		if err != nil {
+			return nil, err
+		}
 		clearKey := make([]byte, 0)
 		clearKey = append(clearKey, leftHalf...)
 		clearKey = append(clearKey, rightHalf...)
@@ -172,7 +193,10 @@ func decryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 
 	} else if len(keyData) == 8 {
 		//single length
-		clearKey := crypto.DecryptTripleDes(keyData, vKey)
+		clearKey, err := crypto.DecryptTripleDes(keyData, vKey)
+		if err != nil {
+			return nil, err
+		}
 		return clearKey, nil
 
 	} else {
