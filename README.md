@@ -1,7 +1,7 @@
-## UPDATE (06/15/2019)
-1. I've only tested this on Linux, I'm working on testing this with windows. I'll try to post a wiki for windows users very soon.
+## UPDATE (06/16/2019)
+1. Folks developing on Windows please see this - https://github.com/rkbalgi/go/wiki/Building-on-Windows
 2. Doesn't follow standard go style (coding conventions etc) - WIP
-2. Not for production use - Perhaps best suited for simulators
+2. Not for production use - perhaps best suited for simulators
 
 # A library of utilities related to ISO message processing 
 
