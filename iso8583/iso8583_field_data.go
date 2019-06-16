@@ -8,59 +8,59 @@ import (
 )
 
 type FieldData struct {
-	field_data []byte
-	field_def  IsoField
-	bmp_def    *BitMap
+	fieldData []byte
+	fieldDef  IsoField
+	bmpDef    *BitMap
 }
 
-func (fld_data *FieldData) BitmapDef() *BitMap {
-	return fld_data.bmp_def
+func (fldData *FieldData) BitmapDef() *BitMap {
+	return fldData.bmpDef
 }
 
-func (fld_data *FieldData) Def() IsoField {
-	return fld_data.field_def
+func (fldData *FieldData) Def() IsoField {
+	return fldData.fieldDef
 }
 
 //SetData sets field data as per the encoding
 //additional padding will be applied if required
-func (fld_data *FieldData) SetData(value string) {
+func (fldData *FieldData) SetData(value string) {
 
-	switch fld_data.field_def.get_data_encoding() {
-	case ascii_encoding:
+	switch fldData.fieldDef.getDataEncoding() {
+	case asciiEncoding:
 		{
-			switch fld_data.field_def.(type) {
+			switch fldData.fieldDef.(type) {
 			case *FixedFieldDef:
 				{
 					data := []byte(value)
-					fld_data.set_truncate_pad(data)
+					fldData.setTruncatePad(data)
 					break
 				}
 			default:
 				{
-					fld_data.field_data = []byte(value)
+					fldData.fieldData = []byte(value)
 				}
 			}
 
 		}
-	case ebcdic_encoding:
+	case ebcdicEncoding:
 		{
 			data := ebcdic.Decode(value)
-			switch fld_data.field_def.(type) {
+			switch fldData.fieldDef.(type) {
 			case *FixedFieldDef:
 				{
-					fld_data.set_truncate_pad(data)
+					fldData.setTruncatePad(data)
 					break
 				}
 			default:
 				{
-					fld_data.field_data = data
+					fldData.fieldData = data
 				}
 			}
 
 		}
-	case binary_encoding:
+	case binaryEncoding:
 		fallthrough
-	case bcd_encoding:
+	case bcdEncoding:
 		{
 			var err error
 
@@ -68,15 +68,15 @@ func (fld_data *FieldData) SetData(value string) {
 			if err != nil {
 				panic(err.Error())
 			}
-			switch fld_data.field_def.(type) {
+			switch fldData.fieldDef.(type) {
 			case *FixedFieldDef:
 				{
-					fld_data.set_truncate_pad(data)
+					fldData.setTruncatePad(data)
 					break
 				}
 			default:
 				{
-					fld_data.field_data = data
+					fldData.fieldData = data
 				}
 			}
 
@@ -90,65 +90,65 @@ func (fld_data *FieldData) SetData(value string) {
 
 }
 
-func (fld_data *FieldData) set_truncate_pad(data []byte) {
+func (fldData *FieldData) setTruncatePad(data []byte) {
 
-	def_obj := fld_data.field_def.(*FixedFieldDef)
-	pad_byte := byte(0x00)
-	switch def_obj.get_data_encoding() {
-	case ascii_encoding:
-		pad_byte = 0x20
-	case ebcdic_encoding:
-		pad_byte = 0x40
+	defObj := fldData.fieldDef.(*FixedFieldDef)
+	padByte := byte(0x00)
+	switch defObj.getDataEncoding() {
+	case asciiEncoding:
+		padByte = 0x20
+	case ebcdicEncoding:
+		padByte = 0x40
 	}
 
-	if len(data) == def_obj.data_size {
-		fld_data.field_data = data
-	} else if len(data) > def_obj.data_size {
+	if len(data) == defObj.dataSize {
+		fldData.fieldData = data
+	} else if len(data) > defObj.dataSize {
 		//truncate
-		fld_data.field_data = data[:len(data)]
+		fldData.fieldData = data[:]
 	} else {
 
-		fld_data.field_data = make([]byte, def_obj.data_size)
-		for i, _ := range fld_data.field_data {
-			fld_data.field_data[i] = pad_byte
+		fldData.fieldData = make([]byte, defObj.dataSize)
+		for i, _ := range fldData.fieldData {
+			fldData.fieldData[i] = padByte
 		}
-		copy(fld_data.field_data, data)
+		copy(fldData.fieldData, data)
 	}
 }
 
 //make a copy of FieldData
-func (fld_data *FieldData) copy() *FieldData {
+func (fldData *FieldData) copy() *FieldData {
 
-	new_fld_data := new(FieldData)
-	new_fld_data.field_data = make([]byte, len(fld_data.field_data))
-	copy(new_fld_data.field_data, fld_data.field_data)
-	new_fld_data.field_def = fld_data.field_def
+	newFldData := new(FieldData)
+	newFldData.fieldData = make([]byte, len(fldData.fieldData))
+	copy(newFldData.fieldData, fldData.fieldData)
+	newFldData.fieldDef = fldData.fieldDef
 
-	return new_fld_data
+	return newFldData
 }
 
-func (field_data FieldData) String() string {
+func (fldData FieldData) String() string {
 
-	if field_data.bmp_def != nil {
-		return hex.EncodeToString(field_data.bmp_def.Bytes())
+	if fldData.bmpDef != nil {
+		return hex.EncodeToString(fldData.bmpDef.Bytes())
 	}
 
-	switch field_data.field_def.get_data_encoding() {
-	case ascii_encoding:
+	switch fldData.fieldDef.getDataEncoding() {
+	case asciiEncoding:
 		{
-			return string(field_data.field_data)
+			return string(fldData.fieldData)
 		}
-	case ebcdic_encoding:
+	case ebcdicEncoding:
 		{
-			encoded := ebcdic.EncodeToString(field_data.field_data)
-			log.Println("encoded - ", encoded, "hex ", hex.EncodeToString(field_data.field_data))
+			encoded := ebcdic.EncodeToString(fldData.fieldData)
+			log.Println("encoded - ", encoded, "hex ", hex.EncodeToString(fldData.fieldData))
 			return encoded
 		}
-	case binary_encoding:
+	case binaryEncoding:
 		fallthrough
-	case bcd_encoding:
+	case bcdEncoding:
 		{
-			return hex.EncodeToString(field_data.field_data)
+			return hex.EncodeToString(fldData.fieldData)
 		}
 	default:
 		{
@@ -161,32 +161,32 @@ func (field_data FieldData) String() string {
 
 //return the raw data associated with this field
 //it will also include any ll portions for a variable field
-func (field_data FieldData) Bytes() []byte {
+func (fldData FieldData) Bytes() []byte {
 
-	if field_data.bmp_def != nil {
+	if fldData.bmpDef != nil {
 		//if it's a bmp field, just return the data
-		return field_data.bmp_def.Bytes()
+		return fldData.bmpDef.Bytes()
 	}
 
-	if field_data.field_def.IsFixed() {
-		data_len := field_data.field_def.DataLength()
-		if len(field_data.field_data) > data_len {
+	if fldData.fieldDef.IsFixed() {
+		dataLen := fldData.fieldDef.DataLength()
+		if len(fldData.fieldData) > dataLen {
 			log.Printf("Warning: field [%s] length exceeds defined length, will be truncated")
-			return field_data.field_data[0:data_len]
-		} else if len(field_data.field_data) < data_len {
+			return fldData.fieldData[0:dataLen]
+		} else if len(fldData.fieldData) < dataLen {
 			//add default padding
-			new_fld_data := make([]byte, data_len)
-			copy(new_fld_data, field_data.field_data)
-			return new_fld_data
+			newFldData := make([]byte, dataLen)
+			copy(newFldData, fldData.fieldData)
+			return newFldData
 		}
-		return field_data.field_data[0:data_len]
+		return fldData.fieldData[0:dataLen]
 
 	} else {
 		//variable fields should have length indicators
-		data_len := len(field_data.field_data)
-		ll := field_data.field_def.EncodedLength(data_len)
-		ll_data := append(ll, field_data.field_data...)
-		return ll_data
+		dataLen := len(fldData.fieldData)
+		ll := fldData.fieldDef.EncodedLength(dataLen)
+		llData := append(ll, fldData.fieldData...)
+		return llData
 
 	}
 

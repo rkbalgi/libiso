@@ -59,12 +59,12 @@ type JsonSpecDefs struct {
 	Specs []JsonSpecDef
 }
 
-func display_specs() {
+func displaySpecs() {
 
-	for k, v := range spec_map {
+	for k, v := range specMap {
 		spec := v
 		buf := bytes.NewBufferString("")
-		for l := spec.fields_def_list.Front(); l != nil; l = l.Next() {
+		for l := spec.fieldsDefList.Front(); l != nil; l = l.Next() {
 
 			switch obj := l.Value.(type) {
 			case IsoField:
@@ -77,9 +77,9 @@ func display_specs() {
 					bmp := obj.(*BitMap)
 					buf.WriteString(obj.Def() + "\n")
 
-					for _, f_def := range bmp.sub_field_def {
-						if f_def != nil {
-							buf.WriteString(f_def.Def() + "\n")
+					for _, fDef := range bmp.subFieldDef {
+						if fDef != nil {
+							buf.WriteString(fDef.Def() + "\n")
 
 						}
 					}
@@ -95,30 +95,30 @@ func display_specs() {
 
 }
 
-var spec_init bool = false
+var specInit bool = false
 
 func ReadDemoSpecDefs() {
 
-	if !spec_init {
-		spec_map = make(map[string]*Iso8583MessageDef)
+	if !specInit {
+		specMap = make(map[string]*MessageDef)
 	} else {
-		for k, _ := range spec_map {
-			delete(spec_map, k)
+		for k, _ := range specMap {
+			delete(specMap, k)
 		}
 	}
 	str := demo.DemoSpecs
 	ReadSpecDefsFromBuf(bytes.NewBufferString(str))
-	spec_init = true
-	display_specs()
+	specInit = true
+	displaySpecs()
 }
 
-func ReadSpecDefs(file_name string) {
+func ReadSpecDefs(fileName string) {
 
-	if !spec_init {
-		spec_map = make(map[string]*Iso8583MessageDef)
+	if !specInit {
+		specMap = make(map[string]*MessageDef)
 	} else {
-		for k, _ := range spec_map {
-			delete(spec_map, k)
+		for k, _ := range specMap {
+			delete(specMap, k)
 		}
 	}
 
@@ -126,82 +126,82 @@ func ReadSpecDefs(file_name string) {
 	//read all specs from the json file
 	//lets just display details of all defined specs
 
-	file, err := os.Open(file_name)
+	file, err := os.Open(fileName)
 	if err != nil {
 		pylog.Log("failed to open specs.json file", err.Error())
 		return
 	}
 
-	tmp_data := make([]byte, 100)
+	tmpData := make([]byte, 100)
 	buf := bytes.NewBuffer([]byte{})
 	for {
-		count, err := file.Read(tmp_data)
+		count, err := file.Read(tmpData)
 		if err != nil && err.Error() == "EOF" {
 			break
 		} else if err != nil {
 			pylog.Log("failed to read from specs.json file", err.Error())
 			break
 		}
-		buf.Write(tmp_data[:count])
+		buf.Write(tmpData[:count])
 	}
 
 	ReadSpecDefsFromBuf(buf)
 
-	spec_init = true
-	display_specs()
+	specInit = true
+	displaySpecs()
 
 }
 
 func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 
-	spec_defs := new(JsonSpecDefs)
-	err := json.Unmarshal(buf.Bytes(), spec_defs)
+	specDefs := new(JsonSpecDefs)
+	err := json.Unmarshal(buf.Bytes(), specDefs)
 	if err != nil {
 		pylog.Log("failed to parse specs.json", err.Error())
 		return
 	}
 
-	for _, spec := range spec_defs.Specs {
+	for _, spec := range specDefs.Specs {
 
-		iso8583_msg_def := new(Iso8583MessageDef)
-		iso8583_msg_def.spec_name = spec.SpecName
-		iso8583_msg_def.field_seq = 0
-		iso8583_msg_def.fields_def_list = list.New()
+		iso8583MsgDef := new(MessageDef)
+		iso8583MsgDef.specName = spec.SpecName
+		iso8583MsgDef.fieldSeq = 0
+		iso8583MsgDef.fieldsDefList = list.New()
 
-		for _, iso_field_def := range spec.Fields {
+		for _, isoFieldDef := range spec.Fields {
 
-			if iso_field_def.Type == "Fixed" {
-				fixed_field_def := construct_fixed_field_def(&iso_field_def)
-				fixed_field_def.SetId(iso8583_msg_def.next_field_seq())
-				if fixed_field_def != nil {
-					iso8583_msg_def.add_field(fixed_field_def)
+			if isoFieldDef.Type == "Fixed" {
+				fixedFieldDef := constructFixedFieldDef(&isoFieldDef)
+				fixedFieldDef.SetId(iso8583MsgDef.nextFieldSeq())
+				if fixedFieldDef != nil {
+					iso8583MsgDef.addField(fixedFieldDef)
 				}
 
-			} else if iso_field_def.Type == "Variable" {
-				var_field_def := construct_variable_field_def(&iso_field_def)
-				var_field_def.SetId(iso8583_msg_def.next_field_seq())
-				if var_field_def != nil {
-					iso8583_msg_def.add_field(var_field_def)
+			} else if isoFieldDef.Type == "Variable" {
+				varFieldDef := constructVariableFieldDef(&isoFieldDef)
+				varFieldDef.SetId(iso8583MsgDef.nextFieldSeq())
+				if varFieldDef != nil {
+					iso8583MsgDef.addField(varFieldDef)
 				}
 
-			} else if iso_field_def.Type == "Bitmapped" {
+			} else if isoFieldDef.Type == "Bitmapped" {
 
-				bmp_field_def := construct_bmp_field_def(iso8583_msg_def, &iso_field_def)
-				bmp_field_def.SetId(iso8583_msg_def.next_field_seq())
-				if bmp_field_def != nil {
-					iso8583_msg_def.add_field(bmp_field_def)
+				bmpFieldDef := constructBmpFieldDef(iso8583MsgDef, &isoFieldDef)
+				bmpFieldDef.SetId(iso8583MsgDef.nextFieldSeq())
+				if bmpFieldDef != nil {
+					iso8583MsgDef.addField(bmpFieldDef)
 				}
 
 			} else {
-				log.Panic("unsupported field type - ", iso_field_def.Type)
+				log.Panic("unsupported field type - ", isoFieldDef.Type)
 			}
 		}
-		spec_map[iso8583_msg_def.spec_name] = iso8583_msg_def
+		specMap[iso8583MsgDef.specName] = iso8583MsgDef
 	}
 
 }
 
-func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
+func constructFixedFieldDef(jsonFieldDef *JsonFieldDef) *FixedFieldDef {
 
 	/*attrs := strings.Split(json_field_def.Attrs, ";")
 	if len(attrs) != 4 {
@@ -214,16 +214,16 @@ func construct_fixed_field_def(json_field_def *JsonFieldDef) *FixedFieldDef {
 		log.Panic("invalid field length -", json_field_def.Name)
 		return nil
 	}*/
-	encoding_type := get_encoding(json_field_def, json_field_def.Attrs.DataEncoding)
-	fixed_field_def := NewFixedFieldDef(json_field_def.Name, encoding_type, json_field_def.Attrs.FieldLength)
-	fixed_field_def.SetBitPosition(json_field_def.BitPosition)
+	encodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.DataEncoding)
+	fixedFieldDef := NewFixedFieldDef(jsonFieldDef.Name, encodingType, jsonFieldDef.Attrs.FieldLength)
+	fixedFieldDef.SetBitPosition(jsonFieldDef.BitPosition)
 
-	pylog.Log("processed field def- " + json_field_def.Name)
+	pylog.Log("processed field def- " + jsonFieldDef.Name)
 
-	return fixed_field_def
+	return fixedFieldDef
 }
 
-func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDef {
+func constructVariableFieldDef(jsonFieldDef *JsonFieldDef) *VariableFieldDef {
 
 	/*attrs := strings.Split(json_field_def.Attrs, ";")
 	if len(attrs) != 5 {
@@ -236,74 +236,74 @@ func construct_variable_field_def(json_field_def *JsonFieldDef) *VariableFieldDe
 		log.Panic("invalid length indicator length -", json_field_def.Name)
 		return nil
 	}*/
-	len_encoding_type := get_encoding(json_field_def, json_field_def.Attrs.FieldIndicatorEncoding)
-	data_encoding_type := get_encoding(json_field_def, json_field_def.Attrs.DataEncoding)
+	lenEncodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.FieldIndicatorEncoding)
+	dataEncodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.DataEncoding)
 
-	var_field_def := NewVariableFieldDef(json_field_def.Name, len_encoding_type, data_encoding_type, json_field_def.Attrs.FieldIndicatorLength)
-	var_field_def.SetBitPosition(json_field_def.BitPosition)
+	varFieldDef := NewVariableFieldDef(jsonFieldDef.Name, lenEncodingType, dataEncodingType, jsonFieldDef.Attrs.FieldIndicatorLength)
+	varFieldDef.SetBitPosition(jsonFieldDef.BitPosition)
 
-	pylog.Log("processed variable field def- " + json_field_def.Name)
+	pylog.Log("processed variable field def- " + jsonFieldDef.Name)
 
-	return var_field_def
+	return varFieldDef
 }
 
-func construct_bmp_field_def(iso8583_msg_def *Iso8583MessageDef, json_field_def *JsonFieldDef) *BitMap {
+func constructBmpFieldDef(iso8583MsgDef *MessageDef, jsonFieldDef *JsonFieldDef) *BitMap {
 
 	bmp := NewBitMap()
 	//var bmp_field BitmappedField = bmp
 
-	for _, child_field := range json_field_def.Children {
-		switch child_field.Type {
+	for _, childField := range jsonFieldDef.Children {
+		switch childField.Type {
 		case "Fixed":
 			{
-				fld := construct_fixed_field_def(&child_field)
-				fld.SetId(iso8583_msg_def.next_field_seq())
-				bmp.sub_field_def[child_field.BitPosition] = fld
+				fld := constructFixedFieldDef(&childField)
+				fld.SetId(iso8583MsgDef.nextFieldSeq())
+				bmp.subFieldDef[childField.BitPosition] = fld
 
 			}
 		case "Variable":
 			{
-				fld := construct_variable_field_def(&child_field)
-				fld.SetId(iso8583_msg_def.next_field_seq())
-				bmp.sub_field_def[child_field.BitPosition] = fld
+				fld := constructVariableFieldDef(&childField)
+				fld.SetId(iso8583MsgDef.nextFieldSeq())
+				bmp.subFieldDef[childField.BitPosition] = fld
 			}
 		default:
 			{
-				log.Panic("unsupported child field for bitmapped parent field - ", child_field.Type)
+				log.Panic("unsupported child field for bitmapped parent field - ", childField.Type)
 			}
 		}
 
 	}
-	pylog.Log("processed bitmapped field - " + json_field_def.Name)
+	pylog.Log("processed bitmapped field - " + jsonFieldDef.Name)
 	return bmp
 }
 
-func get_encoding(iso_field_def *JsonFieldDef, data string) int {
+func getEncoding(isoFieldDef *JsonFieldDef, data string) int {
 
-	encoding_type := 0
+	encodingType := 0
 	switch data {
 	case "ascii":
 		{
-			encoding_type = ascii_encoding
+			encodingType = asciiEncoding
 		}
 	case "ebcdic":
 		{
-			encoding_type = ebcdic_encoding
+			encodingType = ebcdicEncoding
 		}
 	case "binary":
 		{
-			encoding_type = binary_encoding
+			encodingType = binaryEncoding
 		}
 	case "bcd":
 		{
-			encoding_type = bcd_encoding
+			encodingType = bcdEncoding
 		}
 	default:
 		{
-			log.Panicf("invalid encoding [%s] on %s", data, iso_field_def.Name)
+			log.Panicf("invalid encoding [%s] on %s", data, isoFieldDef.Name)
 
 		}
 	}
-	return encoding_type
+	return encodingType
 
 }

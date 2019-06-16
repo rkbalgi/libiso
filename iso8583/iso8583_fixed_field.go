@@ -7,97 +7,97 @@ import (
 )
 
 type FixedFieldDef struct {
-	name          string
-	data_encoding int
-	data_size     int //in bytes
-	id            int
-	b_pos         int //bit position in bitmap
+	name         string
+	dataEncoding int
+	dataSize     int //in bytes
+	id           int
+	bPos         int //bit position in bitmap
 }
 
 //create a new fixed field definition
-func NewFixedFieldDef(p_name string, p_data_encoding int, p_field_len int) *FixedFieldDef {
+func NewFixedFieldDef(pName string, pDataEncoding int, pFieldLen int) *FixedFieldDef {
 	field := new(FixedFieldDef)
-	field.name = p_name
-	field.data_encoding = p_data_encoding
-	field.data_size = p_field_len
+	field.name = pName
+	field.dataEncoding = pDataEncoding
+	field.dataSize = pFieldLen
 
 	return field
 
 }
 
-func (field *FixedFieldDef) Def() string {
+func (fieldDef *FixedFieldDef) Def() string {
 	return fmt.Sprintf("Name: %-40s ; Id: %04d ; Type: %-10s ; Length: %04d ;Encoding: [%-10s]",
-		field.name, field.GetId(), "Fixed", field.data_size, get_encoding_type(field.data_encoding))
+		fieldDef.name, fieldDef.GetId(), "Fixed", fieldDef.dataSize, getEncodingType(fieldDef.dataEncoding))
 }
 
 //parse and return field data by reading appropriate bytes
 //from the buffer buf
-func (field_def *FixedFieldDef) Parse(
-	iso_msg *Iso8583Message,
-	f_data *FieldData,
+func (fieldDef *FixedFieldDef) Parse(
+	isoMsg *Iso8583Message,
+	fData *FieldData,
 	buf *bytes.Buffer) *FieldData {
 
-	tmp := make([]byte, field_def.data_size)
+	tmp := make([]byte, fieldDef.dataSize)
 	n, err := buf.Read(tmp)
 
-	if n != field_def.data_size || err != nil {
-		if n != field_def.data_size {
-			iso_msg.buffer_underflow_error(field_def.name)
+	if n != fieldDef.dataSize || err != nil {
+		if n != fieldDef.dataSize {
+			isoMsg.bufferUnderflowError(fieldDef.name)
 		} else {
-			iso_msg.field_parse_error(field_def.name, err)
+			isoMsg.fieldParseError(fieldDef.name, err)
 		}
 	}
 
-	f_data.field_data = tmp
-	iso_msg.log.Printf("parsed: [%s]=[%s]", field_def.name, f_data.String())
+	fData.fieldData = tmp
+	isoMsg.log.Printf("parsed: [%s]=[%s]", fieldDef.name, fData.String())
 
-	return f_data
+	return fData
 
 }
 
-func (field_def *FixedFieldDef) to_string(data []byte) string {
-	return fmt.Sprintf("[%s] = [%s]", field_def.name, hex.EncodeToString(data))
+func (fieldDef *FixedFieldDef) toString(data []byte) string {
+	return fmt.Sprintf("[%s] = [%s]", fieldDef.name, hex.EncodeToString(data))
 }
 
-func (field_def *FixedFieldDef) get_data_encoding() int {
-	return field_def.data_encoding
+func (fieldDef *FixedFieldDef) getDataEncoding() int {
+	return fieldDef.dataEncoding
 }
 
 //add the field data into buf as per the encoding
-func (field_def *FixedFieldDef) Assemble(iso_msg *Iso8583Message, buf *bytes.Buffer) {
+func (fieldDef *FixedFieldDef) Assemble(isoMsg *Iso8583Message, buf *bytes.Buffer) {
 
 	//buf.Write(iso_msg);
 }
 
-func (field_def *FixedFieldDef) IsFixed() bool {
+func (fieldDef *FixedFieldDef) IsFixed() bool {
 	return true
 }
 
-func (field_def *FixedFieldDef) DataLength() int {
-	return field_def.data_size
+func (fieldDef *FixedFieldDef) DataLength() int {
+	return fieldDef.dataSize
 }
 
-func (field_def *FixedFieldDef) EncodedLength(data_len int) []byte {
+func (fieldDef *FixedFieldDef) EncodedLength(dataLen int) []byte {
 	//not applicable to fixed fields
 	panic("illegal operation")
 }
 
-func (f_def *FixedFieldDef) SetId(id int) {
-	f_def.id = id
+func (fieldDef *FixedFieldDef) SetId(id int) {
+	fieldDef.id = id
 }
 
-func (f_def *FixedFieldDef) GetId() int {
-	return f_def.id
+func (fieldDef *FixedFieldDef) GetId() int {
+	return fieldDef.id
 }
 
-func (f_def *FixedFieldDef) SetBitPosition(id int) {
-	f_def.b_pos = id
+func (fieldDef *FixedFieldDef) SetBitPosition(id int) {
+	fieldDef.bPos = id
 }
 
-func (f_def *FixedFieldDef) BitPosition() int {
-	return f_def.b_pos
+func (fieldDef *FixedFieldDef) BitPosition() int {
+	return fieldDef.bPos
 }
 
-func (field_def *FixedFieldDef) String() string {
-	return field_def.name
+func (fieldDef *FixedFieldDef) String() string {
+	return fieldDef.name
 }

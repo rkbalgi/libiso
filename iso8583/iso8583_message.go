@@ -16,55 +16,55 @@ import (
 )
 
 type Iso8583Message struct {
-	iso_msg_def      *Iso8583MessageDef
-	field_data_list  *list.List
-	log              *log.Logger
-	bit_map          *BitMap //for convenience
-	name_to_data_map map[string]*FieldData
-	id_to_data_map   map[int]*FieldData
+	isoMsgDef     *MessageDef
+	fieldDataList *list.List
+	log           *log.Logger
+	bitMap        *BitMap //for convenience
+	nameToDataMap map[string]*FieldData
+	idToDataMap   map[int]*FieldData
 }
 
-func (iso_msg *Iso8583Message) Bitmap() *BitMap {
-	return iso_msg.bit_map
+func (isoMsg *Iso8583Message) Bitmap() *BitMap {
+	return isoMsg.bitMap
 }
 
 //GetMessageType returns the 'Message Type' as string
-func (iso_msg *Iso8583Message) GetMessageType() string {
-	return iso_msg.name_to_data_map["Message Type"].String()
+func (isoMsg *Iso8583Message) GetMessageType() string {
+	return isoMsg.nameToDataMap["Message Type"].String()
 }
 
 //SpecName returns the name of the specification for this message
-func (iso_msg *Iso8583Message) SpecName() string {
-	return iso_msg.iso_msg_def.spec_name
+func (isoMsg *Iso8583Message) SpecName() string {
+	return isoMsg.isoMsgDef.specName
 }
 
-func (iso_msg *Iso8583Message) ToWebMsg(is_req bool) *WebMsgData {
+func (isoMsg *Iso8583Message) ToWebMsg(isReq bool) *WebMsgData {
 
-	json_msg := WebMsgData{}
-	json_msg.Spec = iso_msg.iso_msg_def.spec_name
-	if is_req {
-		json_msg.Type = "Request"
+	jsonMsg := WebMsgData{}
+	jsonMsg.Spec = isoMsg.isoMsgDef.specName
+	if isReq {
+		jsonMsg.Type = "Request"
 	} else {
-		json_msg.Type = "Response"
+		jsonMsg.Type = "Response"
 	}
-	json_msg.DataArray = make([]string, iso_msg.iso_msg_def.field_seq)
+	jsonMsg.DataArray = make([]string, isoMsg.isoMsgDef.fieldSeq)
 
-	for l := iso_msg.iso_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.isoMsgDef.fieldsDefList.Front(); l != nil; l = l.Next() {
 		switch obj := l.Value.(type) {
 		case IsoField:
 			{
-				iso_field := iso_msg.GetFieldByName(obj.String())
-				if iso_field.field_data != nil {
-					json_msg.DataArray[iso_field.field_def.GetId()] = iso_field.String()
+				isoField := isoMsg.GetFieldByName(obj.String())
+				if isoField.fieldData != nil {
+					jsonMsg.DataArray[isoField.fieldDef.GetId()] = isoField.String()
 				}
 			}
 		case BitmappedField:
 			{
 
-				json_msg.DataArray[obj.GetId()] = iso_msg.bit_map.bit_string()
-				for f_pos, f_data := range iso_msg.bit_map.sub_field_data {
-					if f_data != nil && f_data.field_data != nil && iso_msg.bit_map.IsOn(f_pos) {
-						json_msg.DataArray[f_data.field_def.GetId()] = f_data.String()
+				jsonMsg.DataArray[obj.GetId()] = isoMsg.bitMap.bitString()
+				for fPos, fData := range isoMsg.bitMap.subFieldData {
+					if fData != nil && fData.fieldData != nil && isoMsg.bitMap.IsOn(fPos) {
+						jsonMsg.DataArray[fData.fieldDef.GetId()] = fData.String()
 					}
 				}
 
@@ -73,37 +73,37 @@ func (iso_msg *Iso8583Message) ToWebMsg(is_req bool) *WebMsgData {
 		} //end switch
 	} //end for
 
-	return &json_msg
+	return &jsonMsg
 
 }
 
 //SetData sets data into individual fields by id
-func (iso_msg *Iso8583Message) SetData(data []string) {
+func (isoMsg *Iso8583Message) SetData(data []string) {
 
-	for l := iso_msg.iso_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.isoMsgDef.fieldsDefList.Front(); l != nil; l = l.Next() {
 
 		switch obj := l.Value.(type) {
 		case IsoField:
 			{
-				iso_field := iso_msg.GetFieldByName(obj.String())
-				iso_field.SetData(data[iso_field.field_def.GetId()])
+				isoField := isoMsg.GetFieldByName(obj.String())
+				isoField.SetData(data[isoField.fieldDef.GetId()])
 
 			}
 		case BitmappedField:
 			{
-				bitmap_val := data[obj.GetId()]
-				for i := 0; i < len(bitmap_val); i++ {
+				bitmapVal := data[obj.GetId()]
+				for i := 0; i < len(bitmapVal); i++ {
 
-					if bitmap_val[i:i+1] == "1" {
-						iso_msg.bit_map.SetOn(i + 1)
+					if bitmapVal[i:i+1] == "1" {
+						isoMsg.bitMap.SetOn(i + 1)
 					} else {
-						iso_msg.bit_map.SetOff(i + 1)
+						isoMsg.bitMap.SetOff(i + 1)
 					}
 				}
 
-				for f_pos, f_data := range iso_msg.bit_map.sub_field_data {
-					if f_data != nil && iso_msg.bit_map.IsOn(f_pos) {
-						f_data.SetData(data[f_data.field_def.GetId()])
+				for fPos, fData := range isoMsg.bitMap.subFieldData {
+					if fData != nil && isoMsg.bitMap.IsOn(fPos) {
+						fData.SetData(data[fData.fieldDef.GetId()])
 						//iso_msg.bit_map.SetOn(f_pos)
 					}
 				}
@@ -115,83 +115,83 @@ func (iso_msg *Iso8583Message) SetData(data []string) {
 }
 
 //GetBinaryBitmap returns the 'Bitmap' as binary string
-func (iso_msg *Iso8583Message) GetBinaryBitmap() string {
+func (isoMsg *Iso8583Message) GetBinaryBitmap() string {
 
-	binary_bmp_str := bytes.NewBufferString("")
+	binaryBmpStr := bytes.NewBufferString("")
 	for i := 1; i < 129; i++ {
-		if iso_msg.bit_map.IsOn(i) {
-			binary_bmp_str.WriteString("1")
+		if isoMsg.bitMap.IsOn(i) {
+			binaryBmpStr.WriteString("1")
 		} else {
-			binary_bmp_str.WriteString("0")
+			binaryBmpStr.WriteString("0")
 		}
 	}
 
-	return binary_bmp_str.String()
+	return binaryBmpStr.String()
 
 }
 
 //IsSelected returns a boolean indicating
 //if the 'position' is selected in the bitmap
-func (iso_msg *Iso8583Message) IsSelected(position int) bool {
-	return iso_msg.bit_map.IsOn(position)
+func (isoMsg *Iso8583Message) IsSelected(position int) bool {
+	return isoMsg.bitMap.IsOn(position)
 }
 
 //GetFieldData returns the data associated with the 'position'
 //in the iso_msg
-func (iso_msg *Iso8583Message) GetFieldData(position int) (data string, err error) {
-	field_data, err := iso_msg.Field(position)
+func (isoMsg *Iso8583Message) GetFieldData(position int) (data string, err error) {
+	fieldData, err := isoMsg.Field(position)
 	if err == nil {
-		data = field_data.String()
+		data = fieldData.String()
 	}
 	//iso_msg.log.Println("len",field_data.field_def.String(),position,hex.EncodeToString(field_data.field_data));
 	return data, err
 
 }
 
-func NewIso8583Message(spec_name string) *Iso8583Message {
+func NewIso8583Message(specName string) *Iso8583Message {
 
-	iso_msg := new(Iso8583Message)
-	iso_msg.iso_msg_def = spec_map[spec_name]
-	iso_msg.field_data_list = list.New()
-	iso_msg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
+	isoMsg := new(Iso8583Message)
+	isoMsg.isoMsgDef = specMap[specName]
+	isoMsg.fieldDataList = list.New()
+	isoMsg.log = log.New(os.Stdout, "##iso_msg## ", log.LstdFlags)
 
-	iso_msg.__init__()
-	return iso_msg
+	isoMsg.__init__()
+	return isoMsg
 
 }
 
 //__init__ initilizes the data holding containers (list)
-func (iso_msg *Iso8583Message) __init__() {
+func (isoMsg *Iso8583Message) __init__() {
 
-	iso_msg.name_to_data_map = make(map[string]*FieldData, 10)
-	iso_msg.id_to_data_map = make(map[int]*FieldData, 10)
+	isoMsg.nameToDataMap = make(map[string]*FieldData, 10)
+	isoMsg.idToDataMap = make(map[int]*FieldData, 10)
 
-	for l := iso_msg.iso_msg_def.fields_def_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.isoMsgDef.fieldsDefList.Front(); l != nil; l = l.Next() {
 		switch (l.Value).(type) {
 		case IsoField:
 			{
-				var iso_field IsoField = (l.Value).(IsoField)
-				fdata_ptr := &FieldData{field_data: nil, field_def: iso_field}
-				iso_msg.field_data_list.PushBack(fdata_ptr)
+				var isoField IsoField = (l.Value).(IsoField)
+				fdataPtr := &FieldData{fieldData: nil, fieldDef: isoField}
+				isoMsg.fieldDataList.PushBack(fdataPtr)
 
-				iso_msg.name_to_data_map[iso_field.String()] = fdata_ptr
-				iso_msg.id_to_data_map[iso_field.GetId()] = fdata_ptr
+				isoMsg.nameToDataMap[isoField.String()] = fdataPtr
+				isoMsg.idToDataMap[isoField.GetId()] = fdataPtr
 
 			}
 		case BitmappedField:
 			{
-				var iso_bmp_field *BitMap = (l.Value).(*BitMap)
-				iso_msg.bit_map = NewBitMap()
-				for i, f_def := range iso_bmp_field.sub_field_def {
-					if f_def != nil {
-						fdata_ptr := &FieldData{field_data: nil, field_def: f_def}
-						iso_msg.bit_map.sub_field_data[i] = fdata_ptr
-						iso_msg.name_to_data_map[f_def.String()] = fdata_ptr
-						iso_msg.id_to_data_map[f_def.GetId()] = fdata_ptr
+				var isoBmpField *BitMap = (l.Value).(*BitMap)
+				isoMsg.bitMap = NewBitMap()
+				for i, fDef := range isoBmpField.subFieldDef {
+					if fDef != nil {
+						fdataPtr := &FieldData{fieldData: nil, fieldDef: fDef}
+						isoMsg.bitMap.subFieldData[i] = fdataPtr
+						isoMsg.nameToDataMap[fDef.String()] = fdataPtr
+						isoMsg.idToDataMap[fDef.GetId()] = fdataPtr
 					}
 				}
-				iso_msg.field_data_list.PushBack(iso_msg.bit_map)
-				iso_msg.id_to_data_map[iso_bmp_field.GetId()] = &FieldData{field_data: nil, field_def: nil, bmp_def: iso_msg.bit_map}
+				isoMsg.fieldDataList.PushBack(isoMsg.bitMap)
+				isoMsg.idToDataMap[isoBmpField.GetId()] = &FieldData{fieldData: nil, fieldDef: nil, bmpDef: isoMsg.bitMap}
 
 			}
 		default:
@@ -204,33 +204,33 @@ func (iso_msg *Iso8583Message) __init__() {
 	}
 }
 
-func (iso_msg *Iso8583Message) field_parse_error(field_name string, err error) {
+func (isoMsg *Iso8583Message) fieldParseError(fieldName string, err error) {
 
 	if err != nil {
-		panic(fmt.Sprintf("parse_phase:error parsing field [%s] - error [%s]", field_name, err.Error()))
+		panic(fmt.Sprintf("parse_phase:error parsing field [%s] - error [%s]", fieldName, err.Error()))
 	}
 }
 
-func (iso_msg *Iso8583Message) buffer_underflow_error(field_name string) {
-	panic(fmt.Sprintf("parse_phase: buffer underflow while parsing field [%s]", field_name))
+func (isoMsg *Iso8583Message) bufferUnderflowError(fieldName string) {
+	panic(fmt.Sprintf("parse_phase: buffer underflow while parsing field [%s]", fieldName))
 }
 
-func (iso_msg *Iso8583Message) buffer_overflow_error(data []byte) {
-	iso_msg.log.Panic("parse_phase: buffer overflow -", hex.Dump(data))
+func (isoMsg *Iso8583Message) bufferOverflowError(data []byte) {
+	isoMsg.log.Panic("parse_phase: buffer overflow -", hex.Dump(data))
 
 }
 
-func (iso_msg *Iso8583Message) handle_error(err error) {
+func (isoMsg *Iso8583Message) handleError(err error) {
 
 	if err != nil {
 		panic(fmt.Sprintf("error [%s]", err.Error()))
 	}
 }
 
-func (iso_msg *Iso8583Message) Field(pos int) (*FieldData, error) {
+func (isoMsg *Iso8583Message) Field(pos int) (*FieldData, error) {
 
-	if iso_msg.bit_map.IsOn(pos) {
-		return iso_msg.bit_map.sub_field_data[pos], nil
+	if isoMsg.bitMap.IsOn(pos) {
+		return isoMsg.bitMap.subFieldData[pos], nil
 	} else {
 		return &FieldData{}, errors.New("field not present")
 	}
@@ -238,59 +238,59 @@ func (iso_msg *Iso8583Message) Field(pos int) (*FieldData, error) {
 }
 
 //set field
-func (iso_msg *Iso8583Message) SetField(pos int, value string) {
+func (isoMsg *Iso8583Message) SetField(pos int, value string) {
 
-	iso_msg.bit_map.SetOn(pos)
-	iso_msg.bit_map.sub_field_data[pos].SetData(value)
+	isoMsg.bitMap.SetOn(pos)
+	isoMsg.bitMap.subFieldData[pos].SetData(value)
 
 }
 
 //set field
-func (iso_msg *Iso8583Message) GetFieldByName(name string) *FieldData {
+func (isoMsg *Iso8583Message) GetFieldByName(name string) *FieldData {
 
-	f_data := iso_msg.name_to_data_map[name]
-	return f_data
+	fData := isoMsg.nameToDataMap[name]
+	return fData
 
 }
 
 //copy all data from request to response message
-func CopyRequestToResponse(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
+func CopyRequestToResponse(isoReq *Iso8583Message, isoResp *Iso8583Message) {
 
-	iso_resp.bit_map.copy_bits(iso_req.bit_map)
-	for k, v := range iso_req.name_to_data_map {
-		if v.field_data != nil {
-			data := make([]byte, len(v.field_data))
-			copy(data, v.field_data)
-			iso_resp.name_to_data_map[k].field_data = data
+	isoResp.bitMap.copyBits(isoReq.bitMap)
+	for k, v := range isoReq.nameToDataMap {
+		if v.fieldData != nil {
+			data := make([]byte, len(v.fieldData))
+			copy(data, v.fieldData)
+			isoResp.nameToDataMap[k].fieldData = data
 		} else {
-			iso_resp.name_to_data_map[k].field_data = nil
+			isoResp.nameToDataMap[k].fieldData = nil
 		}
 	}
 
 }
 
 //create a string dump of the iso message
-func (iso_msg *Iso8583Message) Dump() string {
+func (isoMsg *Iso8583Message) Dump() string {
 
-	msg_buf := bytes.NewBufferString("")
-	for l := iso_msg.field_data_list.Front(); l != nil; l = l.Next() {
+	msgBuf := bytes.NewBufferString("")
+	for l := isoMsg.fieldDataList.Front(); l != nil; l = l.Next() {
 
 		switch l.Value.(type) {
 		case *FieldData:
 			{
 
-				var f_data *FieldData = l.Value.(*FieldData)
-				msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
+				var fData *FieldData = l.Value.(*FieldData)
+				msgBuf.WriteString(fmt.Sprintf("\n%-25s: %s", fData.fieldDef.String(), fData.String()))
 				break
 			}
 
 		case *BitMap:
 			{
 
-				var bmp *BitMap = l.Value.(*BitMap)
-				msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", "Bitmap", bmp.bit_string()))
+				var bmp = l.Value.(*BitMap)
+				msgBuf.WriteString(fmt.Sprintf("\n%-25s: %s", "Bitmap", bmp.bitString()))
 
-				for i, f_data := range bmp.sub_field_data {
+				for i, fData := range bmp.subFieldData {
 
 					//if i == 0 || i == 1 || i == 65 || i == 129 {
 					//skip invalid or bits that stand for position
@@ -298,8 +298,8 @@ func (iso_msg *Iso8583Message) Dump() string {
 					//continue
 					//}
 
-					if f_data != nil && bmp.IsOn(i) {
-						msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
+					if fData != nil && bmp.IsOn(i) {
+						msgBuf.WriteString(fmt.Sprintf("\n%-25s: %s", fData.fieldDef.String(), fData.String()))
 					}
 				}
 				break
@@ -308,23 +308,23 @@ func (iso_msg *Iso8583Message) Dump() string {
 		}
 	}
 
-	return msg_buf.String()
+	return msgBuf.String()
 }
 
 //create a string dump of the iso message
-func (iso_msg *Iso8583Message) TabularFormat() *list.List {
+func (isoMsg *Iso8583Message) TabularFormat() *list.List {
 
-	tab_data_list := list.New()
+	tabDataList := list.New()
 
 	//msg_buf := bytes.NewBufferString("")
-	for l := iso_msg.field_data_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.fieldDataList.Front(); l != nil; l = l.Next() {
 
 		switch l.Value.(type) {
 		case *FieldData:
 			{
 
-				var f_data *FieldData = l.Value.(*FieldData)
-				tab_data_list.PushBack(paysim.NewTuple(f_data.field_def.String(), f_data.String()))
+				var fData *FieldData = l.Value.(*FieldData)
+				tabDataList.PushBack(paysim.NewTuple(fData.fieldDef.String(), fData.String()))
 				//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
 				break
 			}
@@ -333,10 +333,10 @@ func (iso_msg *Iso8583Message) TabularFormat() *list.List {
 			{
 
 				var bmp *BitMap = l.Value.(*BitMap)
-				tab_data_list.PushBack(paysim.NewTuple("Bitmap", bmp.bit_string()))
+				tabDataList.PushBack(paysim.NewTuple("Bitmap", bmp.bitString()))
 				//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", "Bitmap", bmp.bit_string()))
 
-				for i, f_data := range bmp.sub_field_data {
+				for i, fData := range bmp.subFieldData {
 
 					//if i == 0 || i == 1 || i == 65 || i == 129 {
 					//skip invalid or bits that stand for position
@@ -344,8 +344,8 @@ func (iso_msg *Iso8583Message) TabularFormat() *list.List {
 					//continue
 					//}
 
-					if f_data != nil && bmp.IsOn(i) {
-						tab_data_list.PushBack(paysim.NewTuple(f_data.field_def.String(), f_data.String()))
+					if fData != nil && bmp.IsOn(i) {
+						tabDataList.PushBack(paysim.NewTuple(fData.fieldDef.String(), fData.String()))
 						//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
 					}
 				}
@@ -355,30 +355,30 @@ func (iso_msg *Iso8583Message) TabularFormat() *list.List {
 		}
 	}
 
-	return tab_data_list
+	return tabDataList
 
 }
 
 //parse the bytes from 'buf' and populate 'Iso8583Message'
-func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
+func (isoMsg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 
 	defer func() {
 		str := recover()
 		if str != nil {
-			iso_msg.log.Printf("parse error. message: %s", str)
+			isoMsg.log.Printf("parse error. message: %s", str)
 			err = errors.New("parse error")
 		}
 	}()
 
-	for l := iso_msg.field_data_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.fieldDataList.Front(); l != nil; l = l.Next() {
 
 		switch l.Value.(type) {
 		case *FieldData:
 			{
 
-				var f_data *FieldData = l.Value.(*FieldData)
-				pylog.Log("parsing.. ", f_data.field_def.Def())
-				f_data.field_def.Parse(iso_msg, f_data, buf)
+				var fData *FieldData = l.Value.(*FieldData)
+				pylog.Log("parsing.. ", fData.fieldDef.Def())
+				fData.fieldDef.Parse(isoMsg, fData, buf)
 				break
 			}
 
@@ -386,9 +386,9 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 			{
 
 				var bmp *BitMap = l.Value.(*BitMap)
-				bmp.Parse(iso_msg, buf)
+				bmp.Parse(isoMsg, buf)
 				//parse sub fields of bitmap
-				for i, f_data := range bmp.sub_field_data {
+				for i, fData := range bmp.subFieldData {
 
 					//if i == 0 || i == 1 || i == 65 || i == 129 {
 					//skip invalid or bits that stand for position
@@ -396,9 +396,9 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 					//continue
 					//}
 
-					if f_data != nil && bmp.IsOn(i) {
-						pylog.Log("parsing.. ", f_data.field_def.Def())
-						f_data.field_def.Parse(iso_msg, f_data, buf)
+					if fData != nil && bmp.IsOn(i) {
+						pylog.Log("parsing.. ", fData.fieldDef.Def())
+						fData.fieldDef.Parse(isoMsg, fData, buf)
 					}
 				}
 				break
@@ -408,40 +408,40 @@ func (iso_msg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 	}
 
 	if buf.Len() > 0 {
-		iso_msg.buffer_overflow_error(buf.Bytes())
+		isoMsg.bufferOverflowError(buf.Bytes())
 	}
 
 	return err
 
 }
 
-func (iso_msg *Iso8583Message) Bytes() []byte {
+func (isoMsg *Iso8583Message) Bytes() []byte {
 
-	msg_buf := bytes.NewBuffer(make([]byte, 0))
+	msgBuf := bytes.NewBuffer(make([]byte, 0))
 
-	for l := iso_msg.field_data_list.Front(); l != nil; l = l.Next() {
+	for l := isoMsg.fieldDataList.Front(); l != nil; l = l.Next() {
 
 		switch obj := l.Value.(type) {
 
 		case *FieldData:
 			{
-				msg_buf.Write(obj.Bytes())
+				msgBuf.Write(obj.Bytes())
 				break
 			}
 		case BitmappedField:
 			{
-				msg_buf.Write(iso_msg.bit_map.Bytes())
+				msgBuf.Write(isoMsg.bitMap.Bytes())
 				bmp := obj.(*BitMap)
 
-				for i, v := range bmp.sub_field_data {
-					if v != nil && v.field_data != nil &&
+				for i, v := range bmp.subFieldData {
+					if v != nil && v.fieldData != nil &&
 						bmp.IsOn(i) {
 
-						f_data := v.Bytes()
-						iso_msg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
-							v.field_def.String(), len(v.field_data), hex.EncodeToString(v.field_data),
-							hex.EncodeToString(f_data))
-						msg_buf.Write(f_data)
+						fData := v.Bytes()
+						isoMsg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
+							v.fieldDef.String(), len(v.fieldData), hex.EncodeToString(v.fieldData),
+							hex.EncodeToString(fData))
+						msgBuf.Write(fData)
 					}
 				}
 			}
@@ -449,16 +449,16 @@ func (iso_msg *Iso8583Message) Bytes() []byte {
 
 	}
 
-	return msg_buf.Bytes()
+	return msgBuf.Bytes()
 }
 
-func (iso_msg *Iso8583Message) SetFieldData(id int, field_val string) {
+func (isoMsg *Iso8583Message) SetFieldData(id int, fieldVal string) {
 
-	iso_msg.id_to_data_map[id].SetData(field_val)
+	isoMsg.idToDataMap[id].SetData(fieldVal)
 }
 
-func (iso_msg *Iso8583Message) GetFieldDataById(id int) *FieldData {
+func (isoMsg *Iso8583Message) GetFieldDataById(id int) *FieldData {
 
-	return iso_msg.id_to_data_map[id]
+	return isoMsg.idToDataMap[id]
 
 }

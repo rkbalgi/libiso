@@ -11,25 +11,25 @@ import (
 )
 
 type VariableFieldDef struct {
-	name            string
-	data_encoding   int
-	length_encoding int
-	len_ind_size    int //in bytes
-	id              int
-	b_pos           int
+	name           string
+	dataEncoding   int
+	lengthEncoding int
+	lenIndSize     int //in bytes
+	id             int
+	bPos           int
 }
 
 //create a new fixed field definition
-func NewVariableFieldDef(p_name string,
-	p_len_encoding int,
-	p_data_encoding int,
-	p_len_ind_size int) *VariableFieldDef {
+func NewVariableFieldDef(pName string,
+	pLenEncoding int,
+	pDataEncoding int,
+	pLenIndSize int) *VariableFieldDef {
 
 	field := new(VariableFieldDef)
-	field.name = p_name
-	field.data_encoding = p_data_encoding
-	field.length_encoding = p_len_encoding
-	field.len_ind_size = p_len_ind_size
+	field.name = pName
+	field.dataEncoding = pDataEncoding
+	field.lengthEncoding = pLenEncoding
+	field.lenIndSize = pLenIndSize
 
 	return field
 
@@ -37,53 +37,53 @@ func NewVariableFieldDef(p_name string,
 
 func (field *VariableFieldDef) Def() string {
 	return fmt.Sprintf("Name: %-40s ; Id: %04d ; Type: %-10s ; Length Indicator Length: %04d ;Encoding (Length Indicator): [%-10s] ; Encoding (Data): [%-10s]",
-		field.name, field.GetId(), "Variable", field.len_ind_size, get_encoding_type(field.length_encoding), get_encoding_type(field.data_encoding))
+		field.name, field.GetId(), "Variable", field.lenIndSize, getEncodingType(field.lengthEncoding), getEncodingType(field.dataEncoding))
 }
 
-func (field_def *VariableFieldDef) to_string(data []byte) string {
-	return fmt.Sprintf("[%s] = [%s]", field_def.name, hex.EncodeToString(data))
+func (field *VariableFieldDef) toString(data []byte) string {
+	return fmt.Sprintf("[%s] = [%s]", field.name, hex.EncodeToString(data))
 }
 
-func (field_def *VariableFieldDef) get_data_encoding() int {
-	return field_def.data_encoding
+func (field *VariableFieldDef) getDataEncoding() int {
+	return field.dataEncoding
 }
 
-func (field_def *VariableFieldDef) Parse(
-	iso_msg *Iso8583Message,
-	f_data *FieldData,
+func (field *VariableFieldDef) Parse(
+	isoMsg *Iso8583Message,
+	fData *FieldData,
 	buf *bytes.Buffer) *FieldData {
 
-	tmp := make([]byte, field_def.len_ind_size)
+	tmp := make([]byte, field.lenIndSize)
 	n, err := buf.Read(tmp)
-	if n != field_def.len_ind_size || err != nil {
+	if n != field.lenIndSize || err != nil {
 
-		if n != field_def.len_ind_size {
-			iso_msg.buffer_underflow_error(field_def.name)
+		if n != field.lenIndSize {
+			isoMsg.bufferUnderflowError(field.name)
 		} else {
-			iso_msg.field_parse_error(field_def.name, err)
+			isoMsg.fieldParseError(field.name, err)
 		}
 
-		iso_msg.field_parse_error(field_def.name, err)
+		isoMsg.fieldParseError(field.name, err)
 	}
 
-	var data_len uint64 = 0
-	switch field_def.length_encoding {
-	case ascii_encoding:
+	var dataLen uint64 = 0
+	switch field.lengthEncoding {
+	case asciiEncoding:
 		{
-			data_len, _ = strconv.ParseUint(string(tmp), 10, 64)
+			dataLen, _ = strconv.ParseUint(string(tmp), 10, 64)
 		}
-	case ebcdic_encoding:
+	case ebcdicEncoding:
 		{
 
-			data_len, _ = strconv.ParseUint(ebcdic.EncodeToString(tmp), 10, 64)
+			dataLen, _ = strconv.ParseUint(ebcdic.EncodeToString(tmp), 10, 64)
 		}
-	case binary_encoding:
+	case binaryEncoding:
 		{
-			data_len, _ = strconv.ParseUint(hex.EncodeToString(tmp), 16, 64)
+			dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 16, 64)
 		}
-	case bcd_encoding:
+	case bcdEncoding:
 		{
-			data_len, _ = strconv.ParseUint(hex.EncodeToString(tmp), 10, 64)
+			dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 10, 64)
 		}
 	default:
 		{
@@ -91,113 +91,113 @@ func (field_def *VariableFieldDef) Parse(
 		}
 	}
 
-	b_field_data := make([]byte, data_len)
-	n, err = buf.Read(b_field_data)
-	if uint64(n) != data_len || err != nil {
+	bFieldData := make([]byte, dataLen)
+	n, err = buf.Read(bFieldData)
+	if uint64(n) != dataLen || err != nil {
 
-		if uint64(n) != data_len {
-			iso_msg.buffer_underflow_error(field_def.name)
+		if uint64(n) != dataLen {
+			isoMsg.bufferUnderflowError(field.name)
 		} else {
-			iso_msg.field_parse_error(field_def.name, err)
+			isoMsg.fieldParseError(field.name, err)
 		}
 
 	}
-	f_data.field_data = b_field_data
-	iso_msg.log.Printf("parsed: [%s]=[%s]", field_def.name, f_data.String())
+	fData.fieldData = bFieldData
+	isoMsg.log.Printf("parsed: [%s]=[%s]", field.name, fData.String())
 
-	return f_data
+	return fData
 
 }
 
 //add the field data into buf as per the encoding
-func (field_def *VariableFieldDef) Assemble(iso_msg *Iso8583Message, buf *bytes.Buffer) {
+func (field *VariableFieldDef) Assemble(isoMsg *Iso8583Message, buf *bytes.Buffer) {
 
 }
 
-func (field_def *VariableFieldDef) IsFixed() bool {
+func (field *VariableFieldDef) IsFixed() bool {
 	return false
 }
 
-func (field_def *VariableFieldDef) DataLength() int {
+func (field *VariableFieldDef) DataLength() int {
 	//not applicable
 	return -1
 }
 
 //return the length part of the variable field
 //as a []byte slice
-func (field_def *VariableFieldDef) EncodedLength(data_len int) []byte {
+func (field *VariableFieldDef) EncodedLength(dataLen int) []byte {
 	//not applicable
 
-	if field_def.len_ind_size > 4 &&
-		(field_def.length_encoding == bcd_encoding || field_def.length_encoding == binary_encoding) {
+	if field.lenIndSize > 4 &&
+		(field.lengthEncoding == bcdEncoding || field.lengthEncoding == binaryEncoding) {
 		panic("[llvar] invalid length indicator size for bcd/binary - >4")
 	}
 
 	var ll []byte
 
-	switch field_def.length_encoding {
-	case binary_encoding:
+	switch field.lengthEncoding {
+	case binaryEncoding:
 		{
-			switch field_def.len_ind_size {
+			switch field.lenIndSize {
 			case 1:
 				{
-					ll = []byte{byte(data_len)}
+					ll = []byte{byte(dataLen)}
 				}
 			case 2:
 				{
 					ll = make([]byte, 2)
-					binary.BigEndian.PutUint16(ll, uint16(data_len))
+					binary.BigEndian.PutUint16(ll, uint16(dataLen))
 				}
 			case 4:
 				{
 					ll = make([]byte, 4)
-					binary.BigEndian.PutUint32(ll, uint32(data_len))
+					binary.BigEndian.PutUint32(ll, uint32(dataLen))
 				}
 			default:
 				{
-					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field_def.len_ind_size))
+					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field.lenIndSize))
 				}
 			}
 
 		}
 
-	case bcd_encoding:
+	case bcdEncoding:
 		{
 
-			switch field_def.len_ind_size {
+			switch field.lenIndSize {
 			case 1:
 				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%0d", data_len))
+					ll, _ = hex.DecodeString(fmt.Sprintf("%0d", dataLen))
 				}
 			case 2:
 				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%04d", data_len))
+					ll, _ = hex.DecodeString(fmt.Sprintf("%04d", dataLen))
 				}
 			case 4:
 				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%08d", data_len))
+					ll, _ = hex.DecodeString(fmt.Sprintf("%08d", dataLen))
 				}
 			default:
 				{
-					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field_def.len_ind_size))
+					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field.lenIndSize))
 				}
 			}
 
 		}
 
-	case ascii_encoding:
+	case asciiEncoding:
 		{
 
-			len_str := encoded_length_as_string(field_def.len_ind_size, data_len)
-			ll = []byte(len_str)
+			lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
+			ll = []byte(lenStr)
 
 		}
 
-	case ebcdic_encoding:
+	case ebcdicEncoding:
 		{
 
-			len_str := encoded_length_as_string(field_def.len_ind_size, data_len)
-			ll = ebcdic.Decode(len_str)
+			lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
+			ll = ebcdic.Decode(lenStr)
 
 		}
 
@@ -206,65 +206,65 @@ func (field_def *VariableFieldDef) EncodedLength(data_len int) []byte {
 	return ll
 }
 
-func encoded_length_as_string(len_ind_size int, data_len int) string {
+func encodedLengthAsString(lenIndSize int, dataLen int) string {
 
 	var tmp string
 
-	switch len_ind_size {
+	switch lenIndSize {
 	case 1:
 		{
-			if data_len > 9 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			if dataLen > 9 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
 			}
-			tmp = fmt.Sprintf("%d", data_len)
+			tmp = fmt.Sprintf("%d", dataLen)
 		}
 	case 2:
 		{
-			if data_len > 99 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			if dataLen > 99 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
 			}
-			tmp = fmt.Sprintf("%02d", data_len)
+			tmp = fmt.Sprintf("%02d", dataLen)
 		}
 	case 3:
 		{
-			if data_len > 999 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			if dataLen > 999 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
 			}
-			tmp = fmt.Sprintf("%03d", data_len)
+			tmp = fmt.Sprintf("%03d", dataLen)
 		}
 	case 4:
 		{
-			if data_len > 9999 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", data_len))
+			if dataLen > 9999 {
+				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
 			}
-			tmp = fmt.Sprintf("%04d", data_len)
+			tmp = fmt.Sprintf("%04d", dataLen)
 		}
 	default:
 		{
-			panic(fmt.Sprintf("[llvar] invalid length indicator size for  field - %d", len_ind_size))
+			panic(fmt.Sprintf("[llvar] invalid length indicator size for  field - %d", lenIndSize))
 		}
 	}
 
 	return tmp
 }
 
-func (f_def *VariableFieldDef) SetId(id int) {
-	f_def.id = id
+func (field *VariableFieldDef) SetId(id int) {
+	field.id = id
 }
 
-func (f_def *VariableFieldDef) GetId() int {
-	return f_def.id
+func (field *VariableFieldDef) GetId() int {
+	return field.id
 }
 
-func (field_def *VariableFieldDef) String() string {
-	return field_def.name
+func (field *VariableFieldDef) String() string {
+	return field.name
 
 }
 
-func (f_def *VariableFieldDef) SetBitPosition(id int) {
-	f_def.b_pos = id
+func (field *VariableFieldDef) SetBitPosition(id int) {
+	field.bPos = id
 }
 
-func (f_def *VariableFieldDef) BitPosition() int {
-	return f_def.b_pos
+func (field *VariableFieldDef) BitPosition() int {
+	return field.bPos
 }

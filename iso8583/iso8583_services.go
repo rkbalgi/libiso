@@ -17,16 +17,16 @@ type FieldDefExp struct {
 }
 
 //GetMessageDefByName returns a spec definition for the given spec_name
-func GetMessageDefByName(spec_name string) *Iso8583MessageDef {
-	return spec_map[spec_name]
+func GetMessageDefByName(specName string) *MessageDef {
+	return specMap[specName]
 }
 
 //GetSpecNames returns names of all available specs
 func GetSpecNames() []string {
 
-	specs := make([]string, len(spec_map))
+	specs := make([]string, len(specMap))
 	i := 0
-	for k, _ := range spec_map {
+	for k, _ := range specMap {
 		specs[i] = k
 		i = i + 1
 	}
@@ -35,11 +35,11 @@ func GetSpecNames() []string {
 }
 
 //GetSpecs returns all available specs
-func GetSpecs() []*Iso8583MessageDef {
+func GetSpecs() []*MessageDef {
 
-	specs := make([]*Iso8583MessageDef, len(spec_map))
+	specs := make([]*MessageDef, len(specMap))
 	i := 0
-	for _, v := range spec_map {
+	for _, v := range specMap {
 		specs[i] = v
 		i = i + 1
 	}
@@ -48,30 +48,30 @@ func GetSpecs() []*Iso8583MessageDef {
 }
 
 //GetSpecLayout returns all fields associated with a spec
-func GetSpecLayout(spec_name string) []*FieldDefExp {
+func GetSpecLayout(specName string) []*FieldDefExp {
 
-	spec := spec_map[spec_name]
+	spec := specMap[specName]
 	fields := list.New()
 	fields.Init()
 
-	fmt.Println(spec.fields_def_list.Len())
+	fmt.Println(spec.fieldsDefList.Len())
 
-	for l := spec.fields_def_list.Front(); l != nil; l = l.Next() {
+	for l := spec.fieldsDefList.Front(); l != nil; l = l.Next() {
 		switch (l.Value).(type) {
 		case IsoField:
 			{
-				var iso_field IsoField = (l.Value).(IsoField)
-				fields.PushBack(&FieldDefExp{Id: iso_field.GetId(), BitPosition: 0, Name: iso_field.String(), JsSafeName: js_safe(iso_field.String())})
+				var isoField IsoField = (l.Value).(IsoField)
+				fields.PushBack(&FieldDefExp{Id: isoField.GetId(), BitPosition: 0, Name: isoField.String(), JsSafeName: js_safe(isoField.String())})
 				break
 			}
 		case BitmappedField:
 			{
-				var iso_bmp_field *BitMap = (l.Value).(*BitMap)
-				fields.PushBack(&FieldDefExp{Id: iso_bmp_field.GetId(), BitPosition: 0, Name: "Bitmap", JsSafeName: "Bitmap"})
+				var isoBmpField *BitMap = (l.Value).(*BitMap)
+				fields.PushBack(&FieldDefExp{Id: isoBmpField.GetId(), BitPosition: 0, Name: "Bitmap", JsSafeName: "Bitmap"})
 
-				for b_position, f_def := range iso_bmp_field.sub_field_def {
-					if f_def != nil {
-						fields.PushBack(&FieldDefExp{Id: f_def.GetId(), BitPosition: b_position, Name: f_def.String(), JsSafeName: js_safe(f_def.String())})
+				for bPosition, fDef := range isoBmpField.subFieldDef {
+					if fDef != nil {
+						fields.PushBack(&FieldDefExp{Id: fDef.GetId(), BitPosition: bPosition, Name: fDef.String(), JsSafeName: js_safe(fDef.String())})
 					}
 				}
 
@@ -80,14 +80,14 @@ func GetSpecLayout(spec_name string) []*FieldDefExp {
 
 	}
 
-	field_exp_defs := make([]*FieldDefExp, fields.Len())
+	fieldExpDefs := make([]*FieldDefExp, fields.Len())
 	j := 0
 	for i := fields.Front(); i != nil; i = i.Next() {
-		field_exp_defs[j] = i.Value.(*FieldDefExp)
+		fieldExpDefs[j] = i.Value.(*FieldDefExp)
 		j++
 	}
 
-	return field_exp_defs
+	return fieldExpDefs
 
 }
 

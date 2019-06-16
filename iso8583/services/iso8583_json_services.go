@@ -10,28 +10,28 @@ import (
 func GetSpecs() string {
 
 	specs := iso8583.GetSpecs()
-	json, err := json.Marshal(specs)
+	jsonContent, err := json.Marshal(specs)
 	if err != nil {
 		log.Println("failed to marshall to JSON - ", err.Error())
 		return ""
 	}
 
-	return string(json)
+	return string(jsonContent)
 
 }
 
 //GetSpecLayout returns the list of all fields in spec_name
 //as a JSON string
-func GetSpecLayout(spec_name string) string {
+func GetSpecLayout(specName string) string {
 
-	fields := iso8583.GetSpecLayout(spec_name)
+	fields := iso8583.GetSpecLayout(specName)
 
-	json, err := json.Marshal(fields)
+	jsonContent, err := json.Marshal(fields)
 	if err != nil {
 		log.Println("failed to marshall to JSON - ", err.Error())
 		return ""
 	}
 
-	return string(json)
+	return string(jsonContent)
 
 }

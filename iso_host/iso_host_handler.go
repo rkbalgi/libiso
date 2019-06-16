@@ -13,51 +13,54 @@ var logger *log.Logger = log.New(os.Stdout, "##iso_handler##", log.LstdFlags)
 
 //this method handles an incoming ISO8583 message, doing the parsing, processing
 //and response creation
-func Handle(spec_name string, buf *bytes.Buffer) (resp_iso_msg *Iso8583Message, err error) {
+func Handle(specName string, buf *bytes.Buffer) (respIsoMsg *Iso8583Message, err error) {
 
-	req_iso_msg := NewIso8583Message(spec_name)
+	reqIsoMsg := NewIso8583Message(specName)
 
 	//parse incoming message
-	err = req_iso_msg.Parse(buf)
+	err = reqIsoMsg.Parse(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Println("parsed incoming message: ", req_iso_msg.Dump())
+	logger.Println("parsed incoming message: ", reqIsoMsg.Dump())
 
 	//continue handling
 
-	resp_iso_msg = NewIso8583Message(spec_name)
-	msg_type := req_iso_msg.GetMessageType()
-	switch msg_type {
-	case ISO_MSG_1100:
+	respIsoMsg = NewIso8583Message(specName)
+	msgType := reqIsoMsg.GetMessageType()
+	switch msgType {
+	case IsoMsg1100:
 		{
-			handle_auth_req(req_iso_msg, resp_iso_msg)
+			handleAuthReq(reqIsoMsg, respIsoMsg)
 		}
-	case ISO_MSG_1804:
+	case IsoMsg1804:
 		{
-			handle_network_req(req_iso_msg, resp_iso_msg)
+			handleNetworkReq(respIsoMsg)
 		}
-	case ISO_MSG_1420:
+	case IsoMsg1420:
 		{
-			handle_reversal_req(req_iso_msg, resp_iso_msg)
+			handleReversalReq(respIsoMsg)
 		}
 	default:
 		{
-			err = errors.New("unsupported message type -" + req_iso_msg.GetMessageType())
+			err = errors.New("unsupported message type -" + reqIsoMsg.GetMessageType())
 
 		}
 	}
 
-	f39, err := resp_iso_msg.Field(39)
-
-	if f39.String() == ISO_RESP_DROP {
-		logger.Println("drop response code, not sending response..")
-		return nil, errors.New("dropped response!")
+	f39, err := respIsoMsg.Field(39)
+	if err != nil {
+		return nil, err
 	}
 
-	logger.Println("outgoing message: ", resp_iso_msg.Dump())
+	if f39.String() == IsoRespDrop {
+		logger.Println("drop response code, not sending response..")
+		return nil, errors.New("dropped response")
+	}
 
-	return resp_iso_msg, err
+	logger.Println("outgoing message: ", respIsoMsg.Dump())
+
+	return respIsoMsg, err
 
 }

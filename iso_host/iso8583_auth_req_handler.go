@@ -7,62 +7,62 @@ import (
 )
 
 //handles 1100 message
-func handle_auth_req(iso_req *Iso8583Message, iso_resp *Iso8583Message) {
+func handleAuthReq(isoReq *Iso8583Message, isoResp *Iso8583Message) {
 
 	//copy all data from req to response
 	//and then lets selective remove fields that are
 	//not required in the response
-	CopyRequestToResponse(iso_req, iso_resp)
+	CopyRequestToResponse(isoReq, isoResp)
 
 	//set message type on response as 1110
 
-	msg_type_field := iso_resp.GetFieldByName("Message Type")
-	msg_type_field.SetData(ISO_MSG_1110)
+	msgTypeField := isoResp.GetFieldByName("Message Type")
+	msgTypeField.SetData(IsoMsg1110)
 
 	//turn off fields not required in response
-	iso_resp.Bitmap().SetOff(14)
-	iso_resp.Bitmap().SetOff(35)
+	isoResp.Bitmap().SetOff(14)
+	isoResp.Bitmap().SetOff(35)
 
 	//for demo purposes, we will simply base our responses
 	//on the input amounts
 
-	f_amount, err := iso_req.Field(4)
+	fAmount, err := isoReq.Field(4)
 	if err != nil {
-		do_format_error_response(iso_resp)
+		doFormatErrorResponse(isoResp)
 		return
 	}
 
-	l_amount, err := strconv.ParseUint(f_amount.String(), 10, 64)
+	lAmount, err := strconv.ParseUint(fAmount.String(), 10, 64)
 	if err != nil {
-		logger.Println("invalid amount -", f_amount.String())
-		do_format_error_response(iso_resp)
+		logger.Println("invalid amount -", fAmount.String())
+		doFormatErrorResponse(isoResp)
 		return
 	}
 	switch {
 
-	case l_amount > 800 && l_amount < 900:
+	case lAmount > 800 && lAmount < 900:
 		{
-			iso_resp.SetField(39, ISO_RESP_DECLINE)
+			isoResp.SetField(39, IsoRespDecline)
 		}
-	case l_amount == 122:
+	case lAmount == 122:
 		{
-			iso_resp.SetField(39, ISO_RESP_DROP)
+			isoResp.SetField(39, IsoRespDrop)
 		}
-	case l_amount == 123:
+	case lAmount == 123:
 		{
 			time.Sleep(30 * time.Second)
-			iso_resp.SetField(39, ISO_RESP_PICKUP)
+			isoResp.SetField(39, IsoRespPickup)
 		}
 	default:
 		{
-			iso_resp.SetField(38, "APPISO")
-			iso_resp.SetField(39, ISO_RESP_APPROVAL)
+			isoResp.SetField(38, "APPISO")
+			isoResp.SetField(39, IsoRespApproval)
 		}
 
 	}
 
 }
 
-func do_format_error_response(iso_msg *Iso8583Message) {
-	iso_msg.SetField(38, ISO_FORMAT_ERROR)
+func doFormatErrorResponse(isoMsg *Iso8583Message) {
+	isoMsg.SetField(38, IsoFormatError)
 }
