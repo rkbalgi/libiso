@@ -22,13 +22,13 @@ type CommandHeader struct {
 	MacData     []byte `size:"4"`
 }
 
-var letter_map map[string]int
+var letterMap map[string]int
 
-func letter_sum(month string) int {
+func letterSum(month string) int {
 
 	sum := 0
 	for i := 0; i < len(month); i++ {
-		sum += letter_map[month[i:i+1]]
+		sum += letterMap[month[i:i+1]]
 	}
 
 	return sum
@@ -37,13 +37,13 @@ func letter_sum(month string) int {
 func main() {
 
 	fmt.Println("Hello World")
-	letter_map = make(map[string]int, 26)
+	letterMap = make(map[string]int, 26)
 	tmp := "abcdefghijklmnopqrstuvwxyz"
 	for i := 1; i < 27; i++ {
-		letter_map[tmp[i-1:i]] = i
+		letterMap[tmp[i-1:i]] = i
 	}
 
-	fmt.Println("january ", letter_sum("s"))
+	fmt.Println("january ", letterSum("s"))
 
 	cmd := "NC"
 
@@ -109,8 +109,4 @@ func main() {
 	avg := total / float32(len(arr))
 	fmt.Printf("%T - %f\n", avg, avg)*/
 
-}
-
-func my_func(x int) {
-	fmt.Println(x)
 }

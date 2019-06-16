@@ -8,8 +8,8 @@ type Tuple struct {
 	data []interface{}
 }
 
-func (self *Tuple) Nth(pos int) interface{} {
-	return self.data[pos]
+func (t *Tuple) Nth(pos int) interface{} {
+	return t.data[pos]
 }
 
 func NewTuple(data ...interface{}) *Tuple {
@@ -21,6 +21,6 @@ func NewTuple(data ...interface{}) *Tuple {
 
 }
 
-func (self *Tuple) String() string {
-	return fmt.Sprintln(self.data)
+func (t *Tuple) String() string {
+	return fmt.Sprintln(t.data)
 }

@@ -17,13 +17,13 @@ type SendMessageHandlerHandler struct {
 func (handler *SendMessageHandlerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	buf := make([]byte, 100)
-	json_buf := bytes.NewBufferString("")
+	jsonBuf := bytes.NewBufferString("")
 	for {
 		n, err := req.Body.Read(buf)
 
 		if n > 0 {
 			//we have good data
-			json_buf.Write(buf[:n])
+			jsonBuf.Write(buf[:n])
 		}
 
 		if err != nil && n == 0 {
@@ -39,39 +39,38 @@ func (handler *SendMessageHandlerHandler) ServeHTTP(w http.ResponseWriter, req *
 		}
 
 	}
-	log.Println("send msg request::  ", json_buf.String())
-	snd_req := iso8583.WebMsgData{Type: "Request"}
-	json.Unmarshal(json_buf.Bytes(), &snd_req)
-	log.Println(snd_req.Spec, snd_req.DataArray)
+	log.Println("send msg request::  ", jsonBuf.String())
+	sndReq := iso8583.WebMsgData{Type: "Request"}
+	_ = json.Unmarshal(jsonBuf.Bytes(), &sndReq)
+	log.Println(sndReq.Spec, sndReq.DataArray)
 
 	//iso_msg_def:=iso8583.GetMessageDefByName(snd_req.Spec);
 
-	iso_msg := iso8583.NewIso8583Message(snd_req.Spec)
+	isoMsg := iso8583.NewIso8583Message(sndReq.Spec)
 
-	iso_msg.SetData(snd_req.DataArray)
+	isoMsg.SetData(sndReq.DataArray)
 
-	log.Println("received request : ", iso_msg.Dump())
+	log.Println("received request : ", isoMsg.Dump())
 
 	//handle the incoming message
-	req_data := iso_msg.Bytes()
-	log.Println("req: \n", hex.EncodeToString(req_data))
-	msg_buf := bytes.NewBuffer(req_data)
-	resp_iso_msg, err := iso_host.Handle(snd_req.Spec, msg_buf)
-	log.Println("processed response: \n", resp_iso_msg.Dump())
-
+	reqData := isoMsg.Bytes()
+	log.Println("req: \n", hex.EncodeToString(reqData))
+	msgBuf := bytes.NewBuffer(reqData)
+	respIsoMsg, err := iso_host.Handle(sndReq.Spec, msgBuf)
 	if err != nil {
-		w.Write([]byte("error"))
+		_, _ = w.Write([]byte("error: " + err.Error()))
 		return
 	}
+	log.Println("processed response: \n", respIsoMsg.Dump())
 
-	web_msg_data := resp_iso_msg.ToWebMsg(false)
-	json_data, err := json.Marshal(web_msg_data)
+	webMsgData := respIsoMsg.ToWebMsg(false)
+	jsonData, err := json.Marshal(webMsgData)
 	if err == nil {
-		log.Println("writing json ", string(json_data))
-		w.Write(json_data)
+		log.Println("writing json ", string(jsonData))
+		_, _ = w.Write(jsonData)
 	} else {
 		log.Println("error marshalling json -", err.Error())
-		w.Write([]byte("error"))
+		_, _ = w.Write([]byte("error"))
 
 	}
 

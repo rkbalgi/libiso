@@ -1,6 +1,9 @@
 package main
 
-import mynet "github.com/rkbalgi/go/net"
+import (
+	mynet "github.com/rkbalgi/go/net"
+	"log"
+)
 import (
 	"fmt"
 	"net"
@@ -53,7 +56,9 @@ func main() {
 	echoServ.TcpAddr = new(net.TCPAddr)
 	echoServ.TcpAddr.IP = net.ParseIP(cmdLineArgs[ipArg])
 	echoServ.TcpAddr.Port, _ = strconv.Atoi(cmdLineArgs[portArg])
-	echoServ.ListenAndAccept()
+	if err := echoServ.ListenAndAccept(); err != nil {
+		log.Fatal(err)
+	}
 
 }
 

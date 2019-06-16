@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/rkbalgi/go/iso8583"
 	"github.com/rkbalgi/go/iso8583/services"
+	"io"
 	"log"
 	"net/http"
 )
@@ -17,36 +18,36 @@ type ParseTraceHandlerHandler struct {
 
 func (handler *PaysimDefaultHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
-	spec_name := req.FormValue("spec_name")
+	specName := req.FormValue("spec_name")
 	log.Println("form values::", req.Form)
-	log.Println("spec_name::", spec_name)
-	layout_json := services.GetSpecLayout(spec_name)
-	log.Println("response::  ", layout_json)
-	w.Write([]byte(layout_json))
+	log.Println("spec_name::", specName)
+	layoutJson := services.GetSpecLayout(specName)
+	log.Println("response::  ", layoutJson)
+	_, _ = w.(io.StringWriter).WriteString(layoutJson)
 }
 
 //parse_trace_req represents the
 //data received from the paysim web application
 
-type parse_trace_req struct {
-	Spec_name string
-	Data      string
+type parseTraceReq struct {
+	SpecName string
+	Data     string
 }
 
 func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
-	spec_name := req.FormValue("Spec")
+	specName := req.FormValue("Spec")
 	log.Println("form values::", req.Form)
-	log.Println("spec_name::", spec_name)
+	log.Println("spec_name::", specName)
 
 	buf := make([]byte, 100)
-	json_buf := bytes.NewBufferString("")
+	jsonBuf := bytes.NewBufferString("")
 	for {
 		n, err := req.Body.Read(buf)
 
 		if n > 0 {
 			//we have good data
-			json_buf.Write(buf[:n])
+			jsonBuf.Write(buf[:n])
 		}
 
 		if err != nil && n == 0 {
@@ -62,61 +63,61 @@ func (handler *ParseTraceHandlerHandler) ServeHTTP(w http.ResponseWriter, req *h
 		}
 
 	}
-	log.Println("parse trace req::  ", json_buf.String())
-	req_obj := parse_trace_req{}
-	err := json.Unmarshal(json_buf.Bytes(), &req_obj)
+	log.Println("parse trace req::  ", jsonBuf.String())
+	reqObj := parseTraceReq{}
+	err := json.Unmarshal(jsonBuf.Bytes(), &reqObj)
 	if err != nil {
 		log.Println("error parsing request ", err.Error())
-		w.Write([]byte("Error: " + err.Error()))
+		_, _ = w.Write([]byte("Error: " + err.Error()))
 		return
 	}
 
-	log.Println("spec_name ", req_obj.Spec_name, " Trace ", req_obj.Data)
+	log.Println("spec_name ", reqObj.SpecName, " Trace ", reqObj.Data)
 
-	data, err := hex.DecodeString(req_obj.Data)
+	data, err := hex.DecodeString(reqObj.Data)
 	if err != nil {
-		w.Write([]byte("Error: Invalid Trace Data"))
+		_, _ = w.Write([]byte("Error: Invalid Trace Data"))
 		return
 	}
 
-	in_buf := bytes.NewBuffer(data)
-	iso_msg := iso8583.NewIso8583Message(spec_name)
-	err = iso_msg.Parse(in_buf)
+	inBuf := bytes.NewBuffer(data)
+	isoMsg := iso8583.NewIso8583Message(specName)
+	err = isoMsg.Parse(inBuf)
 	if err != nil {
-		w.Write([]byte("Error: Parse Failure"))
+		_, _ = w.Write([]byte("Error: Parse Failure"))
 		return
 	}
 
-	field_def_exp_sl := iso8583.GetSpecLayout(req_obj.Spec_name)
+	fieldDefExpSl := iso8583.GetSpecLayout(reqObj.SpecName)
 
 	//0 and 1 should be 'Message Type' and 'Bitmap'
-	field_def_exp_sl[0].Data = iso_msg.GetMessageType()
-	field_def_exp_sl[1].Data = iso_msg.GetBinaryBitmap()
+	fieldDefExpSl[0].Data = isoMsg.GetMessageType()
+	fieldDefExpSl[1].Data = isoMsg.GetBinaryBitmap()
 
-	for _, field_def_exp := range field_def_exp_sl {
-		if field_def_exp.BitPosition > 0 {
+	for _, fieldDefExp := range fieldDefExpSl {
+		if fieldDefExp.BitPosition > 0 {
 
-			if iso_msg.IsSelected(field_def_exp.BitPosition) {
-				fld_data, err := iso_msg.GetFieldData(field_def_exp.BitPosition)
+			if isoMsg.IsSelected(fieldDefExp.BitPosition) {
+				fldData, err := isoMsg.GetFieldData(fieldDefExp.BitPosition)
 				//log.Println(hex.EncodeToString(fld_data));
 				if err != nil {
-					w.Write([]byte("Error: Parse Failure"))
+					_, _ = w.Write([]byte("Error: Parse Failure"))
 					return
 				}
-				field_def_exp.Data = fld_data
+				fieldDefExp.Data = fldData
 			}
 
 		}
 
 	}
 
-	parsed_data_json, err := json.Marshal(field_def_exp_sl)
+	parsedDataJson, err := json.Marshal(fieldDefExpSl)
 	if err != nil {
-		w.Write([]byte("Error: Parse Failure"))
+		_, _ = w.Write([]byte("Error: Parse Failure"))
 		return
 	}
 
-	log.Println("writing response ", string(parsed_data_json))
+	log.Println("writing response ", string(parsedDataJson))
 
-	w.Write(parsed_data_json)
+	_, _ = w.Write(parsedDataJson)
 }

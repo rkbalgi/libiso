@@ -8,40 +8,39 @@ import (
 	"github.com/rkbalgi/go/paysim"
 )
 
-func ShowIsoResponseMsgDialog(tab_data_list *list.List) {
+func ShowIsoResponseMsgDialog(tabDataList *list.List) {
 
 	dialog := gtk.NewDialog()
 	dialog.SetTitle("Message Response")
 
-	t_view := gtk.NewTreeView()
-	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Name", gtk.NewCellRendererText(), "text", 0))
-	t_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Value", gtk.NewCellRendererText(), "text", 1))
-	t_store := gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
+	tView := gtk.NewTreeView()
+	tView.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Name", gtk.NewCellRendererText(), "text", 0))
+	tView.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Field Value", gtk.NewCellRendererText(), "text", 1))
+	tStore := gtk.NewListStore(glib.G_TYPE_STRING, glib.G_TYPE_STRING)
 
-	tree_iter := gtk.TreeIter{}
-	for l := tab_data_list.Front(); l != nil; l = l.Next() {
-		t_store.Append(&tree_iter)
+	treeIter := gtk.TreeIter{}
+	for l := tabDataList.Front(); l != nil; l = l.Next() {
+		tStore.Append(&treeIter)
 		tuple := l.Value.(*paysim.Tuple)
-		//fmt.Println("???",tuple.String());
-		t_store.SetValue(&tree_iter, 0, tuple.Nth(0))
-		t_store.SetValue(&tree_iter, 1, tuple.Nth(1))
+		tStore.SetValue(&treeIter, 0, tuple.Nth(0))
+		tStore.SetValue(&treeIter, 1, tuple.Nth(1))
 	}
 
-	t_view.GetColumn(0).SetClickable(true)
-	t_view.GetColumn(1).SetClickable(true)
-	t_view.GetColumn(0).SetExpand(true)
-	t_view.GetColumn(1).SetExpand(true)
+	tView.GetColumn(0).SetClickable(true)
+	tView.GetColumn(1).SetClickable(true)
+	tView.GetColumn(0).SetExpand(true)
+	tView.GetColumn(1).SetExpand(true)
 
-	t_view.SetModel(t_store)
+	tView.SetModel(tStore)
 
-	swin := gtk.NewScrolledWindow(nil, nil)
-	swin.AddWithViewPort(t_view)
+	scrolledWindow := gtk.NewScrolledWindow(nil, nil)
+	scrolledWindow.AddWithViewPort(tView)
 
-	dialog.GetVBox().Add(swin)
+	dialog.GetVBox().Add(scrolledWindow)
 	dialog.SetSizeRequest(400, 300)
 
-	ok_btn := dialog.AddButton("OK", gtk.RESPONSE_OK)
-	ok_btn.Connect("clicked", func() {
+	okBtn := dialog.AddButton("OK", gtk.RESPONSE_OK)
+	okBtn.Connect("clicked", func() {
 
 		dialog.Destroy()
 		gtk.MainQuit()

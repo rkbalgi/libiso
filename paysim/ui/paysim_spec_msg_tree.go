@@ -23,34 +23,34 @@ type PaysimSpecMsgTree struct {
 	_store *gtk.TreeStore
 	_view  *gtk.TreeView
 
-	_val_rend    *gtk.CellRendererText
-	_toggle_rend *gtk.CellRendererToggle
+	valRend    *gtk.CellRendererText
+	toggleRend *gtk.CellRendererToggle
 }
 
 func NewPaysimSpecMsgTree() *PaysimSpecMsgTree {
 
 	self := new(PaysimSpecMsgTree)
 
-	field_name_renderer := gtk.NewCellRendererText()
-	self._val_rend = gtk.NewCellRendererText()
-	self._toggle_rend = gtk.NewCellRendererToggle()
+	fieldNameRenderer := gtk.NewCellRendererText()
+	self.valRend = gtk.NewCellRendererText()
+	self.toggleRend = gtk.NewCellRendererToggle()
 
-	self._toggle_rend.SetActivatable(true)
+	self.toggleRend.SetActivatable(true)
 	//  0             1             2         3            4        5
 	//is selected, bit position,field name, field value, field id,editable
 	self._store = gtk.NewTreeStore(glib.G_TYPE_BOOL, glib.G_TYPE_INT, glib.G_TYPE_STRING, glib.G_TYPE_STRING, glib.G_TYPE_INT, glib.G_TYPE_BOOL)
 	self._view = gtk.NewTreeView()
 
-	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Is Selected", self._toggle_rend))
-	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Bit Position", field_name_renderer))
-	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Field Name", field_name_renderer))
-	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Data", self._val_rend))
+	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Is Selected", self.toggleRend))
+	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Bit Position", fieldNameRenderer))
+	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Field Name", fieldNameRenderer))
+	self._view.AppendColumn(gtk.NewTreeViewColumnWithAttribute("Data", self.valRend))
 
-	self._view.GetColumn(0).AddAttribute(self._toggle_rend, "active", 0)
-	self._view.GetColumn(1).AddAttribute(field_name_renderer, "text", 1)
-	self._view.GetColumn(2).AddAttribute(field_name_renderer, "text", 2)
-	self._view.GetColumn(3).AddAttribute(self._val_rend, "text", 3)
-	self._view.GetColumn(3).AddAttribute(self._val_rend, "editable", 5)
+	self._view.GetColumn(0).AddAttribute(self.toggleRend, "active", 0)
+	self._view.GetColumn(1).AddAttribute(fieldNameRenderer, "text", 1)
+	self._view.GetColumn(2).AddAttribute(fieldNameRenderer, "text", 2)
+	self._view.GetColumn(3).AddAttribute(self.valRend, "text", 3)
+	self._view.GetColumn(3).AddAttribute(self.valRend, "editable", 5)
 
 	for i := 0; i < 4; i++ {
 		self._view.GetColumn(i).SetProperty("resizable", glib.ValueFromNative(true))
@@ -64,18 +64,18 @@ func NewPaysimSpecMsgTree() *PaysimSpecMsgTree {
 
 }
 
-func (self *PaysimSpecMsgTree) Store() *gtk.TreeStore {
-	return self._store
+func (pTree *PaysimSpecMsgTree) Store() *gtk.TreeStore {
+	return pTree._store
 }
 
-func (self *PaysimSpecMsgTree) View() *gtk.TreeView {
-	return self._view
+func (pTree *PaysimSpecMsgTree) View() *gtk.TreeView {
+	return pTree._view
 }
 
-func (self *PaysimSpecMsgTree) FieldValueRenderer() *gtk.CellRendererText {
-	return self._val_rend
+func (pTree *PaysimSpecMsgTree) FieldValueRenderer() *gtk.CellRendererText {
+	return pTree.valRend
 }
 
-func (self *PaysimSpecMsgTree) FieldToggleRenderer() *gtk.CellRendererToggle {
-	return self._toggle_rend
+func (pTree *PaysimSpecMsgTree) FieldToggleRenderer() *gtk.CellRendererToggle {
+	return pTree.toggleRend
 }

@@ -1,6 +1,6 @@
 package demo
 
-var Demo_Specs string = `
+var DemoSpecs string = `
 
 
 { "Specs":[{"SpecName": "ISO8583_1_v1__DEMO_", "Fields": [{"BitPosition":0,"Name": "Message Type", "Type":"Fixed", "Attrs":{"Key":false,"FieldLength":4,"DataEncoding":"ascii","Padding":"default"}},

@@ -17,22 +17,22 @@ import (
 	"unsafe"
 )
 
-var right_box, spec_tree_vbox *gtk.VBox
-var status_bar *gtk.Statusbar
-var status_bar_context_id uint
-var active_spec_frame *gtk.Frame
-var swin_spec_tree *gtk.ScrolledWindow
-var ui_ctx *pyui.PaysimUiContext
-var bmp_iter gtk.TreeIter
-var h_box *gtk.HBox
-var swin_console *gtk.ScrolledWindow
+var rightBox, specTreeVbox *gtk.VBox
+var statusBar *gtk.Statusbar
+var statusBarContextId uint
+var activeSpecFrame *gtk.Frame
+var swinSpecTree *gtk.ScrolledWindow
+var uiCtx *pyui.PaysimUiContext
+var bmpIter gtk.TreeIter
+var hBox *gtk.HBox
+var swinConsole *gtk.ScrolledWindow
 
 //the tree holding all the specs
-var spec_tree_view *gtk.TreeView
+var specTreeView *gtk.TreeView
 
 //the currently loaded iso_msg
-var req_iso_msg, resp_iso_msg *iso8583.Iso8583Message
-var comms_config_bx *gtk.VBox
+var reqIsoMsg, respIsoMsg *iso8583.Iso8583Message
+var commsConfigBx *gtk.VBox
 
 func main() {
 
@@ -41,9 +41,9 @@ func main() {
 	//a vbox that will hold the spec tree
 	//and its contents
 	pyui.Init()
-	spec_tree_vbox = gtk.NewVBox(false, 1)
+	specTreeVbox = gtk.NewVBox(false, 1)
 
-	ui_ctx = pyui.NewUiContext()
+	uiCtx = pyui.NewUiContext()
 
 	menu_bar := gtk.NewMenuBar()
 	cascade_file_mi := gtk.NewMenuItemWithMnemonic("_File")
@@ -51,13 +51,13 @@ func main() {
 	cascade_file_mi.SetSubmenu(file_menu)
 	menu_bar.Append(cascade_file_mi)
 
-	open_spec_mi := gtk.NewMenuItemWithMnemonic("_Open Specs Def")
-	file_menu.Add(open_spec_mi)
-	open_spec_mi.Connect("activate", func() {
+	openSpecMi := gtk.NewMenuItemWithMnemonic("_Open Specs Def")
+	file_menu.Add(openSpecMi)
+	openSpecMi.Connect("activate", func() {
 
 		filechooserdialog := gtk.NewFileChooserDialog(
 			"Choose File...",
-			ui_ctx.Window(),
+			uiCtx.Window(),
 			gtk.FILE_CHOOSER_ACTION_OPEN,
 			gtk.STOCK_OK,
 			gtk.RESPONSE_ACCEPT)
@@ -66,40 +66,40 @@ func main() {
 		filechooserdialog.AddFilter(filter)
 		filechooserdialog.Response(func() {
 			iso8583.ReadSpecDefs(filechooserdialog.GetFilename())
-			make_and_populate_spec_tree()
+			makeAndPopulateSpecTree()
 			filechooserdialog.Destroy()
 		})
 		filechooserdialog.Run()
 
 	})
 
-	quit_mi := gtk.NewMenuItemWithMnemonic("E_xit")
-	quit_mi.Connect("activate", func() {
+	quitMi := gtk.NewMenuItemWithMnemonic("E_xit")
+	quitMi.Connect("activate", func() {
 		gtk.MainQuit()
 	})
-	file_menu.Add(quit_mi)
+	file_menu.Add(quitMi)
 
-	cascade_utils_mi := gtk.NewMenuItemWithMnemonic("_Utils")
-	utils_menu := gtk.NewMenu()
-	cascade_utils_mi.SetSubmenu(utils_menu)
+	cascadeUtilsMi := gtk.NewMenuItemWithMnemonic("_Utils")
+	utilsMenu := gtk.NewMenu()
+	cascadeUtilsMi.SetSubmenu(utilsMenu)
 
-	mac_mi := gtk.NewMenuItemWithMnemonic("_MAC")
-	utils_menu.Add(mac_mi)
-	mac_mi.Connect("activate", func() {
-		pyui.ComputeMacDialog(ui_ctx.Window(), "")
+	macMi := gtk.NewMenuItemWithMnemonic("_MAC")
+	utilsMenu.Add(macMi)
+	macMi.Connect("activate", func() {
+		pyui.ComputeMacDialog(uiCtx.Window(), "")
 	})
 
-	pin_mi := gtk.NewMenuItemWithMnemonic("_PIN")
-	utils_menu.Add(pin_mi)
-	pin_mi.Connect("activate", func() {
-		pyui.ComputePinBlockDialog(ui_ctx.Window(), "")
+	pinMi := gtk.NewMenuItemWithMnemonic("_PIN")
+	utilsMenu.Add(pinMi)
+	pinMi.Connect("activate", func() {
+		pyui.ComputePinBlockDialog(uiCtx.Window(), "")
 	})
 
-	menu_bar.Append(cascade_utils_mi)
+	menu_bar.Append(cascadeUtilsMi)
 
-	cascade_about_mi := gtk.NewMenuItemWithMnemonic("_About")
+	cascadeAboutMi := gtk.NewMenuItemWithMnemonic("_About")
 
-	cascade_about_mi.Connect("activate", func() {
+	cascadeAboutMi.Connect("activate", func() {
 		dialog := gtk.NewAboutDialog()
 		dialog.SetName("About Paysim")
 		dialog.SetProgramName("PaySim v1.0 build 03052015	")
@@ -111,99 +111,99 @@ func main() {
 		dialog.Destroy()
 	})
 
-	menu_bar.Append(cascade_about_mi)
+	menu_bar.Append(cascadeAboutMi)
 
 	vbox := gtk.NewVBox(false, 1)
 	vbox.PackStart(menu_bar, false, false, 0)
 
 	//add a vertical pane
-	h_pane := gtk.NewHPaned()
-	h_pane.SetPosition(40)
-	vbox.Add(h_pane)
+	hPane := gtk.NewHPaned()
+	hPane.SetPosition(40)
+	vbox.Add(hPane)
 
 	frame1 := gtk.NewFrame("")
 	frame1.SetSizeRequest(100, 600)
-	frame1.Add(spec_tree_vbox)
+	frame1.Add(specTreeVbox)
 
 	frame2 := gtk.NewFrame("")
-	right_box = gtk.NewVBox(false, 1)
-	frame2.Add(right_box)
-	h_pane.Pack1(frame1, false, false)
-	h_pane.Pack2(frame2, false, false)
+	rightBox = gtk.NewVBox(false, 1)
+	frame2.Add(rightBox)
+	hPane.Pack1(frame1, false, false)
+	hPane.Pack2(frame2, false, false)
 
-	ui_ctx.Window().Add(vbox)
+	uiCtx.Window().Add(vbox)
 
-	status_bar = gtk.NewStatusbar()
-	status_bar_context_id = status_bar.GetContextId("pay-sim")
-	status_bar.Push(status_bar_context_id, "OK")
-	vbox.PackStart(status_bar, false, false, 1)
+	statusBar = gtk.NewStatusbar()
+	statusBarContextId = statusBar.GetContextId("pay-sim")
+	statusBar.Push(statusBarContextId, "OK")
+	vbox.PackStart(statusBar, false, false, 1)
 
-	right_box.PackStart(ui_ctx.CommsConfigVBox(), false, false, 12)
+	rightBox.PackStart(uiCtx.CommsConfigVBox(), false, false, 12)
 
-	reset_console()
-	active_spec_frame = gtk.NewFrame("                 ")
-	active_spec_frame.SetName("spec_frame")
-	active_spec_frame.SetSizeRequest(400, 400)
+	resetConsole()
+	activeSpecFrame = gtk.NewFrame("                 ")
+	activeSpecFrame.SetName("spec_frame")
+	activeSpecFrame.SetSizeRequest(400, 400)
 
-	right_box.PackStart(active_spec_frame, false, false, 5)
-	right_box.PackStart(swin_console, false, false, 5)
-	right_box.ShowAll()
+	rightBox.PackStart(activeSpecFrame, false, false, 5)
+	rightBox.PackStart(swinConsole, false, false, 5)
+	rightBox.ShowAll()
 
 	pylog.Log("Paysim v1.00 starting...\n#********************************#")
 
 	iso8583.ReadDemoSpecDefs()
-	make_and_populate_spec_tree()
+	makeAndPopulateSpecTree()
 
-	ui_ctx.Window().ShowAll()
+	uiCtx.Window().ShowAll()
 	gtk.Main()
 
 }
 
-func make_and_populate_spec_tree() {
+func makeAndPopulateSpecTree() {
 	//remove the old tree if there is already one
 	//and then create a new one with the specs loaded in the
 	//tree
-	if spec_tree_view != nil {
-		spec_tree_vbox.Remove(swin_spec_tree)
+	if specTreeView != nil {
+		specTreeVbox.Remove(swinSpecTree)
 	}
 
-	tree_store := gtk.NewTreeStore(glib.G_TYPE_STRING)
-	spec_tree_view = gtk.NewTreeView()
-	spec_tree_view.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Specs", gtk.NewCellRendererText(), "text", 0))
-	spec_tree_view.SetModel(tree_store.ToTreeModel())
+	treeStore := gtk.NewTreeStore(glib.G_TYPE_STRING)
+	specTreeView = gtk.NewTreeView()
+	specTreeView.AppendColumn(gtk.NewTreeViewColumnWithAttributes("Specs", gtk.NewCellRendererText(), "text", 0))
+	specTreeView.SetModel(treeStore.ToTreeModel())
 
-	spec_tree_view.SetSizeRequest(250, 800)
+	specTreeView.SetSizeRequest(250, 800)
 
-	var ti_1, ti_2 gtk.TreeIter
-	tree_store.Append(&ti_1, nil)
-	tree_store.Set(&ti_1, "Specifications")
+	var ti1, ti2 gtk.TreeIter
+	treeStore.Append(&ti1, nil)
+	treeStore.Set(&ti1, "Specifications")
 	n := 0
 	for _, spec := range iso8583.GetSpecs() {
-		tree_store.Append(&ti_2, &ti_1)
-		tree_store.Set(&ti_2, spec.Name())
+		treeStore.Append(&ti2, &ti1)
+		treeStore.Set(&ti2, spec.Name())
 		n++
 	}
 
-	spec_tree_view.SetHeadersVisible(false)
+	specTreeView.SetHeadersVisible(false)
 
-	spec_tree_view.Connect("button-release-event", func(ctx *glib.CallbackContext) {
+	specTreeView.Connect("button-release-event", func(ctx *glib.CallbackContext) {
 
 		event := (*gdk.EventButton)(unsafe.Pointer(ctx.Args(0)))
 		if event.Button == 1 {
 
 			var path *gtk.TreePath
 			var col *gtk.TreeViewColumn
-			spec_tree_view.GetCursor(&path, &col)
+			specTreeView.GetCursor(&path, &col)
 
 			if path.String() == "0" {
 				return
 			}
 
 			val := new(glib.GValue)
-			var t_iter gtk.TreeIter
-			if tree_store.GetIter(&t_iter, path) {
-				tree_store.GetValue(&t_iter, 0, val)
-				show_spec_layout(val.GetString())
+			var tIter gtk.TreeIter
+			if treeStore.GetIter(&tIter, path) {
+				treeStore.GetValue(&tIter, 0, val)
+				showSpecLayout(val.GetString())
 
 			}
 
@@ -211,237 +211,236 @@ func make_and_populate_spec_tree() {
 
 	})
 
-	status_bar.Push(status_bar_context_id, fmt.Sprintf("%d specs loaded. OK.", n))
+	statusBar.Push(statusBarContextId, fmt.Sprintf("%d specs loaded. OK.", n))
 
-	swin_spec_tree = gtk.NewScrolledWindow(nil, nil)
-	swin_spec_tree.SetSizeRequest(200, 800)
-	swin_spec_tree.AddWithViewPort(spec_tree_view)
+	swinSpecTree = gtk.NewScrolledWindow(nil, nil)
+	swinSpecTree.SetSizeRequest(200, 800)
+	swinSpecTree.AddWithViewPort(specTreeView)
 
-	spec_tree_vbox.PackStart(swin_spec_tree, true, true, 2)
+	specTreeVbox.PackStart(swinSpecTree, true, true, 2)
 
-	spec_tree_vbox.ShowAll()
+	specTreeVbox.ShowAll()
 
 }
 
-func show_spec_layout(spec_name string) {
+func showSpecLayout(specName string) {
 
 	//this 'req_iso_msg' will act as the model
 	//that backs the TreeView
-	req_iso_msg = iso8583.NewIso8583Message(spec_name)
+	reqIsoMsg = iso8583.NewIso8583Message(specName)
 
 	//remove the active frame
-	if active_spec_frame != nil {
-		right_box.Remove(active_spec_frame)
-		right_box.Remove(h_box)
+	if activeSpecFrame != nil {
+		rightBox.Remove(activeSpecFrame)
+		rightBox.Remove(hBox)
 	}
 	//right_box.Remove(swin_console)
 
-	spec_msg_tree := pyui.NewPaysimSpecMsgTree()
+	specMsgTree := pyui.NewPaysimSpecMsgTree()
 
-	spec_lyt_tree := spec_msg_tree.View()
-	spec_lyt_store := spec_msg_tree.Store()
+	specLytTree := specMsgTree.View()
+	specLytStore := specMsgTree.Store()
 
 	var i1 gtk.TreeIter
 
-	spec_lyt := iso8583.GetSpecLayout(spec_name)
-	for _, field_def := range spec_lyt {
-		spec_lyt_store.Append(&i1, nil)
-		spec_lyt_store.SetValue(&i1, 0, false)
-		spec_lyt_store.SetValue(&i1, 1, field_def.BitPosition)
-		spec_lyt_store.SetValue(&i1, 2, field_def.Name)
-		spec_lyt_store.SetValue(&i1, 3, "")
-		spec_lyt_store.SetValue(&i1, 4, field_def.Id)
-		if field_def.Name == "Bitmap" || field_def.Name == "Message Type" {
-			spec_lyt_store.SetValue(&i1, 0, true)
+	specLyt := iso8583.GetSpecLayout(specName)
+	for _, fieldDef := range specLyt {
+		specLytStore.Append(&i1, nil)
+		specLytStore.SetValue(&i1, 0, false)
+		specLytStore.SetValue(&i1, 1, fieldDef.BitPosition)
+		specLytStore.SetValue(&i1, 2, fieldDef.Name)
+		specLytStore.SetValue(&i1, 3, "")
+		specLytStore.SetValue(&i1, 4, fieldDef.Id)
+		if fieldDef.Name == "Bitmap" || fieldDef.Name == "Message Type" {
+			specLytStore.SetValue(&i1, 0, true)
 		} else {
-			spec_lyt_store.SetValue(&i1, 0, false)
+			specLytStore.SetValue(&i1, 0, false)
 		}
 
 		//bitmap will be non-editable
-		if field_def.Name == "Bitmap" {
+		if fieldDef.Name == "Bitmap" {
 			//lets store the iter
-			bmp_iter = i1
-			spec_lyt_store.SetValue(&i1, 3, "00000000000000000000000000000000")
-			spec_lyt_store.SetValue(&i1, 5, false)
+			bmpIter = i1
+			specLytStore.SetValue(&i1, 3, "00000000000000000000000000000000")
+			specLytStore.SetValue(&i1, 5, false)
 		} else {
-			spec_lyt_store.SetValue(&i1, 5, true)
+			specLytStore.SetValue(&i1, 5, true)
 		}
 
 	}
 
-	spec_msg_tree.FieldValueRenderer().Connect("edited",
+	specMsgTree.FieldValueRenderer().Connect("edited",
 		func(ctx *glib.CallbackContext) {
 
-			field_name := get_current_field_name(spec_lyt_tree, spec_lyt_store)
-			if field_name == "Bitmap" {
+			fieldName := getCurrentFieldName(specLytTree, specLytStore)
+			if fieldName == "Bitmap" {
 				//do not allow edits on Bitmap field
 				return
 			}
 
-			set_current_field_value(spec_lyt_tree, spec_lyt_store, ctx.Args(1).ToString())
+			setCurrentFieldValue(specLytTree, specLytStore, ctx.Args(1).ToString())
 
 		})
 
-	spec_msg_tree.FieldToggleRenderer().Connect("toggled",
+	specMsgTree.FieldToggleRenderer().Connect("toggled",
 		func(ctx *glib.CallbackContext) {
 
 			var path *gtk.TreePath
 			var col *gtk.TreeViewColumn
-			spec_lyt_tree.GetCursor(&path, &col)
+			specLytTree.GetCursor(&path, &col)
 			log.Println(col.GetTitle())
 			if col.GetTitle() != "Is Selected" {
 				return
 			}
 
 			var i1 gtk.TreeIter
-			if spec_lyt_store.GetIter(&i1, path) {
+			if specLytStore.GetIter(&i1, path) {
 
-				field_name_val := glib.GValue{}
-				spec_lyt_store.GetValue(&i1, 2, &field_name_val)
-				fmt.Println(field_name_val.GetString())
+				fieldNameVal := glib.GValue{}
+				specLytStore.GetValue(&i1, 2, &fieldNameVal)
+				fmt.Println(fieldNameVal.GetString())
 
-				if field_name_val.GetString() == "Bitmap" || field_name_val.GetString() == "Message Type" {
+				if fieldNameVal.GetString() == "Bitmap" || fieldNameVal.GetString() == "Message Type" {
 					return
 				}
 
 				val := glib.GValue{}
-				bit_pos_val := glib.GValue{}
-				spec_lyt_store.GetValue(&i1, 0, &val)
-				spec_lyt_store.GetValue(&i1, 1, &bit_pos_val)
+				bitPosVal := glib.GValue{}
+				specLytStore.GetValue(&i1, 0, &val)
+				specLytStore.GetValue(&i1, 1, &bitPosVal)
 
-				spec_lyt_store.SetValue(&i1, 0, !val.GetBool())
+				specLytStore.SetValue(&i1, 0, !val.GetBool())
 
 				if !val.GetBool() {
-					req_iso_msg.Bitmap().SetOn(bit_pos_val.GetInt())
+					reqIsoMsg.Bitmap().SetOn(bitPosVal.GetInt())
 				} else {
-					req_iso_msg.Bitmap().SetOff(bit_pos_val.GetInt())
+					reqIsoMsg.Bitmap().SetOff(bitPosVal.GetInt())
 				}
 
-				recompute_bitmap(spec_lyt_store)
+				recomputeBitmap(specLytStore)
 			}
 
 		})
 
-	ui_ctx.LoadButton().Connect("clicked", func() {
+	uiCtx.LoadButton().Connect("clicked", func() {
 
-		trace_data, err := ui_ctx.GetUsrTrace()
+		trace_data, err := uiCtx.GetUsrTrace()
 		log.Println("user trace: ", hex.EncodeToString(trace_data))
 		if err == nil {
 			msg_buf := bytes.NewBuffer(trace_data)
-			err = req_iso_msg.Parse(msg_buf)
+			err = reqIsoMsg.Parse(msg_buf)
 			if err != nil {
-				pyui.ShowErrorDialog(ui_ctx.Window(), "Trace Parse Error")
+				pyui.ShowErrorDialog(uiCtx.Window(), "Trace Parse Error")
 			}
 
-			populate_model(spec_lyt_store)
+			populateModel(specLytStore)
 		}
 
 	})
 
-	ui_ctx.AssembleButton().Connect("clicked", func() {
+	uiCtx.AssembleButton().Connect("clicked", func() {
 
-		trace_data := req_iso_msg.Bytes()
-		ui_ctx.ShowUsrTrace(trace_data)
+		traceData := reqIsoMsg.Bytes()
+		uiCtx.ShowUsrTrace(traceData)
 	})
-	ui_ctx.SendButton().Connect("clicked", func() {
+	uiCtx.SendButton().Connect("clicked", func() {
 
-		tcp_addr, mli_type_str, err := ui_ctx.GetCommsConfig()
+		tcpAddr, mliTypeStr, err := uiCtx.GetCommsConfig()
 		if err != nil {
-			pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+			pyui.ShowErrorDialog(uiCtx.Window(), err.Error())
 			return
 		}
 
 		//send this msg, get the response and then display
 		//the response
-		resp_iso_msg, err = pynet.SendIsoMsg(tcp_addr.String(), mli_type_str, req_iso_msg)
+		respIsoMsg, err = pynet.SendIsoMsg(tcpAddr.String(), mliTypeStr, reqIsoMsg)
 		if err != nil {
 
-			net_err, ok := err.(net.Error)
-			if ok && net_err.Timeout() {
-				pyui.ShowErrorDialog(ui_ctx.Window(), "Message Timed Out.")
+			netErr, ok := err.(net.Error)
+			if ok && netErr.Timeout() {
+				pyui.ShowErrorDialog(uiCtx.Window(), "Message Timed Out.")
 			} else {
-				pyui.ShowErrorDialog(ui_ctx.Window(), err.Error())
+				pyui.ShowErrorDialog(uiCtx.Window(), err.Error())
 			}
 		} else {
 			//hoo-hah! response received
 			//display it as a dialog to the user
-			pyui.ShowIsoResponseMsgDialog(resp_iso_msg.TabularFormat())
+			pyui.ShowIsoResponseMsgDialog(respIsoMsg.TabularFormat())
 		}
 
 	})
 
 	align := gtk.NewAlignment(0.5, 0.5, 0.0, 0.0)
-	align.Add(ui_ctx.ButtonBox())
-	spec_lyt_tree.ShowAll()
-	active_spec_frame = gtk.NewFrame("       [" + spec_name + "]        ")
-	active_spec_frame.SetName("spec_frame")
-	active_spec_frame.SetSizeRequest(300, 300)
+	align.Add(uiCtx.ButtonBox())
+	specLytTree.ShowAll()
+	activeSpecFrame = gtk.NewFrame("       [" + specName + "]        ")
+	activeSpecFrame.SetName("spec_frame")
+	activeSpecFrame.SetSizeRequest(300, 300)
 
 	//add a scrolled winow containing
 	//the spec_lty_tree
 	swin := gtk.NewScrolledWindow(nil, nil)
-	swin.AddWithViewPort(spec_lyt_tree)
-	hbox_tmp := gtk.NewHBox(false, 10)
-	hbox_tmp.PackStart(swin, true, true, 10)
+	swin.AddWithViewPort(specLytTree)
+	hboxTmp := gtk.NewHBox(false, 10)
+	hboxTmp.PackStart(swin, true, true, 10)
 
-	active_spec_frame.Add(hbox_tmp)
+	activeSpecFrame.Add(hboxTmp)
 
-	right_box.SetSizeRequest(400, 200)
-	right_box.PackStart(active_spec_frame, false, false, 20)
-	right_box.PackStart(align, false, false, 0)
+	rightBox.SetSizeRequest(400, 200)
+	rightBox.PackStart(activeSpecFrame, false, false, 20)
+	rightBox.PackStart(align, false, false, 0)
 	//reset_console()
-	right_box.ReorderChild(swin_console, -1) //.PackStart(swin_console, false, false, 0)
+	rightBox.ReorderChild(swinConsole, -1) //.PackStart(swin_console, false, false, 0)
 
-	right_box.ShowAll()
-
-}
-
-func reset_console() {
-
-	swin_console = gtk.NewScrolledWindow(nil, nil)
-	swin_console.AddWithViewPort(pyui.PaysimConsole.TextView())
-	swin_console.SetSizeRequest(400, 150)
+	rightBox.ShowAll()
 
 }
 
-func get_current_field_name(iso_msg_tree *gtk.TreeView,
-	iso_msg_tree_store *gtk.TreeStore) string {
+func resetConsole() {
+
+	swinConsole = gtk.NewScrolledWindow(nil, nil)
+	swinConsole.AddWithViewPort(pyui.PaysimConsole.TextView())
+	swinConsole.SetSizeRequest(400, 150)
+
+}
+
+func getCurrentFieldName(isoMsgTree *gtk.TreeView, isoMsgTreeStore *gtk.TreeStore) string {
 
 	var path *gtk.TreePath
 	var col *gtk.TreeViewColumn
-	iso_msg_tree.GetCursor(&path, &col)
+	isoMsgTree.GetCursor(&path, &col)
 	var i1 gtk.TreeIter
 
-	if iso_msg_tree_store.GetIter(&i1, path) {
-		field_name_val := glib.GValue{}
-		iso_msg_tree_store.GetValue(&i1, 2, &field_name_val)
-		return field_name_val.GetString()
+	if isoMsgTreeStore.GetIter(&i1, path) {
+		fieldNameVal := glib.GValue{}
+		isoMsgTreeStore.GetValue(&i1, 2, &fieldNameVal)
+		return fieldNameVal.GetString()
 	}
 
 	return ""
 
 }
 
-func set_current_field_value(iso_msg_tree *gtk.TreeView,
-	iso_msg_tree_store *gtk.TreeStore, val string) {
+func setCurrentFieldValue(isoMsgTree *gtk.TreeView,
+	isoMsgTreeStore *gtk.TreeStore, val string) {
 
 	var path *gtk.TreePath
 	var col *gtk.TreeViewColumn
-	iso_msg_tree.GetCursor(&path, &col)
+	isoMsgTree.GetCursor(&path, &col)
 	var i1 gtk.TreeIter
 
-	if iso_msg_tree_store.GetIter(&i1, path) {
+	if isoMsgTreeStore.GetIter(&i1, path) {
 
-		f_name := glib.GValue{}
-		iso_msg_tree_store.GetValue(&i1, 2, &f_name)
-		log.Println("setting field to value ", f_name.GetString(), "to ", val)
-		fld_id := glib.GValue{}
-		iso_msg_tree_store.GetValue(&i1, 4, &fld_id)
-		req_iso_msg.SetFieldData(fld_id.GetInt(), val)
+		fName := glib.GValue{}
+		isoMsgTreeStore.GetValue(&i1, 2, &fName)
+		log.Println("setting field to value ", fName.GetString(), "to ", val)
+		fldId := glib.GValue{}
+		isoMsgTreeStore.GetValue(&i1, 4, &fldId)
+		reqIsoMsg.SetFieldData(fldId.GetInt(), val)
 		//data might have been truncated or padded based on the
 		//field definition
-		new_val := req_iso_msg.GetFieldDataById(fld_id.GetInt()).String()
-		iso_msg_tree_store.SetValue(&i1, 3, new_val)
+		newVal := reqIsoMsg.GetFieldDataById(fldId.GetInt()).String()
+		isoMsgTreeStore.SetValue(&i1, 3, newVal)
 
 	}
 
@@ -449,57 +448,57 @@ func set_current_field_value(iso_msg_tree *gtk.TreeView,
 
 //recompute_bitmap will show a new value of the bitmap
 //on the UI
-func recompute_bitmap(iso_tree_store *gtk.TreeStore) {
+func recomputeBitmap(isoTreeStore *gtk.TreeStore) {
 
 	val := glib.GValue{}
-	bmp_data := req_iso_msg.Bitmap().Bytes()
-	iso_tree_store.GetValue(&bmp_iter, 3, &val)
+	bmpData := reqIsoMsg.Bitmap().Bytes()
+	isoTreeStore.GetValue(&bmpIter, 3, &val)
 	log.Println("Bitmap's current value", val.GetString())
 
-	iso_tree_store.SetValue(&bmp_iter, 3, hex.EncodeToString(bmp_data))
+	isoTreeStore.SetValue(&bmpIter, 3, hex.EncodeToString(bmpData))
 
 }
 
 //populates the store based on the data in
 //req_iso_msg
-func populate_model(iso_tree_store *gtk.TreeStore) {
+func populateModel(isoTreeStore *gtk.TreeStore) {
 
 	iter := gtk.TreeIter{}
 
-	if iso_tree_store.GetIterFirst(&iter) {
-		g_val := glib.GValue{}
-		iso_tree_store.GetValue(&iter, 4, &g_val)
-		get_and_set_field_val(iso_tree_store, g_val.GetInt(), &iter)
-		for iso_tree_store.IterNext(&iter) {
-			g_val := glib.GValue{}
-			iso_tree_store.GetValue(&iter, 4, &g_val)
-			get_and_set_field_val(iso_tree_store, g_val.GetInt(), &iter)
+	if isoTreeStore.GetIterFirst(&iter) {
+		gVal := glib.GValue{}
+		isoTreeStore.GetValue(&iter, 4, &gVal)
+		getAndSetFieldVal(isoTreeStore, gVal.GetInt(), &iter)
+		for isoTreeStore.IterNext(&iter) {
+			gVal := glib.GValue{}
+			isoTreeStore.GetValue(&iter, 4, &gVal)
+			getAndSetFieldVal(isoTreeStore, gVal.GetInt(), &iter)
 
 		}
 	}
 
 }
 
-func get_and_set_field_val(iso_tree_store *gtk.TreeStore, id int, iter *gtk.TreeIter) {
-	f_name_val := glib.GValue{}
-	iso_tree_store.GetValue(iter, pyui.COL_FIELD_NAME, &f_name_val)
-	val := req_iso_msg.GetFieldDataById(id)
+func getAndSetFieldVal(isoTreeStore *gtk.TreeStore, id int, iter *gtk.TreeIter) {
+	fNameVal := glib.GValue{}
+	isoTreeStore.GetValue(iter, pyui.COL_FIELD_NAME, &fNameVal)
+	val := reqIsoMsg.GetFieldDataById(id)
 	if len(val.Bytes()) > 0 {
-		log.Printf("setting field [%s] value [%s]\n", f_name_val.GetString(), val.String())
-		iso_tree_store.SetValue(iter, pyui.COL_FIELD_VAL, val.String())
+		log.Printf("setting field [%s] value [%s]\n", fNameVal.GetString(), val.String())
+		isoTreeStore.SetValue(iter, pyui.COL_FIELD_VAL, val.String())
 
 		if val.Def() != nil {
 
 			if val.Def().BitPosition() > 0 {
-				if req_iso_msg.IsSelected(val.Def().BitPosition()) {
-					iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
+				if reqIsoMsg.IsSelected(val.Def().BitPosition()) {
+					isoTreeStore.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
 				} else {
-					iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, false)
+					isoTreeStore.SetValue(iter, pyui.COL_FIELD_SELECTION, false)
 				}
 
 			}
 		} else {
-			iso_tree_store.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
+			isoTreeStore.SetValue(iter, pyui.COL_FIELD_SELECTION, true)
 		}
 
 	}

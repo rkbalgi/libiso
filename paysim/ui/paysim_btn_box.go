@@ -4,18 +4,18 @@ import (
 	"github.com/mattn/go-gtk/gtk"
 )
 
-func (self *PaysimUiContext) create_buttons_and_box() {
+func (pCtx *PaysimUiContext) createButtonsAndBox() {
 
-	self._btn_ld = gtk.NewButtonWithLabel(" Load Trace ")
-	self._btn_ld.ModifyFontEasy("Dejavu Sans 9")
-	self._btn_assemble = gtk.NewButtonWithLabel(" Assemble Trace ")
-	self._btn_send = gtk.NewButtonWithLabel(" Send  ")
-	self._btn_box = gtk.NewHBox(false, 5)
-	self._btn_box.PackStart(self._btn_ld, false, false, 1)
-	self._btn_box.PackStart(self._btn_assemble, false, false, 1)
-	self._btn_box.PackStart(self._btn_send, false, false, 1)
+	pCtx.btnLd = gtk.NewButtonWithLabel(" Load Trace ")
+	pCtx.btnLd.ModifyFontEasy("Dejavu Sans 9")
+	pCtx.btnAssemble = gtk.NewButtonWithLabel(" Assemble Trace ")
+	pCtx.btnSend = gtk.NewButtonWithLabel(" Send  ")
+	pCtx.btnBox = gtk.NewHBox(false, 5)
+	pCtx.btnBox.PackStart(pCtx.btnLd, false, false, 1)
+	pCtx.btnBox.PackStart(pCtx.btnAssemble, false, false, 1)
+	pCtx.btnBox.PackStart(pCtx.btnSend, false, false, 1)
 }
 
-func (self *PaysimUiContext) ButtonBox() *gtk.HBox {
-	return self._btn_box
+func (pCtx *PaysimUiContext) ButtonBox() *gtk.HBox {
+	return pCtx.btnBox
 }

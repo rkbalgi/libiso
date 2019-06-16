@@ -11,13 +11,15 @@ type PaysimUiConsole struct {
 }
 
 var init_ bool = false
+var PaysimConsole *PaysimUiConsole
 
 func Init() {
 	if !init_ {
-
+		PaysimConsole = newConsole()
 		init_ = true
 	}
 }
+
 func newConsole() *PaysimUiConsole {
 
 	self := new(PaysimUiConsole)

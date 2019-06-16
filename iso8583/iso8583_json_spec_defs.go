@@ -106,7 +106,7 @@ func ReadDemoSpecDefs() {
 			delete(spec_map, k)
 		}
 	}
-	str := demo.Demo_Specs
+	str := demo.DemoSpecs
 	ReadSpecDefsFromBuf(bytes.NewBufferString(str))
 	spec_init = true
 	display_specs()

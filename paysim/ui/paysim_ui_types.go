@@ -18,30 +18,30 @@ type SpecTab struct {
 }
 
 type PaysimUiContext struct {
-	_window           *gtk.Window
-	ip_addr_entry     *gtk.Entry
-	port_entry        *gtk.Entry
-	mli_types_cb      *gtk.ComboBox
-	comms_config_vbox *gtk.VBox
+	_window         *gtk.Window
+	ipAddrEntry     *gtk.Entry
+	portEntry       *gtk.Entry
+	mliTypesCb      *gtk.ComboBox
+	commsConfigVbox *gtk.VBox
 
-	_btn_ld       *gtk.Button
-	_btn_assemble *gtk.Button
-	_btn_send     *gtk.Button
-	_btn_box      *gtk.HBox
-}
-
-func (ctx *PaysimUiContext) Window() *gtk.Window {
-	return ctx._window
+	btnLd       *gtk.Button
+	btnAssemble *gtk.Button
+	btnSend     *gtk.Button
+	btnBox      *gtk.HBox
 }
 
-func (ctx *PaysimUiContext) LoadButton() *gtk.Button {
-	return ctx._btn_ld
+func (pCtx *PaysimUiContext) Window() *gtk.Window {
+	return pCtx._window
 }
-func (ctx *PaysimUiContext) AssembleButton() *gtk.Button {
-	return ctx._btn_assemble
+
+func (pCtx *PaysimUiContext) LoadButton() *gtk.Button {
+	return pCtx.btnLd
 }
-func (ctx *PaysimUiContext) SendButton() *gtk.Button {
-	return ctx._btn_send
+func (pCtx *PaysimUiContext) AssembleButton() *gtk.Button {
+	return pCtx.btnAssemble
+}
+func (pCtx *PaysimUiContext) SendButton() *gtk.Button {
+	return pCtx.btnSend
 }
 
 /*func (ctx *PaysimUiContext) MliTypesComboBox() *gtk.ComboBox {
@@ -56,8 +56,8 @@ func (ctx *PaysimUiContext) PortEntryWidget() *gtk.Entry {
 	return ctx.port_entry
 }
 */
-func (ctx *PaysimUiContext) CommsConfigVBox() *gtk.VBox {
-	return ctx.comms_config_vbox
+func (pCtx *PaysimUiContext) CommsConfigVBox() *gtk.VBox {
+	return pCtx.commsConfigVbox
 }
 
 func NewUiContext() *PaysimUiContext {
@@ -74,34 +74,34 @@ func NewUiContext() *PaysimUiContext {
 	}, "foo")
 
 	//comms_config box setup
-	ctx.ip_addr_entry = gtk.NewEntry()
-	ctx.port_entry = gtk.NewEntry()
-	ctx.mli_types_cb = gtk.NewComboBoxNewText()
-	ctx.mli_types_cb.AppendText("2I")
-	ctx.mli_types_cb.AppendText("2E")
+	ctx.ipAddrEntry = gtk.NewEntry()
+	ctx.portEntry = gtk.NewEntry()
+	ctx.mliTypesCb = gtk.NewComboBoxNewText()
+	ctx.mliTypesCb.AppendText("2I")
+	ctx.mliTypesCb.AppendText("2E")
 
 	iter := gtk.TreeIter{}
-	ctx.mli_types_cb.GetModel().GetIterFirst(&iter)
-	ctx.mli_types_cb.SetActiveIter(&iter)
+	ctx.mliTypesCb.GetModel().GetIterFirst(&iter)
+	ctx.mliTypesCb.SetActiveIter(&iter)
 
-	ctx.construct_comms_config_vbox()
-	ctx.create_buttons_and_box()
+	ctx.constructCommsConfigVbox()
+	ctx.createButtonsAndBox()
 
 	return ctx
 }
 
 //GetCommsConfig returns the IP, port and the MLI to be used
 //for the message
-func (ctx *PaysimUiContext) GetCommsConfig() (*net.TCPAddr, string, error) {
+func (pCtx *PaysimUiContext) GetCommsConfig() (*net.TCPAddr, string, error) {
 
-	ip_str := ctx.ip_addr_entry.GetText()
-	if len(strings.Trim(ip_str, " ")) == 0 {
+	ipStr := pCtx.ipAddrEntry.GetText()
+	if len(strings.Trim(ipStr, " ")) == 0 {
 		return nil, "", errors.New("invalid ip")
 	}
 
-	port_str := ctx.port_entry.GetText()
+	portStr := pCtx.portEntry.GetText()
 	port := uint64(0)
-	matched, err := regexp.Match("^[0-9]{4,6}$", []byte(port_str))
+	matched, err := regexp.Match("^[0-9]{4,6}$", []byte(portStr))
 	if err != nil {
 		return nil, "", err
 	} else {
@@ -109,69 +109,69 @@ func (ctx *PaysimUiContext) GetCommsConfig() (*net.TCPAddr, string, error) {
 			return nil, "", errors.New("invalid port")
 		}
 
-		_ip := net.ParseIP(ip_str)
-		port, err = strconv.ParseUint(port_str, 10, 32)
-		tcp_addr := &net.TCPAddr{IP: _ip, Port: int(port)}
-		return tcp_addr, ctx.mli_types_cb.GetActiveText(), nil
+		_ip := net.ParseIP(ipStr)
+		port, err = strconv.ParseUint(portStr, 10, 32)
+		tcpAddr := &net.TCPAddr{IP: _ip, Port: int(port)}
+		return tcpAddr, pCtx.mliTypesCb.GetActiveText(), nil
 	}
 
 }
 
-func (ctx *PaysimUiContext) construct_comms_config_vbox() {
+func (pCtx *PaysimUiContext) constructCommsConfigVbox() {
 
 	//default values
-	ctx.ip_addr_entry.SetText("127.0.0.1")
-	ctx.port_entry.SetText("5656")
+	pCtx.ipAddrEntry.SetText("127.0.0.1")
+	pCtx.portEntry.SetText("5656")
 
-	ctx.comms_config_vbox = gtk.NewVBox(true, 5)
+	pCtx.commsConfigVbox = gtk.NewVBox(true, 5)
 	//ip addr box
-	tmp_hbox := gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 5)
-	tmp_hbox.PackStart(ctx.ip_addr_entry, false, false, 5)
-	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 5)
+	tmpHbox := gtk.NewHBox(false, 5)
+	tmpHbox.PackStart(gtk.NewLabel("Destination Ip   "), false, false, 5)
+	tmpHbox.PackStart(pCtx.ipAddrEntry, false, false, 5)
+	pCtx.commsConfigVbox.PackStart(tmpHbox, false, false, 5)
 
 	//port box
-	tmp_hbox = gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("Destination Port "), false, false, 2)
-	tmp_hbox.PackStart(ctx.port_entry, false, false, 5)
-	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
+	tmpHbox = gtk.NewHBox(false, 5)
+	tmpHbox.PackStart(gtk.NewLabel("Destination Port "), false, false, 2)
+	tmpHbox.PackStart(pCtx.portEntry, false, false, 5)
+	pCtx.commsConfigVbox.PackStart(tmpHbox, false, false, 1)
 
-	tmp_hbox = gtk.NewHBox(false, 5)
-	tmp_hbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 10)
-	tmp_hbox.PackStart(ctx.mli_types_cb, false, false, 15)
-	ctx.comms_config_vbox.PackStart(tmp_hbox, false, false, 1)
+	tmpHbox = gtk.NewHBox(false, 5)
+	tmpHbox.PackStart(gtk.NewLabel("MLI Type "), false, false, 10)
+	tmpHbox.PackStart(pCtx.mliTypesCb, false, false, 15)
+	pCtx.commsConfigVbox.PackStart(tmpHbox, false, false, 1)
 
 }
 
-func (ctx *PaysimUiContext) GetUsrTrace() ([]byte, error) {
+func (pCtx *PaysimUiContext) GetUsrTrace() ([]byte, error) {
 
 	dialog := gtk.NewDialog()
 	dialog.SetPosition(gtk.WIN_POS_CENTER)
 	dialog.SetTitle("Input Trace")
-	dialog.SetParent(ctx.Window().GetTopLevelAsWindow())
+	dialog.SetParent(pCtx.Window().GetTopLevelAsWindow())
 	dialog.SetModal(true)
 	dialog.SetSizeRequest(400, 200)
 
 	data := make([]byte, 0)
 	var err error
 
-	text_view := gtk.NewTextView()
-	text_view.SetEditable(true)
-	text_view.SetWrapMode(gtk.WRAP_CHAR)
-	text_view.GetBuffer().SetText("31313030702000000000000131353131313131313131313131313131343030343830303030303030303030303132323132333435360000000000000000")
-	swin := gtk.NewScrolledWindow(nil, nil)
-	swin.AddWithViewPort(text_view)
+	textView := gtk.NewTextView()
+	textView.SetEditable(true)
+	textView.SetWrapMode(gtk.WRAP_CHAR)
+	textView.GetBuffer().SetText("31313030702000000000000131353131313131313131313131313131343030343830303030303030303030303132323132333435360000000000000000")
+	scrolledWindow := gtk.NewScrolledWindow(nil, nil)
+	scrolledWindow.AddWithViewPort(textView)
 
-	dialog.GetVBox().PackStart(swin, true, true, 5)
-	ok_btn := dialog.AddButton("OK", gtk.RESPONSE_OK)
+	dialog.GetVBox().PackStart(scrolledWindow, true, true, 5)
+	okBtn := dialog.AddButton("OK", gtk.RESPONSE_OK)
 
-	ok_btn.Connect("clicked", func() {
-		text_buf := text_view.GetBuffer()
-		var s_i, e_i gtk.TextIter
-		text_buf.GetStartIter(&s_i)
-		text_buf.GetEndIter(&e_i)
-		tmp := text_buf.GetText(&s_i, &e_i, false)
-		data, err = hex.DecodeString((strings.Trim(tmp, " ")))
+	okBtn.Connect("clicked", func() {
+		textBuf := textView.GetBuffer()
+		var sI, eI gtk.TextIter
+		textBuf.GetStartIter(&sI)
+		textBuf.GetEndIter(&eI)
+		tmp := textBuf.GetText(&sI, &eI, false)
+		data, err = hex.DecodeString(strings.Trim(tmp, " "))
 
 		if err != nil {
 			ShowErrorDialog(dialog, "invalid trace data")
@@ -181,8 +181,8 @@ func (ctx *PaysimUiContext) GetUsrTrace() ([]byte, error) {
 			gtk.MainQuit()
 		}
 	})
-	cancel_btn := dialog.AddButton("Cancel", gtk.RESPONSE_CANCEL)
-	cancel_btn.Connect("clicked", func() {
+	cancelBtn := dialog.AddButton("Cancel", gtk.RESPONSE_CANCEL)
+	cancelBtn.Connect("clicked", func() {
 
 		err = errors.New("cancel_op")
 		data = nil
@@ -196,7 +196,7 @@ func (ctx *PaysimUiContext) GetUsrTrace() ([]byte, error) {
 
 }
 
-func (ctx *PaysimUiContext) ShowUsrTrace(trace_data []byte) {
+func (pCtx *PaysimUiContext) ShowUsrTrace(traceData []byte) {
 
 	dialog := gtk.NewDialog()
 	dialog.SetTitle("Assembled Trace")
@@ -204,17 +204,17 @@ func (ctx *PaysimUiContext) ShowUsrTrace(trace_data []byte) {
 	dialog.SetModal(true)
 	dialog.SetSizeRequest(400, 200)
 
-	text_view := gtk.NewTextView()
-	text_view.SetEditable(false)
-	text_view.SetWrapMode(gtk.WRAP_CHAR)
-	text_view.GetBuffer().SetText(hex.EncodeToString(trace_data))
-	swin := gtk.NewScrolledWindow(nil, nil)
-	swin.AddWithViewPort(text_view)
+	textView := gtk.NewTextView()
+	textView.SetEditable(false)
+	textView.SetWrapMode(gtk.WRAP_CHAR)
+	textView.GetBuffer().SetText(hex.EncodeToString(traceData))
+	ScrolledWindow := gtk.NewScrolledWindow(nil, nil)
+	ScrolledWindow.AddWithViewPort(textView)
 
-	dialog.GetVBox().PackStart(swin, true, true, 5)
-	ok_btn := dialog.AddButton("OK", gtk.RESPONSE_OK)
+	dialog.GetVBox().PackStart(ScrolledWindow, true, true, 5)
+	okBtn := dialog.AddButton("OK", gtk.RESPONSE_OK)
 
-	ok_btn.Connect("clicked", func() {
+	okBtn.Connect("clicked", func() {
 		dialog.Destroy()
 	})
 
