@@ -3,6 +3,7 @@ package iso8583
 import (
 	"bytes"
 	"encoding/hex"
+	"github.com/rkbalgi/go/iso_host"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func Test_Iso8583Message(t *testing.T) {
 
 	buf := bytes.NewBuffer(data)
 	t.Log(hex.EncodeToString(buf.Bytes()))
-	_, err := Handle("", buf)
+	_, err := iso_host.Handle("", buf)
 	if err != nil {
 		t.Fail()
 	}
