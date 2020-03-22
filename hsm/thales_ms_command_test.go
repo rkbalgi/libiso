@@ -4,7 +4,7 @@ import (
 	//"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/rkbalgi/go/net"
+	"go/net"
 	"strings"
 	"testing"
 )

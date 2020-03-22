@@ -1,7 +1,7 @@
 package main
 
 import (
-	mynet "github.com/rkbalgi/go/net"
+	mynet "go/net"
 	"log"
 )
 import (

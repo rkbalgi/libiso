@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "github.com/rkbalgi/go/hsm"
-	"github.com/rkbalgi/go/hsm/console"
+	_ "go/hsm"
+	"go/hsm/console"
 	"sync"
 )
 

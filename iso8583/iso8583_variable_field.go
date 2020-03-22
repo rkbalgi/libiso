@@ -6,7 +6,7 @@ import (
 	_ "encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/rkbalgi/go/encoding/ebcdic"
+	"go/encoding/ebcdic"
 	"strconv"
 )
 

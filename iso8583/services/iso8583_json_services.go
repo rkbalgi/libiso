@@ -2,7 +2,7 @@ package services
 
 import (
 	"encoding/json"
-	"github.com/rkbalgi/go/iso8583"
+	"go/iso8583"
 	"log"
 )
 

@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/rkbalgi/go/net"
+	"go/net"
 	"os"
 	"time"
 )

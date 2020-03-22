@@ -1,12 +1,12 @@
 package main
 
 //import hexutils "github.com/rkbalgi/utils"
-import "github.com/rkbalgi/go/crypto"
+import "go/crypto"
 import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/rkbalgi/go/utils"
+	"go/utils"
 	"reflect"
 	"sync"
 	//"os"

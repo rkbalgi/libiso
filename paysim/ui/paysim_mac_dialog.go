@@ -4,8 +4,8 @@ import (
 	"encoding/hex"
 	_ "fmt"
 	"github.com/mattn/go-gtk/gtk"
-	"github.com/rkbalgi/go/crypto"
-	"github.com/rkbalgi/go/crypto/mac"
+	"go/crypto"
+	"go/crypto/mac"
 )
 
 func ComputeMacDialog(widget gtk.IWidget, msg string) {

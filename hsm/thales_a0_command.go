@@ -3,8 +3,8 @@ package hsm
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/rkbalgi/go/crypto"
-	"github.com/rkbalgi/go/hsm/keys"
+	"go/crypto"
+	"go/hsm/keys"
 )
 
 type thalesA0Req struct {

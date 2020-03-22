@@ -1,6 +1,6 @@
 package main
 
-import mynet "github.com/rkbalgi/go/net"
+import mynet "go/net"
 import (
 	"encoding/hex"
 	"flag"

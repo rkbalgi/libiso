@@ -2,7 +2,7 @@ package hsm
 
 import (
 	"encoding/hex"
-	"github.com/rkbalgi/go/crypto"
+	"go/crypto"
 	"golang.org/x/xerrors"
 	"strconv"
 )

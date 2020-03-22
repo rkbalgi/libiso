@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/rkbalgi/go/iso8583"
-	_ "github.com/rkbalgi/go/iso8583/services"
-	"github.com/rkbalgi/go/iso_host"
+	"go/iso8583"
+	_ "go/iso8583/services"
+	"go/iso_host"
 	"log"
 	"net/http"
 )

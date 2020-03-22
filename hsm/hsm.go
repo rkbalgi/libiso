@@ -7,7 +7,7 @@ import (
 	//"bytes"
 	"encoding/binary"
 	"encoding/hex"
-	_net "github.com/rkbalgi/go/net"
+	_net "go/net"
 	"io"
 	"log"
 	"os"

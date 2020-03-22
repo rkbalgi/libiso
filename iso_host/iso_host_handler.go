@@ -2,9 +2,9 @@ package iso_host
 
 import (
 	"bytes"
-	//"github.com/rkbalgi/go/iso8583"
+	//"go/iso8583"
 	"errors"
-	. "github.com/rkbalgi/go/iso8583"
+	. "go/iso8583"
 	"log"
 	"os"
 )

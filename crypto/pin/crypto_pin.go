@@ -13,7 +13,7 @@ import (
 	_ "strings"
 	//"math"
 	"crypto/rand"
-	_crypt "github.com/rkbalgi/go/crypto"
+	_crypt "go/crypto"
 	//"github.com/rkbalgi/crypto/pin"
 )
 

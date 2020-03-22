@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	_ "fmt"
 	"github.com/mattn/go-gtk/gtk"
-	"github.com/rkbalgi/go/crypto/pin"
+	"go/crypto/pin"
 )
 
 func ComputePinBlockDialog(widget gtk.IWidget, msg string) {

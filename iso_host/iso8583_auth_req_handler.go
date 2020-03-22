@@ -1,7 +1,6 @@
 package iso_host
 
 import (
-	. "github.com/rkbalgi/go/iso8583"
 	"strconv"
 	"time"
 )

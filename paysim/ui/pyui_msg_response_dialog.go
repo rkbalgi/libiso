@@ -5,7 +5,7 @@ import (
 	_ "fmt"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
-	"github.com/rkbalgi/go/paysim"
+	"go/paysim"
 )
 
 func ShowIsoResponseMsgDialog(tabDataList *list.List) {

@@ -22,8 +22,8 @@ import (
 	"container/list"
 	"encoding/json"
 
-	"github.com/rkbalgi/go/paysim/demo"
-	pylog "github.com/rkbalgi/go/paysim/log"
+	"go/paysim/demo"
+	pylog "go/paysim/log"
 	_ "io"
 	"log"
 	"os"

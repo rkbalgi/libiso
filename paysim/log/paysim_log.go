@@ -2,7 +2,7 @@ package log
 
 import (
 	"fmt"
-	"github.com/rkbalgi/go/paysim/ui"
+	"go/paysim/ui"
 	"log"
 	"os"
 )

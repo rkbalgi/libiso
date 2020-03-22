@@ -5,7 +5,7 @@ package mac
 
 import (
 	"encoding/hex"
-	"github.com/rkbalgi/go/crypto"
+	"go/crypto"
 )
 
 //generate a X9.9 MAC using a single length key

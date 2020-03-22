@@ -3,7 +3,7 @@ package iso8583
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/rkbalgi/go/iso_host"
+	"go/iso_host"
 	"testing"
 )
 

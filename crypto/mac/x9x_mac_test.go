@@ -2,7 +2,7 @@ package mac
 
 import (
 	"bytes"
-	"github.com/rkbalgi/go/utils"
+	"go/utils"
 	"testing"
 )
 

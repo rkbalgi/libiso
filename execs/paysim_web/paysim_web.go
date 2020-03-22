@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/rkbalgi/go/paysim/handlers"
+	"go/paysim/handlers"
 	"log"
 	"net/http"
 )

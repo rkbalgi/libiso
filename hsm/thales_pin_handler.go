@@ -2,7 +2,7 @@ package hsm
 
 import (
 	"fmt"
-	"github.com/rkbalgi/go/crypto/pin"
+	"go/crypto/pin"
 	"log"
 )
 

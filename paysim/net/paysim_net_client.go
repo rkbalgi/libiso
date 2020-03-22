@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"github.com/rkbalgi/go/iso8583"
-	p_nc "github.com/rkbalgi/go/net"
-	pylog "github.com/rkbalgi/go/paysim/log"
+	"go/iso8583"
+	p_nc "go/net"
+	pylog "go/paysim/log"
 	//	"log"
 	//	"os"
 )

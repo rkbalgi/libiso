@@ -3,7 +3,7 @@ package console
 import (
 	"bufio"
 	"fmt"
-	"github.com/rkbalgi/go/hsm"
+	"go/hsm"
 	//"io"
 	_ "flag"
 	"os"
