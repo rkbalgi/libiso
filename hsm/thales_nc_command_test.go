@@ -8,6 +8,12 @@ import (
 	"testing"
 )
 
+func init() {
+	hsm := NewThalesHsm("127.0.0.1", 1500, AsciiEncoding)
+	go hsm.Start()
+
+}
+
 func Test_Thales_NC(t *testing.T) {
 
 	cmdStr := "303030303030303030303032;4e43;"

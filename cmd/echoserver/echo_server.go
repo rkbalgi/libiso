@@ -1,11 +1,9 @@
 package main
 
 import (
+	"fmt"
 	mynet "go/net"
 	"log"
-)
-import (
-	"fmt"
 	"net"
 	//"testing"
 	"os"

@@ -12,7 +12,7 @@ type PinblockIso3 struct {
 	PinBlocker
 }
 
-func (pinBlock *PinblockIso3) Encrypt(pan12digits string, clearPin string, key []byte) (res []byte, err error) {
+func (pinBlock *PinblockIso3) Encrypt(pan string, clearPin string, key []byte) (res []byte, err error) {
 
 	if len(clearPin) > 12 {
 		panic("pin length > 12")
@@ -24,6 +24,7 @@ func (pinBlock *PinblockIso3) Encrypt(pan12digits string, clearPin string, key [
 	fillRandom(buf)
 
 	pinBlockDataA, err := hex.DecodeString(buf.String())
+	pan12digits := pan[len(pan)-13 : len(pan)-1]
 	pinBlockDataB, err := hex.DecodeString("0000" + pan12digits)
 
 	for i, v := range pinBlockDataB {
@@ -36,12 +37,12 @@ func (pinBlock *PinblockIso3) Encrypt(pan12digits string, clearPin string, key [
 
 }
 
-func (pinBlock *PinblockIso3) GetPin(pan12digits string, pinBlockData []byte, key []byte) (res string, err error) {
+func (pinBlock *PinblockIso3) GetPin(pan string, pinBlockData []byte, key []byte) (res string, err error) {
 
 	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
 
-	//pan_12digits := pan[len(pan)-13 : len(pan)-1]
-	pinBlockDataB, _ := hex.DecodeString("0000" + pan12digits)
+	pan_12digits := pan[len(pan)-13 : len(pan)-1]
+	pinBlockDataB, _ := hex.DecodeString("0000" + pan_12digits)
 	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
 
 	for i, v := range pinBlockDataB {

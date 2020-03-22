@@ -13,23 +13,32 @@ type PinBlock_Iso0 struct {
 	PinBlocker
 }
 
-func (pin_block *PinBlock_Iso0) Encrypt(pan_12digits string, clear_pin string, key []byte) ([]byte, error) {
+func (pinBlock *PinBlock_Iso0) Encrypt(pan string, clearPin string, key []byte) ([]byte, error) {
 
-	if len(clear_pin) > 12 {
+	if len(clearPin) > 12 {
 		panic("pin length > 12")
 	}
 
-	buf := bytes.NewBufferString(fmt.Sprintf("0%X%s", len(clear_pin), clear_pin))
+	buf := bytes.NewBufferString(fmt.Sprintf("0%X%s", len(clearPin), clearPin))
 	for buf.Len() < 16 {
 		buf.WriteString("F")
 	}
 
-	pinBlockDataA, _ := hex.DecodeString(buf.String())
-	//log.Printf(" pin block (a) =", buf.String())
+	pinBlockDataA, err := hex.DecodeString(buf.String())
+	if err != nil {
+		return nil, err
+	}
 
-	//pan_12digits := pan[len(pan)-13 : len(pan)-1]
-	pinBlockDataB, _ := hex.DecodeString("0000" + pan_12digits)
-	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
+	pan12digits := pan
+	if len(pan) != 12 {
+		pan12digits = pan[len(pan)-13 : len(pan)-1]
+	}
+	pinBlockDataB, err := hex.DecodeString("0000" + pan12digits)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(pinBlockDataA, pinBlockDataB, pan12digits)
 
 	for i, v := range pinBlockDataB {
 		pinBlockDataA[i] = pinBlockDataA[i] ^ v
@@ -41,12 +50,17 @@ func (pin_block *PinBlock_Iso0) Encrypt(pan_12digits string, clear_pin string, k
 
 }
 
-func (pin_block *PinBlock_Iso0) GetPin(pan_12digits string, pin_block_data []byte, key []byte) (res string, err error) {
+func (pinBlock *PinBlock_Iso0) GetPin(pan string, pin_block_data []byte, key []byte) (res string, err error) {
 
 	clearPinBlock, err := DecryptPinBlock(pin_block_data, key)
 
-	//pan_12digits := pan[len(pan)-13 : len(pan)-1]
-	pinBlockDataB, _ := hex.DecodeString("0000" + pan_12digits)
+	pan12Digits := pan
+	if len(pan12Digits) != 12 {
+		//assume we have a full pan
+		pan12Digits = pan[len(pan)-13 : len(pan)-1]
+	}
+
+	pinBlockDataB, _ := hex.DecodeString("0000" + pan12Digits)
 	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
 
 	for i, v := range pinBlockDataB {

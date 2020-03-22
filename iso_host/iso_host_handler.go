@@ -2,7 +2,6 @@ package iso_host
 
 import (
 	"bytes"
-	//"go/iso8583"
 	"errors"
 	. "go/iso8583"
 	"log"

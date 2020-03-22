@@ -182,7 +182,7 @@ func (th *ThalesHsm) bufferedMsgReader(reader io.Reader) {
 			th.log.Println(tmp)
 
 			msgLen := binary.BigEndian.Uint16(tmp)
-			th.log.Printf("message len - %s", msgLen)
+			th.log.Printf("message len - %d", msgLen)
 			completeMsgLen := 2 + int(msgLen)
 			if bufferedDataLen >= completeMsgLen {
 				//we have enough bytes to make a
