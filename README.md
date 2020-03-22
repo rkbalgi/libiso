@@ -2,7 +2,7 @@
 
 ## UPDATE (03/22/2020)
 1. There will be no further development on paysim, this repo will be strictly be used as a module/library
-2. If you're interested in a ISO8583 simulator, please check out [isosim](https://github.com/rkbalgi/isosim)
+2. If you're interested in a ISO8583 simulator, please check out [ISO WebSim](https://github.com/rkbalgi/isosim)
 
 ## UPDATE (06/16/2019)
 1. Folks developing on Windows please see this - https://github.com/rkbalgi/go/wiki/Building-on-Windows
@@ -21,14 +21,4 @@ An open ISO8583 Simulator
 </li>
 </ul>
 
-
-# Some Screenshots
-## The Main Application Screen
-![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_MainScreen.png)
-## Some Cryptographic Utilities (MAC'ing / PIN)
-![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_Utils.png)
-## After a response is received
-![](https://github.com/rkbalgi/github.io/blob/master/images_paysim/Paysim_With_Response.png)
-
-# A brief presentation
-I have put together a brief presentation which is available here - https://docs.google.com/presentation/d/1UxxL4f_SO3NGpnx_N_v21RJoADOVK8YLrJYXRVnLw-4/edit?usp=sharing
+You can read more about paysim here - https://github.com/rkbalgi/go/wiki/Paysim
