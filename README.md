@@ -1,9 +1,14 @@
+# A library of utilities related to payments, crypto, ISO8583 etc 
+
+## UPDATE (03/22/2020)
+1. There will be no further development on paysim, this repo will be strictly be used as a module/library
+2. If you're interested in a ISO8583 simulator, please check out [isosim](https://github.com/rkbalgi/isosim)
+
 ## UPDATE (06/16/2019)
 1. Folks developing on Windows please see this - https://github.com/rkbalgi/go/wiki/Building-on-Windows
 2. Doesn't follow standard go style (coding conventions etc) - WIP
 2. Not for production use - perhaps best suited for simulators
 
-# A library of utilities related to ISO message processing 
 
 # Paysim
 An open ISO8583 Simulator
