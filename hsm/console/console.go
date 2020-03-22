@@ -15,6 +15,15 @@ import (
 
 var startCmdRegexp *regexp.Regexp
 
+const usage = `
+commands supported -
+1. start_hsm Example: :/> start_hsm -port 1500
+2. stop_hsm Example: :/> stop_hsm
+
+You can quit at anytime by typing 'quit' or 'exit' on the console.
+
+`
+
 func init() {
 	var err error
 	startCmdRegexp, err = regexp.Compile("start_hsm[ ]+-port[ ]+([0-9]+)")
@@ -40,16 +49,14 @@ func (console *Console) Show(waitGroup *sync.WaitGroup) {
 	var line string
 	stdinReader := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("console# ")
+		fmt.Print("$thales-soft-sim$console$:/> ")
 		line, _ = stdinReader.ReadString('\n')
 		line = strings.TrimSpace(line)
 
 		if line == QUIT || line == EXIT {
 			break
-
 		} else {
 			console.handleCommand(line)
-
 		}
 
 	}
@@ -71,9 +78,10 @@ func (console *Console) handleCommand(cmd string) {
 	} else if cmd == "stop_hsm" {
 		console.thalesHsm.Stop()
 		fmt.Println("done.")
+	} else if cmd == "help" {
+		fmt.Println(usage)
 	} else {
-		fmt.Println("bad command.")
+		fmt.Println("unsupported command. - usage: " + usage)
 	}
 
-	//return "done."
 }

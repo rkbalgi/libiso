@@ -1,8 +1,10 @@
 package iso_host
 
-func handleNetworkReq(isoResp *Iso8583Message) {
+import "go/iso8583"
+
+func handleNetworkReq(isoResp *iso8583.Iso8583Message) {
 
 	msgTypeField := isoResp.GetFieldByName("Message Type")
-	msgTypeField.SetData(IsoMsg1814)
+	msgTypeField.SetData(iso8583.IsoMsg1814)
 
 }

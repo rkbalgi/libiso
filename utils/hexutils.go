@@ -2,21 +2,13 @@ package utils
 
 import "encoding/hex"
 
-/**
-converts a string containing hexadecimal digits into a byte array of unsigned bytes
-**/
+//StringToHex coverts a hex string into a []byte (binary)
 func StringToHex(hexStr string) []byte {
-
 	val, _ := hex.DecodeString(hexStr)
 	return val
-
 }
 
-/**
-convert a byte array of unsigned bytes to a String
-**/
+//HexToString converts a binary slice into a string
 func HexToString(hexArray []byte) string {
-
 	return hex.EncodeToString(hexArray)
-
 }
