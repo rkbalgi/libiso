@@ -6,7 +6,7 @@ import (
 	_ "encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"libiso/encoding/ebcdic"
+	"github.com/rkbalgi/libiso/encoding/ebcdic"
 	"strconv"
 )
 

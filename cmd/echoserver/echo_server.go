@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	mynet "libiso/net"
+	mynet "github.com/rkbalgi/libiso/net"
 	"log"
 	"net"
 	//"testing"

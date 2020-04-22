@@ -6,15 +6,9 @@ package pin
 
 import (
 	"bytes"
-	"encoding/hex"
-	_ "fmt"
-	_ "log"
-	_ "strconv"
-	_ "strings"
-	//"math"
 	"crypto/rand"
-	_crypt "libiso/crypto"
-	//"github.com/rkbalgi/crypto/pin"
+	"encoding/hex"
+	_crypt "github.com/rkbalgi/libiso/crypto"
 )
 
 type PinBlocker interface {

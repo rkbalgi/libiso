@@ -7,11 +7,10 @@ import (
 	//"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	_net "github.com/rkbalgi/libiso/net"
 	"io"
-	_net "libiso/net"
 	"log"
 	"os"
-	_ "strconv"
 	"strings"
 	"time"
 )

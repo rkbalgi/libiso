@@ -2,7 +2,7 @@ package hsm
 
 import (
 	"fmt"
-	"libiso/crypto/pin"
+	"github.com/rkbalgi/libiso/crypto/pin"
 	"log"
 )
 

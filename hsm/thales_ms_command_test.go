@@ -4,7 +4,7 @@ import (
 	//"bytes"
 	"encoding/hex"
 	"fmt"
-	"libiso/net"
+	"github.com/rkbalgi/libiso/net"
 	"strings"
 	"testing"
 )

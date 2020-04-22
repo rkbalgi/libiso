@@ -1,7 +1,7 @@
 package iso_host
 
 import (
-	"libiso/iso8583"
+	"github.com/rkbalgi/libiso/iso8583"
 	"strconv"
 	"time"
 )

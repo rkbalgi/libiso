@@ -1,6 +1,6 @@
 package iso_host
 
-import "libiso/iso8583"
+import "github.com/rkbalgi/libiso/iso8583"
 
 func handleNetworkReq(isoResp *iso8583.Iso8583Message) {
 

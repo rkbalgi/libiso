@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"libiso/net"
+	"github.com/rkbalgi/libiso/net"
 	"os"
 	"time"
 )

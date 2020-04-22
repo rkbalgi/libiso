@@ -3,7 +3,7 @@ package console
 import (
 	"bufio"
 	"fmt"
-	"libiso/hsm"
+	"github.com/rkbalgi/libiso/hsm"
 	//"io"
 	_ "flag"
 	"os"

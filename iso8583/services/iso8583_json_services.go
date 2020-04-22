@@ -2,7 +2,7 @@ package services
 
 import (
 	"encoding/json"
-	"libiso/iso8583"
+	"github.com/rkbalgi/libiso/iso8583"
 	"log"
 )
 

@@ -3,8 +3,8 @@ package hsm
 import (
 	"bytes"
 	"encoding/hex"
-	"libiso/crypto"
-	"libiso/hsm/keys"
+	"github.com/rkbalgi/libiso/crypto"
+	"github.com/rkbalgi/libiso/hsm/keys"
 )
 
 type thalesA0Req struct {

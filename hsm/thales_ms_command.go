@@ -3,7 +3,7 @@ package hsm
 import (
 	"bytes"
 	"encoding/hex"
-	"libiso/crypto/mac"
+	"github.com/rkbalgi/libiso/crypto/mac"
 	"log"
 	//_ "github.com/rkbalgi/hsm"
 )

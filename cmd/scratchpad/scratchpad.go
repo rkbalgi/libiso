@@ -1,12 +1,12 @@
 package main
 
 //import hexutils "github.com/rkbalgi/utils"
-import "libiso/crypto"
+import "github.com/rkbalgi/libiso/crypto"
 import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"libiso/utils"
+	"github.com/rkbalgi/libiso/utils"
 	"reflect"
 	"sync"
 	//"os"
