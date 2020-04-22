@@ -1,6 +1,6 @@
 package iso_host
 
-import "go/iso8583"
+import "libiso/iso8583"
 
 func handleNetworkReq(isoResp *iso8583.Iso8583Message) {
 

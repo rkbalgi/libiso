@@ -3,7 +3,7 @@ package hsm
 import (
 	"encoding/hex"
 	"fmt"
-	"go/net"
+	"libiso/net"
 	"strings"
 	"testing"
 )

@@ -2,7 +2,7 @@ package services
 
 import (
 	"encoding/json"
-	"go/iso8583"
+	"libiso/iso8583"
 	"log"
 )
 

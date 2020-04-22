@@ -12,6 +12,7 @@ const (
 	Mli2i MliType = "2i"
 	Mli2e MliType = "2e"
 	Mli4e MliType = "4e"
+	Mli4i MliType = "4i"
 )
 
 type NetCatClient struct {
@@ -68,34 +69,43 @@ func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 	defer func() {
 		_ = nt.conn.SetReadDeadline(time.Time{})
 	}()
+
 	_ = nt.conn.SetReadDeadline(time.Now().Add(time.Duration(5) * time.Second))
 
-	mliByteLength := 2
-	if nt.mliType == Mli4e {
+	var mliByteLength uint32 = 0
+
+	switch nt.mliType {
+	case Mli2i, Mli2e:
+		mliByteLength = 2
+	case Mli4i, Mli4e:
 		mliByteLength = 4
 	}
+
 	tmp := make([]byte, mliByteLength)
+
 	_, err := nt.conn.Read(tmp)
 	if err != nil {
-		//if connection has been closed
-		//return
 		return nil, err
 	}
 
-	msgLen := uint32(binary.BigEndian.Uint16(tmp))
-	if mliByteLength == 4 {
+	var msgLen uint32 = 0
+
+	switch nt.mliType {
+	case Mli2i, Mli2e:
+		msgLen = uint32(binary.BigEndian.Uint16(tmp))
+		if nt.mliType == Mli2i {
+			msgLen -= mliByteLength
+		}
+	case Mli4i, Mli4e:
 		msgLen = binary.BigEndian.Uint32(tmp)
+		if nt.mliType == Mli4i {
+			msgLen -= mliByteLength
+		}
 	}
 
-	if nt.mliType == Mli2i {
-		msgLen -= 2
-	}
-	//read data
 	msgData := make([]byte, msgLen)
 	_, err = nt.conn.Read(msgData)
 	if err != nil {
-		//if connection has been closed
-		//return
 		return nil, err
 	}
 

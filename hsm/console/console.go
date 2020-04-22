@@ -3,7 +3,7 @@ package console
 import (
 	"bufio"
 	"fmt"
-	"go/hsm"
+	"libiso/hsm"
 	//"io"
 	_ "flag"
 	"os"

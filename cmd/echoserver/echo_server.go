@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	mynet "go/net"
+	mynet "libiso/net"
 	"log"
 	"net"
 	//"testing"

@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"go/paysim"
-	pylog "go/paysim/log"
+
 	"log"
 	"os"
 	_ "reflect"
@@ -324,8 +323,7 @@ func (isoMsg *Iso8583Message) TabularFormat() *list.List {
 			{
 
 				var fData *FieldData = l.Value.(*FieldData)
-				tabDataList.PushBack(paysim.NewTuple(fData.fieldDef.String(), fData.String()))
-				//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
+				tabDataList.PushBack(NewTuple(fData.fieldDef.String(), fData.String()))
 				break
 			}
 
@@ -333,20 +331,11 @@ func (isoMsg *Iso8583Message) TabularFormat() *list.List {
 			{
 
 				var bmp *BitMap = l.Value.(*BitMap)
-				tabDataList.PushBack(paysim.NewTuple("Bitmap", bmp.bitString()))
-				//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", "Bitmap", bmp.bit_string()))
+				tabDataList.PushBack(NewTuple("Bitmap", bmp.bitString()))
 
 				for i, fData := range bmp.subFieldData {
-
-					//if i == 0 || i == 1 || i == 65 || i == 129 {
-					//skip invalid or bits that stand for position
-					//that represents additional bitmap position
-					//continue
-					//}
-
 					if fData != nil && bmp.IsOn(i) {
-						tabDataList.PushBack(paysim.NewTuple(fData.fieldDef.String(), fData.String()))
-						//msg_buf.WriteString(fmt.Sprintf("\n%-25s: %s", f_data.field_def.String(), f_data.String()))
+						tabDataList.PushBack(NewTuple(fData.fieldDef.String(), fData.String()))
 					}
 				}
 				break
@@ -356,6 +345,16 @@ func (isoMsg *Iso8583Message) TabularFormat() *list.List {
 	}
 
 	return tabDataList
+
+}
+
+type Tuple struct {
+	_1 interface{}
+	_2 interface{}
+}
+
+func NewTuple(s string, s2 string) *Tuple {
+	return &Tuple{_1: s, _2: s2}
 
 }
 
@@ -377,7 +376,7 @@ func (isoMsg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 			{
 
 				var fData *FieldData = l.Value.(*FieldData)
-				pylog.Log("parsing.. ", fData.fieldDef.Def())
+				log.Println("parsing.. ", fData.fieldDef.Def())
 				fData.fieldDef.Parse(isoMsg, fData, buf)
 				break
 			}
@@ -397,7 +396,7 @@ func (isoMsg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 					//}
 
 					if fData != nil && bmp.IsOn(i) {
-						pylog.Log("parsing.. ", fData.fieldDef.Def())
+						log.Println("parsing.. ", fData.fieldDef.Def())
 						fData.fieldDef.Parse(isoMsg, fData, buf)
 					}
 				}

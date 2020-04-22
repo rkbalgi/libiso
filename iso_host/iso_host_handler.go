@@ -3,7 +3,7 @@ package iso_host
 import (
 	"bytes"
 	"errors"
-	. "go/iso8583"
+	. "libiso/iso8583"
 	"log"
 	"os"
 )

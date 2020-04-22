@@ -3,7 +3,7 @@ package iso8583
 import (
 	"encoding/hex"
 	_ "fmt"
-	"go/encoding/ebcdic"
+	"libiso/encoding/ebcdic"
 	"log"
 )
 

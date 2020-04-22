@@ -1,7 +1,7 @@
 package hsm
 
 import (
-	"go/crypto"
+	"libiso/crypto"
 )
 
 //encrypt a key under the kek using x917

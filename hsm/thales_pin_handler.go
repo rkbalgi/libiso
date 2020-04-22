@@ -2,7 +2,7 @@ package hsm
 
 import (
 	"fmt"
-	"go/crypto/pin"
+	"libiso/crypto/pin"
 	"log"
 )
 

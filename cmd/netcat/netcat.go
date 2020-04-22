@@ -1,6 +1,9 @@
 package main
 
-import mynet "go/net"
+import (
+	mynet "libiso/net"
+	"log"
+)
 import (
 	"encoding/hex"
 	"flag"
@@ -21,15 +24,18 @@ func main() {
 	flag.StringVar(&data, "data", "30303030", "data in hex")
 	flag.Parse()
 
-	/*for i:=0;i<flag.NFlag();i++{
-		fmt.Println(flag.Arg(i));
-	}*/
-
 	var mli mynet.MliType
+
 	if mliStr == string(mynet.Mli2i) {
 		mli = mynet.Mli2i
 	} else if mliStr == string(mynet.Mli2e) {
 		mli = mynet.Mli2e
+	} else if mliStr == string(mynet.Mli4e) {
+		mli = mynet.Mli4e
+	} else if mliStr == string(mynet.Mli4i) {
+		mli = mynet.Mli4i
+	} else {
+		log.Panicf("libiso: Unsupported MLI type - " + mliStr)
 	}
 
 	if len(ip) == 0 || port == 0 {

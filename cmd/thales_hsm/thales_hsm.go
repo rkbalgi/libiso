@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "go/hsm"
-	"go/hsm/console"
+	_ "libiso/hsm"
+	"libiso/hsm/console"
 	"sync"
 )
 

@@ -1,5 +1,9 @@
 # A library of utilities related to payments, crypto, ISO8583 etc 
 
+## UPDATE (04/22/2020)
+1. Renaming the repo to libiso
+2. Deleting paysim (concentrating efforts on isosim for now)
+
 ## UPDATE (03/22/2020)
 1. There will be no further development on paysim, this repo will be strictly be used as a module/library
 2. If you're interested in a ISO8583 simulator, please check out [ISO WebSim](https://github.com/rkbalgi/isosim)

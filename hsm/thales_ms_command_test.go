@@ -4,7 +4,7 @@ import (
 	//"bytes"
 	"encoding/hex"
 	"fmt"
-	"go/net"
+	"libiso/net"
 	"strings"
 	"testing"
 )

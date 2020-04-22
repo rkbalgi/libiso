@@ -1,7 +1,7 @@
 package iso_host
 
 import (
-	"go/iso8583"
+	"libiso/iso8583"
 	"strconv"
 	"time"
 )

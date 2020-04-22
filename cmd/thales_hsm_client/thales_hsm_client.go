@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"go/net"
+	"libiso/net"
 	"os"
 	"time"
 )

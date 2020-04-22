@@ -2,7 +2,7 @@ package mac
 
 import (
 	"bytes"
-	"go/utils"
+	"libiso/utils"
 	"testing"
 )
 

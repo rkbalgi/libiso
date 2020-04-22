@@ -73,9 +73,7 @@ func handleClientError(clientCon net.Conn, err error) {
 	}
 }
 
-/**
-This function adds a mli (length indicator) based on the type of mli - 2I, 2L etc
-**/
+// AddMLI adds a MLI to the payload
 func AddMLI(mliType MliType, data []byte) []byte {
 
 	switch mliType {
@@ -86,7 +84,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			bin.BigEndian.PutUint16(mli, uint16(len(data)))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
-			return (buf.Bytes())
+			return buf.Bytes()
 		}
 	case Mli2i:
 		{
@@ -94,7 +92,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			bin.BigEndian.PutUint16(mli, uint16(len(data)+2))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
-			return (buf.Bytes())
+			return buf.Bytes()
 		}
 	case Mli4e:
 		{
@@ -102,7 +100,15 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			bin.BigEndian.PutUint32(mli, uint32(len(data)))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
-			return (buf.Bytes())
+			return buf.Bytes()
+		}
+	case Mli4i:
+		{
+			var mli []byte = make([]byte, 4)
+			bin.BigEndian.PutUint32(mli, uint32(len(data)+4))
+			buf := bytes.NewBuffer(mli)
+			buf.Write(data)
+			return buf.Bytes()
 		}
 	default:
 		{
