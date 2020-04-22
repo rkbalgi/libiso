@@ -1,4 +1,4 @@
-module libiso
+module github.com/rkbalgi/libiso
 
 go 1.14
 
