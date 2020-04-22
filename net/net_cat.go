@@ -11,6 +11,7 @@ type MliType string
 const (
 	Mli2i MliType = "2i"
 	Mli2e MliType = "2e"
+	Mli4e MliType = "4e"
 )
 
 type NetCatClient struct {
@@ -69,7 +70,11 @@ func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 	}()
 	_ = nt.conn.SetReadDeadline(time.Now().Add(time.Duration(5) * time.Second))
 
-	tmp := make([]byte, 2)
+	mliByteLength := 2
+	if nt.mliType == Mli4e {
+		mliByteLength = 4
+	}
+	tmp := make([]byte, mliByteLength)
 	_, err := nt.conn.Read(tmp)
 	if err != nil {
 		//if connection has been closed
@@ -77,7 +82,11 @@ func (nt *NetCatClient) ReadNextPacket() ([]byte, error) {
 		return nil, err
 	}
 
-	msgLen := binary.BigEndian.Uint16(tmp)
+	msgLen := uint32(binary.BigEndian.Uint16(tmp))
+	if mliByteLength == 4 {
+		msgLen = binary.BigEndian.Uint32(tmp)
+	}
+
 	if nt.mliType == Mli2i {
 		msgLen -= 2
 	}
