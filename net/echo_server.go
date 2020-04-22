@@ -96,6 +96,14 @@ func AddMLI(mliType MliType, data []byte) []byte {
 			buf.Write(data)
 			return (buf.Bytes())
 		}
+	case Mli4e:
+		{
+			var mli []byte = make([]byte, 4)
+			bin.BigEndian.PutUint32(mli, uint32(len(data)))
+			buf := bytes.NewBuffer(mli)
+			buf.Write(data)
+			return (buf.Bytes())
+		}
 	default:
 		{
 			return nil
