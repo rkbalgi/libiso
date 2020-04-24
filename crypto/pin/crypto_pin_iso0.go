@@ -38,8 +38,6 @@ func (pinBlock *PinBlock_Iso0) Encrypt(pan string, clearPin string, key []byte) 
 		return nil, err
 	}
 
-	fmt.Println(pinBlockDataA, pinBlockDataB, pan12digits)
-
 	for i, v := range pinBlockDataB {
 		pinBlockDataA[i] = pinBlockDataA[i] ^ v
 	}
@@ -49,9 +47,9 @@ func (pinBlock *PinBlock_Iso0) Encrypt(pan string, clearPin string, key []byte) 
 
 }
 
-func (pinBlock *PinBlock_Iso0) GetPin(pan string, pin_block_data []byte, key []byte) (res string, err error) {
+func (pinBlock *PinBlock_Iso0) GetPin(pan string, pinBlockData []byte, key []byte) (res string, err error) {
 
-	clearPinBlock, err := DecryptPinBlock(pin_block_data, key)
+	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
 
 	pan12Digits := pan
 	if len(pan12Digits) != 12 {
