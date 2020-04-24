@@ -24,13 +24,16 @@ func (pinBlock *PinblockIso3) Encrypt(pan string, clearPin string, key []byte) (
 	fillRandom(buf)
 
 	pinBlockDataA, err := hex.DecodeString(buf.String())
-	pan12digits := pan[len(pan)-13 : len(pan)-1]
+	pan12digits := pan
+	if len(pan) != 12 {
+		pan12digits = pan[len(pan)-13 : len(pan)-1]
+	}
+
 	pinBlockDataB, err := hex.DecodeString("0000" + pan12digits)
 
 	for i, v := range pinBlockDataB {
 		pinBlockDataA[i] = pinBlockDataA[i] ^ v
 	}
-	//log.Printf(" xor'ed pin block =", hex.EncodeToString(pin_block_data_a))
 
 	res, err = EncryptPinBlock(pinBlockDataA, key)
 	return
@@ -41,16 +44,14 @@ func (pinBlock *PinblockIso3) GetPin(pan string, pinBlockData []byte, key []byte
 
 	clearPinBlock, err := DecryptPinBlock(pinBlockData, key)
 
-	pan_12digits := pan[len(pan)-13 : len(pan)-1]
-	pinBlockDataB, _ := hex.DecodeString("0000" + pan_12digits)
-	//log.Printf(" pin block (b) =", hex.EncodeToString(pin_block_data_b))
+	pan12digits := pan[len(pan)-13 : len(pan)-1]
+	pinBlockDataB, _ := hex.DecodeString("0000" + pan12digits)
 
 	for i, v := range pinBlockDataB {
 		clearPinBlock[i] = clearPinBlock[i] ^ v
 	}
 
 	pinBlockStr := hex.EncodeToString(clearPinBlock)
-	//log.Printf(" clear pin block (b) =", pin_block_str)
 
 	nPinDigits, _ := strconv.ParseInt(pinBlockStr[1:2], 16, 16)
 	res = pinBlockStr[2:(2 + nPinDigits)]

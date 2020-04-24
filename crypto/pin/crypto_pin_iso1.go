@@ -18,8 +18,6 @@ func (pinBlock *PinblockIso1) Encrypt(pan string, clearPin string, key []byte) (
 	buf := bytes.NewBufferString(fmt.Sprintf("1%X%s", len(clearPin), clearPin))
 	fillRandom(buf)
 
-	//log.Println("block =", buf.String())
-
 	pinBlockData, err := hex.DecodeString(buf.String())
 	res, err = EncryptPinBlock(pinBlockData, key)
 	return
