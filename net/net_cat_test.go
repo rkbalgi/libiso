@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestAddMLI(t *testing.T) {
@@ -33,7 +34,7 @@ func TestAddMLI(t *testing.T) {
 		if err := ncc.Write(payload); err != nil {
 			t.Fatal(err)
 		}
-		response, err := ncc.ReadNextPacket()
+		response, err := ncc.Read(nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -52,7 +53,7 @@ func TestAddMLI(t *testing.T) {
 		if err := ncc.Write(payload); err != nil {
 			t.Fatal(err)
 		}
-		response, err := ncc.ReadNextPacket()
+		response, err := ncc.Read(&ReadOptions{Deadline: time.Now().Add(5 * time.Second)})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -91,7 +92,7 @@ func TestAddMLI(t *testing.T) {
 		if err := ncc.Write(payload); err != nil {
 			t.Fatal(err)
 		}
-		response, err := ncc.ReadNextPacket()
+		response, err := ncc.Read(&ReadOptions{Deadline: time.Now().Add(5 * time.Second)})
 		if err != nil {
 			t.Fatal(err)
 		}

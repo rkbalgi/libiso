@@ -19,10 +19,10 @@ type EchoServ struct {
 //start listening to incoming client connections
 //and start off a new goroutine for each client
 
-func (echoServ *EchoServ) ListenAndAccept() (err error) {
+func (echoServer *EchoServ) ListenAndAccept() (err error) {
 
-	logger.Println("listening at -", echoServ.TcpAddr.String())
-	listener, err := net.ListenTCP("tcp4", echoServ.TcpAddr)
+	logger.Println("listening at -", echoServer.TcpAddr.String())
+	listener, err := net.ListenTCP("tcp4", echoServer.TcpAddr)
 	HandleError(err)
 
 	for {
@@ -35,24 +35,24 @@ func (echoServ *EchoServ) ListenAndAccept() (err error) {
 
 }
 
-func handleClient(clientCon net.Conn) {
+func handleClient(conn net.Conn) {
 
-	defer clientCon.Close()
+	defer conn.Close()
 
-	logger.Println("new client connection ", clientCon.RemoteAddr())
+	logger.Println("new client connection ", conn.RemoteAddr())
 
 	for {
 		var buf [512]byte
-		n, err := clientCon.Read(buf[:])
+		n, err := conn.Read(buf[:])
 		if err != nil {
-			handleClientError(clientCon, err)
+			handleClientError(conn, err)
 			return
 		}
 		if err == nil {
 			tmp := buf[:n]
 			logger.Println("received -\n", hex.Dump(tmp))
 			logger.Println("writing  -\n", hex.Dump(tmp))
-			clientCon.Write(tmp)
+			conn.Write(tmp)
 		} else {
 			logger.Println("no data", err)
 		}
