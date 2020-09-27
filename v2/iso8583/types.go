@@ -22,29 +22,6 @@ type PinFormat string
 type MacAlgo string
 
 const (
-	ISO0    PinFormat = "ISO0"
-	ISO1    PinFormat = "ISO1"
-	ISO3    PinFormat = "ISO3"
-	IBM3264 PinFormat = "IBM3264"
-
-	ANSIX9_19 MacAlgo = "ANSIX9_19"
-)
-
-type MacGenProps struct {
-	MacAlgo MacAlgo `yaml:"mac_algo",json:"mac_algo"`
-	MacKey  string  `yaml:"mac_key",json:"mac_key"`
-}
-
-type PinGenProps struct {
-	PINClear         string    `yaml:"pin_clear",json:"pin_clear"`
-	PINFormat        PinFormat `yaml:"pin_format",json:"pin_format"`
-	PINKey           string    `yaml:"pin_key",json:"pin_key"`
-	PANFieldID       int       `yaml:"pan_field_id",json:"pan_field_id"`
-	PANExtractParams string    `yaml:"pan_extract_params",json:"pan_extract_params"`
-	PAN              string    `yaml:"pan",json:"pan"`
-}
-
-const (
 	LeadingZeroes PaddingType = "LEADING_ZEROES"
 	LeadingSpaces PaddingType = "LEADING_SPACES"
 	LeadingF      PaddingType = "LEADING_F"
@@ -120,39 +97,25 @@ type EnumValue struct {
 	Description string `yaml:"description"`
 }
 
-// Field represents a field in the ISO message
-type Field struct {
-	Name                      string    `yaml:"name"`
-	ID                        int       `yaml:"id"`
-	Type                      FieldType `yaml:"type"`
-	Size                      int       `yaml:"size"`
-	Position                  int       `yaml:"position"`
-	DataEncoding              Encoding  `yaml:"data_encoding"`
-	LengthIndicatorSize       int       `yaml:"length_indicator_size"`
-	LengthIndicatorMultiplier int       `yaml:"length_indicator_multiplier"`
-	LengthIndicatorEncoding   Encoding  `yaml:"length_indicator_encoding"`
+const (
+	ISO0    PinFormat = "ISO0"
+	ISO1    PinFormat = "ISO1"
+	ISO3    PinFormat = "ISO3"
+	IBM3264 PinFormat = "IBM3264"
 
-	Constraints FieldConstraints `yaml:"constraints"`
-	Padding     PaddingType      `yaml:"padding"`
+	ANSIX9_19 MacAlgo = "ANSIX9_19"
+)
 
-	Children []*Field `yaml:"children"`
-
-	msg *Message `yaml:"-"json:"-"`
-	//for bitmap only
-	fieldsByPosition map[int]*Field
-
-	ParentId           int
-	ValueGeneratorType string       `yaml:"gen_type"`
-	PinGenProps        *PinGenProps `yaml:"pin_gen_props,omitempty"`
-	MacGenProps        *MacGenProps `yaml:"mac_gen_props,omitempty"`
-
-	Key bool `yaml:"key"`
-
-	Hint Hint `yaml:"hint"`
+type MacGenProps struct {
+	MacAlgo MacAlgo `yaml:"mac_algo",json:"mac_algo"`
+	MacKey  string  `yaml:"mac_key",json:"mac_key"`
 }
 
-type FieldConstraints struct {
-	ContentType string `yaml:"string"`
-	MaxSize     int    `yaml:"max_size"`
-	MinSize     int    `yaml:"min_size"`
+type PinGenProps struct {
+	PINClear         string    `yaml:"pin_clear",json:"pin_clear"`
+	PINFormat        PinFormat `yaml:"pin_format",json:"pin_format"`
+	PINKey           string    `yaml:"pin_key",json:"pin_key"`
+	PANFieldID       int       `yaml:"pan_field_id",json:"pan_field_id"`
+	PANExtractParams string    `yaml:"pan_extract_params",json:"pan_extract_params"`
+	PAN              string    `yaml:"pan",json:"pan"`
 }
