@@ -71,6 +71,41 @@ func (e Encoding) AsString() string {
 	return string(e)
 }
 
+// Field represents a field in the ISO message
+type Field struct {
+	Name                      string    `yaml:"name"`
+	ID                        int       `yaml:"id"`
+	Type                      FieldType `yaml:"type"`
+	Size                      int       `yaml:"size"`
+	Position                  int       `yaml:"position"`
+	DataEncoding              Encoding  `yaml:"data_encoding"`
+	LengthIndicatorSize       int       `yaml:"length_indicator_size"`
+	LengthIndicatorMultiplier int       `yaml:"length_indicator_multiplier"`
+	LengthIndicatorEncoding   Encoding  `yaml:"length_indicator_encoding"`
+
+	Constraints FieldConstraints `yaml:"constraints"`
+	Padding     PaddingType      `yaml:"padding"`
+
+	Children []*Field `yaml:"children"`
+
+	msg *Message `yaml:"-"json:"-"`
+	//for bitmap only
+	fieldsByPosition map[int]*Field
+
+	ParentId           int
+	ValueGeneratorType string       `yaml:"gen_type"`
+	PinGenProps        *PinGenProps `yaml:"pin_gen_props,omitempty"`
+	MacGenProps        *MacGenProps `yaml:"mac_gen_props,omitempty"`
+
+	Key bool `yaml:"key"`
+}
+
+type FieldConstraints struct {
+	ContentType string `yaml:"string"`
+	MaxSize     int    `yaml:"max_size"`
+	MinSize     int    `yaml:"min_size"`
+}
+
 // HintType is the type of hint
 type HintType string
 
@@ -98,12 +133,11 @@ type EnumValue struct {
 }
 
 const (
-	ISO0    PinFormat = "ISO0"
-	ISO1    PinFormat = "ISO1"
-	ISO3    PinFormat = "ISO3"
-	IBM3264 PinFormat = "IBM3264"
-
-	ANSIX9_19 MacAlgo = "ANSIX9_19"
+	ISO0      PinFormat = "ISO0"
+	ISO1      PinFormat = "ISO1"
+	ISO3      PinFormat = "ISO3"
+	IBM3264   PinFormat = "IBM3264"
+	ANSIX9_19 MacAlgo   = "ANSIX9_19"
 )
 
 type MacGenProps struct {
