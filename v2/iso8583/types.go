@@ -97,7 +97,8 @@ type Field struct {
 	PinGenProps        *PinGenProps `yaml:"pin_gen_props,omitempty"`
 	MacGenProps        *MacGenProps `yaml:"mac_gen_props,omitempty"`
 
-	Key bool `yaml:"key"`
+	Key  bool `yaml:"key"`
+	Hint Hint `yaml:"hint"`
 }
 
 type FieldConstraints struct {

@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-// HTMLDir will point to the directory containing the static assets (HTML/JS/CSS etc)
-var HTMLDir string
-
 const (
 	// IsoMessageType is a constant that indicates the Message Type or the MTI
 	// (This name has special meaning within the context of ISO8583 and cannot be named anything else. The same restrictions apply for 'Bitmap')
