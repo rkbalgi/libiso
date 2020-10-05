@@ -3,6 +3,7 @@ package main
 import (
 	mynet "github.com/rkbalgi/libiso/net"
 	"log"
+	"time"
 )
 import (
 	"encoding/hex"
@@ -45,7 +46,6 @@ func main() {
 	}
 
 	connectionString := ip + ":" + strconv.FormatUint(uint64(port), 10)
-	//fmt.Println(connectionString);
 
 	nt := mynet.NewNetCatClient(connectionString, mli)
 	err := nt.OpenConnection()
@@ -63,10 +63,11 @@ func main() {
 
 func readResponse(nt *mynet.NetCatClient) {
 
-	var responseData [512]byte
-	n, err := nt.Read(responseData[:])
+	responseData, err := nt.Read(&mynet.ReadOptions{Deadline: time.Now().Add(5 * time.Second)})
 	mynet.HandleError(err)
 
-	fmt.Println("<--\n", hex.Dump(responseData[:n]))
+	if err != nil {
+		fmt.Println("<--\n", hex.Dump(responseData))
+	}
 
 }
