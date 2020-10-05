@@ -34,12 +34,6 @@ type fieldIdValue struct {
 	Value string
 }
 
-// NewIso returns a Iso instance that can be used to build messages
-func (msg *Message) NewIso() *Iso {
-	isoMsg := FromParsedMsg(&ParsedMsg{Msg: msg, FieldDataMap: make(map[int]*FieldData)})
-	return isoMsg
-}
-
 func (msg *Message) addField(def *Field) *Field {
 
 	if _, ok := msg.fieldByName[def.Name]; ok {

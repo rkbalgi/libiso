@@ -26,6 +26,12 @@ type MetaInfo struct {
 	MessageKey string
 }
 
+// NewIso returns a Iso instance that can be used to build messages
+func (msg *Message) NewIso() *Iso {
+	isoMsg := FromParsedMsg(&ParsedMsg{Msg: msg, FieldDataMap: make(map[int]*FieldData)})
+	return isoMsg
+}
+
 // FromParsedMsg constructs a new Iso from a parsedMsg
 func FromParsedMsg(parsedMsg *ParsedMsg) *Iso {
 	isoMsg := &Iso{parsedMsg: parsedMsg}
