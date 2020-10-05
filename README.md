@@ -28,7 +28,7 @@ if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 
 	msgData, _ := hex.DecodeString("3131303070386000000080003136343736363937373635343332373737373030343030303030303030303030313039303636363535313230313333353035323239333131333336383236")
 
-	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parse, you can do this - Example: spec.MessageByName("1100 - Authorization")
+	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parsing, you can do this - Example: spec.MessageByName("1100 - Authorization")
 	if msg != nil {
 		parsedMsg, err := msg.Parse(msgData)
 		if err != nil {
@@ -61,7 +61,7 @@ if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 	}
 	assert.Equal(t, "31313030300000000000c00030303430303034373636393737363534333237373737333336383236", hex.EncodeToString(msgData))
 ```
-Please checkout https://gthub.com/rkbalgi/isosim project which uses this library.
+Please checkout https://github.com/rkbalgi/isosim project which uses this library.
 
 
 ### Note:
