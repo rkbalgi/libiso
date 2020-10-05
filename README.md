@@ -12,7 +12,8 @@ First, create a yaml file containing the spec definition (see v2\iso8583\testdat
 if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 		log.Fatal(err)
 		return
-}```
+}
+```
 
 2. Once initialized you can construct ISO8583 messages like below (from iso_test.go) -
 
@@ -60,31 +61,14 @@ if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 	}
 	assert.Equal(t, "31313030300000000000c00030303430303034373636393737363534333237373737333336383236", hex.EncodeToString(msgData))
 ```
+Please checkout https://gthub.com/rkbalgi/isosim project which uses this library.
 
 
-## UPDATE (04/22/2020)
-1. Renaming the repo to libiso
-2. Deleting paysim (concentrating efforts on isosim for now)
+### Note:
+* Message Type and Bitmap are reserved keywords within this library (i.e you cannot call the Bitmap as Primary Bitmap or Bmp etc)
+* This library has not yet been subjected to any kind of targeted tests (performance or otherwise), so use this with a bit of caution - It's at the moment perhaps best suited for simulators
 
-## UPDATE (03/22/2020)
-1. There will be no further development on paysim, this repo will be strictly be used as a module/library
-2. If you're interested in a ISO8583 simulator, please check out [ISO WebSim](https://github.com/rkbalgi/isosim)
-
-## UPDATE (06/16/2019)
-1. Folks developing on Windows please see this - https://github.com/rkbalgi/go/wiki/Building-on-Windows
-2. Doesn't follow standard go style (coding conventions etc) - WIP
-2. This has not be subject to any kind of targeted tests (performance or otherwise), so use this with a bit of caution - It's at the moment perhaps best suited for simulators
 
 
 # Paysim
-An open ISO8583 Simulator
-
-<ul>
-<li>The application is built using go and GTK+2 bindings made available at github.com/mattn/go-gtk (Thanks a ton Yashuhiro Matsumoto!)</li>
-<li>The entire source code is available at https://github.com/rkbalgi/go</li>
-<li>The interesting packages would be github.com/rkbalgi/go/execs/paysim, github.com/rkbalgi/go/paysim and github.com/rkbalgi/iso8583</li>
-<li>There are loads of other interesting things available in other packages – like a minimalist implementation of a Thales HSM for basic commands (A6, MS, M6 and the like)
-</li>
-</ul>
-
-You can read more about paysim here - https://github.com/rkbalgi/go/wiki/Paysim
+Paysim is an old application that uses this library. You can read more about paysim here - https://github.com/rkbalgi/go/wiki/Paysim
