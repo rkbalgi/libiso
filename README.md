@@ -1,4 +1,4 @@
-# A library of utilities related to payments, crypto, ISO8583 etc 
+# libiso - A library of utilities related to payments, crypto, ISO8583 etc 
 
 
 ## Creating ISO8583 messages
