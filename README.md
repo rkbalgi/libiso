@@ -3,7 +3,7 @@
 
 ## Creating ISO8583 messages
 
-First, create a yaml file containing the spec definition (see v2\iso8583\testdata) and then list that under a file called specs.yaml
+First, create a yaml file containing the spec definition (for example, see [this](https://github.com/rkbalgi/libiso/blob/master/v2/iso8583/testdata/iso_specs.yaml)) and then list that under a file called [specs.yaml](https://github.com/rkbalgi/libiso/blob/master/v2/iso8583/testdata/specs.yaml)
 (ignore the .spec files - they're an older way of defining specs)
 
 1. Read all the specs defined (the path should contain the file specs.yaml)
