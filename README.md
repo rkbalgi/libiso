@@ -15,7 +15,7 @@ if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 }
 ```
 
-2. Once initialized you can construct ISO8583 messages like below (from iso_test.go) -
+2. Once initialized you can construct ISO8583 messages like below (from https://github.com/rkbalgi/libiso/blob/master/v2/iso8583/iso_test.go#L20) -
 
 ```go
 	specName := "ISO8583-Test"
