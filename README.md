@@ -1,7 +1,8 @@
 # libiso - A library of utilities related to payments, crypto, ISO8583 etc 
 
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/rkbalgi/libiso?include_prereleases&style=flat)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/rkbalgi/libiso?sort=semver)
 ![CircleCI](https://img.shields.io/circleci/build/github/rkbalgi/libiso/master?style=flat-square)
+![GitHub go.mod Go version (branch & subfolder of monorepo)](https://img.shields.io/github/go-mod/go-version/rkbalgi/libiso/master?filename=go.mod)
 
 ## Creating ISO8583 messages
 
