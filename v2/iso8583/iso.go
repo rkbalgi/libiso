@@ -8,7 +8,8 @@ const (
 	// IsoMessageType is a constant that indicates the Message Type or the MTI
 	// (This name has special meaning within the context of ISO8583 and cannot be named anything else. The same restrictions apply for 'Bitmap')
 	IsoMessageType = "Message Type"
-	IsoBitmap      = "Bitmap"
+	// IsoBitmap is a constant for the bitmap in the ISO message
+	IsoBitmap = "Bitmap"
 )
 
 // Iso is a handle into accessing the details of a ISO message(via the parsedMsg)

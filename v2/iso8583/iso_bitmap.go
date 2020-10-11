@@ -20,6 +20,7 @@ type Bitmap struct {
 	parsedMsg *ParsedMsg
 }
 
+// HighBitMask represents a integer with the highest bit set
 const HighBitMask = uint64(1) << 63
 
 // NewBitmap creates a new empty bitmap
@@ -54,7 +55,7 @@ func (bmp *Bitmap) Set(pos int, val string) error {
 
 	field, ok := bmp.field.fieldsByPosition[pos]
 	if !ok {
-		return fmt.Errorf("isosim: Unable to set value for field. No field at position:%d", pos)
+		return fmt.Errorf("libiso: Unable to set value for field. No field at position:%d", pos)
 	}
 
 	rawFieldData, err := field.ValueFromString(val)
@@ -86,14 +87,14 @@ func (bmp *Bitmap) Set(pos int, val string) error {
 			// all the children
 			vFieldWithLI, err := buildLengthIndicator(field.LengthIndicatorEncoding, field.LengthIndicatorSize, len(fieldData.Data))
 			if err != nil {
-				return fmt.Errorf("isosim: Unable to set value for variable field: %s :%w", field.Name, err)
+				return fmt.Errorf("libiso: Unable to set value for variable field: %s :%w", field.Name, err)
 			}
 			vFieldWithLI.Write(rawFieldData)
 			err = parseVariable(&ParserConfig{LogEnabled: false}, vFieldWithLI, bmp.parsedMsg, field)
 		}
 
 		if err != nil {
-			return fmt.Errorf("isosim: Unable to set value for field: %s :%w", field.Name, err)
+			return fmt.Errorf("libiso: Unable to set value for field: %s :%w", field.Name, err)
 		}
 	}
 
@@ -135,7 +136,7 @@ func (bmp *Bitmap) Bytes() []byte {
 		//already taken care of
 
 	default:
-		log.Errorf("isosim: Invalid encoding %v for Bitmap field", bmp.field.DataEncoding)
+		log.Errorf("libiso: Invalid encoding %v for Bitmap field", bmp.field.DataEncoding)
 
 	}
 
@@ -214,20 +215,20 @@ func toBinary(inputBuffer *bytes.Buffer, encoding Encoding) (*bytes.Buffer, erro
 	var outputBuffer = &bytes.Buffer{}
 
 	if tmp, err = NextBytes(inputBuffer, 16); err != nil {
-		return nil, fmt.Errorf("isosim: Failed to read primary bitmap :%w", err)
+		return nil, fmt.Errorf("libiso: Failed to read primary bitmap :%w", err)
 	}
 
 	bin, _ := hex.DecodeString(encoding.EncodeToString(tmp))
 	outputBuffer.Write(bin)
 	if bin[0]&0x80 == 0x80 {
 		if tmp, err = NextBytes(inputBuffer, 16); err != nil {
-			return nil, fmt.Errorf("isosim: Failed to read secondary bitmap :%w", err)
+			return nil, fmt.Errorf("libiso: Failed to read secondary bitmap :%w", err)
 		}
 		bin, _ := hex.DecodeString(encoding.EncodeToString(tmp))
 		outputBuffer.Write(bin)
 		if bin[0]&0x80 == 0x80 {
 			if tmp, err = NextBytes(inputBuffer, 16); err != nil {
-				return nil, fmt.Errorf("isosim: Failed to read tertiary bitmap :%w", err)
+				return nil, fmt.Errorf("libiso: Failed to read tertiary bitmap :%w", err)
 			}
 			bin, _ := hex.DecodeString(encoding.EncodeToString(tmp))
 			outputBuffer.Write(bin)

@@ -43,7 +43,7 @@ func (spec *Spec) GetOrAddMsg(msgId int, msgName string) (*Message, bool) {
 
 }
 
-// Messages returns a list of all messages defined for the spec
+// GetMessages returns a list of all messages defined for the spec
 func (spec *Spec) GetMessages() []*Message {
 
 	specMapMu.RLock()
@@ -114,7 +114,7 @@ func (spec *Spec) FindTargetMsg(data []byte) *Message {
 	}
 
 	if matchKey == "" {
-		log.Errorf("isosim: No match key found!")
+		log.Errorf("libiso: No match key found!")
 		return nil
 	}
 
@@ -205,7 +205,7 @@ func getOrCreateNewSpec(specId int, specName string) (spec *Spec, ok bool, err e
 	spec = SpecByID(specId)
 	if spec != nil {
 		return nil, false,
-			fmt.Errorf("isosim: SpecID - %d cannot be used for spec - %s. Is already used by %s", specId, specName, spec.Name)
+			fmt.Errorf("libiso: SpecID - %d cannot be used for spec - %s. Is already used by %s", specId, specName, spec.Name)
 	}
 	specMapMu.Lock()
 	defer specMapMu.Unlock()

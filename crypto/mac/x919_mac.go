@@ -7,9 +7,7 @@ import (
 
 var zeroIV []byte = make([]byte, 8)
 
-//generate a X9.19 MAC (ISO9797 - Algorithm 3) with a double length key (ede2)
-//data will be zero padded if required
-
+// GenerateMacX919 generate a X9.19 MAC (ISO9797 - Algorithm 3) with a double length key (ede2)  data will be zero padded if required
 func GenerateMacX919(inMacData []byte, keyData []byte) ([]byte, error) {
 
 	tripleDesKey := make([]byte, len(keyData))
@@ -55,7 +53,7 @@ func GenerateMacX919(inMacData []byte, keyData []byte) ([]byte, error) {
 			//take the last block of encrypted data
 			//and use that as a iv to encrypt the last
 			//clear block with triple des
-			tripledesCbcEncryptor := cipher.NewCBCEncrypter(tripleDesCipher, allButLast[len(allButLast)-8:len(allButLast)])
+			tripledesCbcEncryptor := cipher.NewCBCEncrypter(tripleDesCipher, allButLast[len(allButLast)-8:])
 			tripledesCbcEncryptor.CryptBlocks(result, (macData)[len(macData)-8:len(macData)])
 
 		}

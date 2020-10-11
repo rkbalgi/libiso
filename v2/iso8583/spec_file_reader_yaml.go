@@ -59,7 +59,7 @@ func processSpecs(specs []Spec) error {
 func processField(msg *Message, f *Field) error {
 	fld := msg.FieldById(f.ID)
 	if fld != nil {
-		return fmt.Errorf("isosim: Field with ID %d already exists in Msg: %s", f.ID, msg.Name)
+		return fmt.Errorf("libiso: Field with ID %d already exists in Msg: %s", f.ID, msg.Name)
 	}
 
 	if err := validateField(f); err != nil {
@@ -79,18 +79,18 @@ func validateField(f *Field) error {
 	if f.Padding != "" {
 
 		if f.Type != FixedType {
-			return errors.New("isosim: padding is only applicable for Fixed type fields")
+			return errors.New("libiso: padding is only applicable for Fixed type fields")
 		}
 
 		switch f.Padding {
 		case LeadingSpaces, TrailingSpaces:
 			if f.DataEncoding == BINARY || f.DataEncoding == BCD {
-				return errors.New("isosim: Spaces padding type is only applicable for ASCII/EBCDIC fields")
+				return errors.New("libiso: Spaces padding type is only applicable for ASCII/EBCDIC fields")
 			}
 		case LeadingF, TrailingF:
 			{
 				if f.DataEncoding != BINARY {
-					return errors.New("isosim: 'F' padding type is only applicable for ASCII/EBCDIC fields")
+					return errors.New("libiso: 'F' padding type is only applicable for ASCII/EBCDIC fields")
 				}
 			}
 
@@ -106,7 +106,7 @@ func processChildren(msg *Message, f *Field) error {
 		for _, cf := range f.Children {
 			fld := msg.FieldById(cf.ID)
 			if fld != nil {
-				return fmt.Errorf("isosim: Field with ID %d already exists in Msg: %s", cf.ID, msg.Name)
+				return fmt.Errorf("libiso: Field with ID %d already exists in Msg: %s", cf.ID, msg.Name)
 			}
 
 			f.setAux(cf)

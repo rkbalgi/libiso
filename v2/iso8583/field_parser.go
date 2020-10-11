@@ -11,13 +11,13 @@ import (
 )
 
 // ErrInsufficientData is an error when there is not enough data in the raw message to parse it
-var ErrInsufficientData = errors.New("isosim: Insufficient data to parse field")
+var ErrInsufficientData = errors.New("libiso: Insufficient data to parse field")
 
-// ErrLargeLengthIndicator is an error that could happen when a large lenght indicator is used in a variable field
-var ErrLargeLengthIndicator = errors.New("isosim: Too large length indicator size. ")
+// ErrLargeLengthIndicator is an error that could happen when a large length indicator is used in a variable field
+var ErrLargeLengthIndicator = errors.New("libiso: Too large length indicator size. ")
 
 // ErrInvalidEncoding is when an unsupported encoding is used for a field
-var ErrInvalidEncoding = errors.New("isosim: Invalid encoding")
+var ErrInvalidEncoding = errors.New("libiso: Invalid encoding")
 
 // ParsedMsg is a type that represents a parsed form of a ISO8583 message
 type ParsedMsg struct {
@@ -77,7 +77,7 @@ func parse(parserCfg *ParserConfig, buf *bytes.Buffer, parsedMsg *ParsedMsg, fie
 	case BitmappedType:
 		err = parseBitmap(parserCfg, buf, parsedMsg, field)
 	default:
-		return fmt.Errorf("isosim: Unsupported field type - %v", field.Type)
+		return fmt.Errorf("libiso: Unsupported field type - %v", field.Type)
 
 	}
 

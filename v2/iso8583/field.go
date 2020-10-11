@@ -12,8 +12,11 @@ import (
 )
 
 const (
-	Fixed     = "fixed"
-	Variable  = "variable"
+	// Fixed represents a Fixed field
+	Fixed = "fixed"
+	// Variable
+	Variable = "variable"
+	// Bitmapped
 	Bitmapped = "bitmap"
 )
 
@@ -33,7 +36,7 @@ func NewField(info []string) (*Field, error) {
 				//with constraints
 				hasConstraints = true
 			default:
-				return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+				return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 			}
 
 			if err := setEncoding(&(*fieldInfo).DataEncoding, info[1]); err != nil {
@@ -41,7 +44,7 @@ func NewField(info []string) (*Field, error) {
 			}
 			sizeTokens := strings.Split(info[2], sizeSeparator)
 			if len(sizeTokens) != 2 {
-				return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+				return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 			}
 			size, err := strconv.ParseInt(sizeTokens[1], 10, 0)
 			if err != nil {
@@ -52,10 +55,10 @@ func NewField(info []string) (*Field, error) {
 
 				constraints, err := parseConstraints(strings.Replace(info[3], " ", "", -1))
 				if err != nil {
-					return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+					return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 				}
 				if err := fieldInfo.addConstraints(constraints); err != nil {
-					return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+					return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 				}
 			}
 
@@ -69,7 +72,7 @@ func NewField(info []string) (*Field, error) {
 			switch fieldInfo.DataEncoding {
 			case ASCII, EBCDIC, BINARY:
 			default:
-				return nil, fmt.Errorf("isosim: Unsupported encoding for bitmap: %v", info[1])
+				return nil, fmt.Errorf("libiso: Unsupported encoding for bitmap: %v", info[1])
 			}
 
 		}
@@ -84,7 +87,7 @@ func NewField(info []string) (*Field, error) {
 				//with constraints
 				hasConstraints = true
 			default:
-				return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+				return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 
 			}
 
@@ -96,20 +99,20 @@ func NewField(info []string) (*Field, error) {
 			}
 			sizeTokens := strings.Split(info[3], sizeSeparator)
 			if len(sizeTokens) != 2 {
-				return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+				return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 
 			}
 
 			size, err := strconv.ParseInt(sizeTokens[1], 10, 0)
 			if err != nil {
-				return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+				return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 			}
 			fieldInfo.LengthIndicatorSize = int(size)
 			if hasConstraints {
 
 				constraints, err := parseConstraints(strings.Replace(info[4], " ", "", -1))
 				if err != nil {
-					return nil, fmt.Errorf("isosim: Format error in field-specification - %v", info)
+					return nil, fmt.Errorf("libiso: Format error in field-specification - %v", info)
 				}
 				if err := fieldInfo.addConstraints(constraints); err != nil {
 					return nil, err
@@ -117,7 +120,7 @@ func NewField(info []string) (*Field, error) {
 			}
 		}
 	default:
-		return nil, fmt.Errorf("isosim: Unsupported field type - %s", info[0])
+		return nil, fmt.Errorf("libiso: Unsupported field type - %s", info[0])
 
 	}
 
@@ -136,7 +139,7 @@ func (f *Field) addConstraints(consMap map[string]interface{}) error {
 		case "maxSize":
 			f.Constraints.MaxSize, _ = strconv.Atoi(val.(string))
 		default:
-			return fmt.Errorf("isosim: Format constraint spec in field-specification - %v", consMap)
+			return fmt.Errorf("libiso: Format constraint spec in field-specification - %v", consMap)
 		}
 	}
 
@@ -172,7 +175,7 @@ func setEncoding(encoding *Encoding, stringEncoding string) error {
 	case "binary":
 		*encoding = BINARY
 	default:
-		return fmt.Errorf("isosim: Unsupported encoding :%s", stringEncoding)
+		return fmt.Errorf("libiso: Unsupported encoding :%s", stringEncoding)
 	}
 	return nil
 }
@@ -210,7 +213,7 @@ func (f *Field) ValueFromString(data string) ([]byte, error) {
 	case EBCDIC:
 		return ebcdic.Decode(data), nil
 	default:
-		return nil, fmt.Errorf("isosim: Invalid encoding - %v", f.DataEncoding)
+		return nil, fmt.Errorf("libiso: Invalid encoding - %v", f.DataEncoding)
 
 	}
 

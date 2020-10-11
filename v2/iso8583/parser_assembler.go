@@ -47,6 +47,7 @@ func NewAssembler(assemblerCfg *AssemblerConfig) *Assembler {
 	return &Assembler{cfg: assemblerCfg}
 }
 
+// Assemble assembles a ISO message based on field data set in "iso"
 func (asm *Assembler) Assemble(iso *Iso) ([]byte, *MetaInfo, error) {
 
 	msg := iso.parsedMsg.Msg

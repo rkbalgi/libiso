@@ -10,10 +10,10 @@ import (
 )
 
 // ErrUnreadDataRemaining to represent a condition where data remain post parsing
-var ErrUnreadDataRemaining = errors.New("isosim: Unprocessed data remaining")
+var ErrUnreadDataRemaining = errors.New("libiso: Unprocessed data remaining")
 
 // ErrUnknownField is an error when a unknown field is referenced
-var ErrUnknownField = errors.New("isosim: Unknown field")
+var ErrUnknownField = errors.New("libiso: Unknown field")
 
 // Message represents a message within a specification (auth/reversal etc)
 type Message struct {
@@ -131,7 +131,7 @@ func (msg *Message) ParseJSON(jsonMsg string) (*ParsedMsg, error) {
 			parsedMsg.FieldDataMap[field.ID] = fieldData
 		} else {
 			if fieldData.Data, err = field.ValueFromString(pFieldIdValue.Value); err != nil {
-				return nil, fmt.Errorf("isosim: failed to set value for field :%s :%w", field.Name, err)
+				return nil, fmt.Errorf("libiso: failed to set value for field :%s :%w", field.Name, err)
 			}
 
 			if field.Type == FixedType && len(fieldData.Data) != field.Size {

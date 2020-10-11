@@ -109,7 +109,7 @@ func (fldData *FieldData) setTruncatePad(data []byte) {
 	} else {
 
 		fldData.fieldData = make([]byte, defObj.dataSize)
-		for i, _ := range fldData.fieldData {
+		for i := range fldData.fieldData {
 			fldData.fieldData[i] = padByte
 		}
 		copy(fldData.fieldData, data)

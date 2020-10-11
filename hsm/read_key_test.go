@@ -38,11 +38,11 @@ func Test_EncryptTripleLen_003(t *testing.T) {
 
 func Test_Read_SingleLength(t *testing.T) {
 
-	var key_holder TestStruct
+	var keyHolder TestStruct
 	buf := bytes.NewBuffer([]byte("e045fe3ea2a2f47d007a3030"))
-	readKey(buf, &key_holder.Key)
+	readKey(buf, &keyHolder.Key)
 
-	if key_holder.Key != "e045fe3ea2a2f47d" {
+	if keyHolder.Key != "e045fe3ea2a2f47d" {
 		t.Fail()
 	}
 
@@ -50,12 +50,12 @@ func Test_Read_SingleLength(t *testing.T) {
 
 func Test_read_SingleLength2(t *testing.T) {
 
-	var key_holder TestStruct
+	var keyHolder TestStruct
 	buf := bytes.NewBuffer([]byte("Ze045fe3ea2a2f47d007a3030"))
-	readKey(buf, &key_holder.Key)
+	readKey(buf, &keyHolder.Key)
 
-	if key_holder.Key != "Ze045fe3ea2a2f47d" {
-		t.Log(key_holder.Key)
+	if keyHolder.Key != "Ze045fe3ea2a2f47d" {
+		t.Log(keyHolder.Key)
 		t.Fail()
 	}
 
@@ -63,10 +63,10 @@ func Test_read_SingleLength2(t *testing.T) {
 
 func Test_read_key_DoubleLength(t *testing.T) {
 
-	var key_holder TestStruct
+	var keyHolder TestStruct
 	buf := bytes.NewBuffer([]byte("Ue045fe3ea2a2f47d007afe3ea2a2f47d007a3030"))
-	readKey(buf, &key_holder.Key)
-	if key_holder.Key != "Ue045fe3ea2a2f47d007afe3ea2a2f47d" {
+	readKey(buf, &keyHolder.Key)
+	if keyHolder.Key != "Ue045fe3ea2a2f47d007afe3ea2a2f47d" {
 		t.Fail()
 	}
 
@@ -74,11 +74,11 @@ func Test_read_key_DoubleLength(t *testing.T) {
 
 func Test_read_key_TripleLength(t *testing.T) {
 
-	var key_holder TestStruct
+	var keyHolder TestStruct
 	buf := bytes.NewBuffer([]byte("Te045fe3ea2a2f47d007afe3ea2a2f47d007a30307ee5eae300"))
-	readKey(buf, &key_holder.Key)
+	readKey(buf, &keyHolder.Key)
 
-	if key_holder.Key != "Te045fe3ea2a2f47d007afe3ea2a2f47d007a30307ee5eae3" {
+	if keyHolder.Key != "Te045fe3ea2a2f47d007afe3ea2a2f47d007a30307ee5eae3" {
 		t.Fail()
 	}
 
@@ -99,40 +99,40 @@ func Test_read_key_Invalid(t *testing.T) {
 
 func TestReadFieldsFromStruct(t *testing.T) {
 
-	var fields_struct TestStruct2
+	var fieldsStruct TestStruct2
 	data, _ := hex.DecodeString("303030303030303030303032323334303041310001020304")
 	buf := bytes.NewBuffer(data)
 
-	result := readFixedField(buf, &fields_struct.StringField, 12, String)
+	result := readFixedField(buf, &fieldsStruct.StringField, 12, String)
 	if !result {
 		t.Fail()
 	}
-	result = readFixedField(buf, &fields_struct.DecimalNumberField1, 1, DecimalInt)
+	result = readFixedField(buf, &fieldsStruct.DecimalNumberField1, 1, DecimalInt)
 	if !result {
 		t.Fail()
 	}
-	result = readFixedField(buf, &fields_struct.DecimalNumberField2, 2, DecimalInt)
+	result = readFixedField(buf, &fieldsStruct.DecimalNumberField2, 2, DecimalInt)
 	if !result {
 		t.Fail()
 	}
-	result = readFixedField(buf, &fields_struct.HexNumberField, 4, HexadecimalInt)
-	if !result {
-		t.Fail()
-	}
-
-	result = readFixedField(buf, &fields_struct.RawData, 5, Binary)
+	result = readFixedField(buf, &fieldsStruct.HexNumberField, 4, HexadecimalInt)
 	if !result {
 		t.Fail()
 	}
 
-	fmt.Println(Dump(fields_struct))
+	result = readFixedField(buf, &fieldsStruct.RawData, 5, Binary)
+	if !result {
+		t.Fail()
+	}
 
-	if fields_struct.StringField == "000000000002" &&
-		fields_struct.DecimalNumberField1 == 2 &&
-		fields_struct.DecimalNumberField2 == 34 &&
-		fields_struct.HexNumberField == 161 {
+	fmt.Println(Dump(fieldsStruct))
 
-		if hex.EncodeToString(fields_struct.RawData) != "0001020304" {
+	if fieldsStruct.StringField == "000000000002" &&
+		fieldsStruct.DecimalNumberField1 == 2 &&
+		fieldsStruct.DecimalNumberField2 == 34 &&
+		fieldsStruct.HexNumberField == 161 {
+
+		if hex.EncodeToString(fieldsStruct.RawData) != "0001020304" {
 			t.Fail()
 
 		}

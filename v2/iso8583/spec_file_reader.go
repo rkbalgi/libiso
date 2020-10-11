@@ -19,7 +19,7 @@ func ReadSpecs(specDir string) error {
 
 	file, err := os.Open(filepath.Join(specDir))
 	if err != nil {
-		err = errors.New("isosim: init error. Unable to open specs-dir directory - " + err.Error())
+		err = errors.New("libiso: init error. Unable to open specs-dir directory - " + err.Error())
 		return err
 	}
 	_ = file.Close()
@@ -50,7 +50,7 @@ func ReadSpecs(specDir string) error {
 				//FIXME:: we will eventually get rid of the older .spec file format
 				// but for now lets convert the new format to older and continue
 				if err := processSpecs(specs); err != nil {
-					return fmt.Errorf("isosim: Error processing spec definition file: %s :%w", specFile, err)
+					return fmt.Errorf("libiso: Error processing spec definition file: %s :%w", specFile, err)
 				}
 			}
 		}

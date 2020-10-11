@@ -1,7 +1,7 @@
 package crypto
 
 func toOddParity(b []byte) {
-	for i, _ := range b {
+	for i := range b {
 
 		c := 0
 		var j uint = 0

@@ -33,7 +33,7 @@ func readLegacyFile(specDir string, specFile string) error {
 		}
 		splitLine := strings.Split(line, "=")
 		if len(splitLine) != 2 {
-			return fmt.Errorf("isosim:  Syntax error on line. line: %d", lineNo)
+			return fmt.Errorf("libiso:  Syntax error on line. line: %d", lineNo)
 		}
 		keyPart := strings.Split(splitLine[0], componentSeparator)
 		valuePart := strings.Split(splitLine[1], componentSeparator)
@@ -47,14 +47,14 @@ func readLegacyFile(specDir string, specFile string) error {
 					//spec definition
 					specName := keyPart[1]
 					if strings.ContainsAny(specName, "/ '") {
-						return errors.New("isosim: Invalid spec name. contains invalid characters (/,[SPACE],') - " + specName)
+						return errors.New("libiso: Invalid spec name. contains invalid characters (/,[SPACE],') - " + specName)
 					}
 					specId, err := strconv.Atoi(valuePart[0])
 					if err != nil {
-						return errors.New("isosim: Invalid SpecId - " + valuePart[0])
+						return errors.New("libiso: Invalid SpecId - " + valuePart[0])
 					}
 					if _, ok, err := getOrCreateNewSpec(specId, specName); err != nil || !ok {
-						return errors.New("isosim: Multiple definition of spec or duplicate specID - spec: " + specName)
+						return errors.New("libiso: Multiple definition of spec or duplicate specID - spec: " + specName)
 					}
 
 				} else {
@@ -64,7 +64,7 @@ func readLegacyFile(specDir string, specFile string) error {
 					msgId, err := strconv.Atoi(valuePart[0])
 
 					if err != nil {
-						return fmt.Errorf("isosim: Invalid MsgId (%s) for specId - %s ", valuePart[0], specRef)
+						return fmt.Errorf("libiso: Invalid MsgId (%s) for specId - %s ", valuePart[0], specRef)
 					}
 					var spec *Spec
 
@@ -72,17 +72,17 @@ func readLegacyFile(specDir string, specFile string) error {
 						specId, _ := strconv.Atoi(specRef)
 						spec = SpecByID(specId)
 						if spec == nil {
-							return errors.New("isosim: Invalid SpecId - " + specRef)
+							return errors.New("libiso: Invalid SpecId - " + specRef)
 						}
 					} else {
 						spec = SpecByName(specRef)
 						if spec == nil {
-							return errors.New("isosim: Invalid SpecName - " + specRef)
+							return errors.New("libiso: Invalid SpecName - " + specRef)
 						}
 					}
 
 					if _, ok := spec.GetOrAddMsg(msgId, msgName); !ok {
-						return fmt.Errorf("isosim: Multiple definition of msg %s for spec?  - %s", msgName, spec.Name)
+						return fmt.Errorf("libiso: Multiple definition of msg %s for spec?  - %s", msgName, spec.Name)
 					}
 
 				}
@@ -94,18 +94,18 @@ func readLegacyFile(specDir string, specFile string) error {
 
 				spec, msg, err := resolveSpecAndMsg(specRef, msgRef)
 				if spec == nil || msg == nil {
-					return fmt.Errorf("isosim: Unknown spec/msg used. line: %d ", lineNo)
+					return fmt.Errorf("libiso: Unknown spec/msg used. line: %d ", lineNo)
 				}
 				fieldId, err := strconv.Atoi(sFieldId)
 				if err != nil {
-					return fmt.Errorf("isosim: Invalid FieldID - %s : line: %d", sFieldId, lineNo)
+					return fmt.Errorf("libiso: Invalid FieldID - %s : line: %d", sFieldId, lineNo)
 				}
 				if fld := msg.FieldById(fieldId); fld != nil {
-					return fmt.Errorf("isosim: FieldId %d already used for field - %s : line: %d", fieldId, fld.Name, lineNo)
+					return fmt.Errorf("libiso: FieldId %d already used for field - %s : line: %d", fieldId, fld.Name, lineNo)
 				}
 				fieldInfo, err := NewField(valuePart)
 				if err != nil {
-					return errors.New("isosim: Syntax error in (field-specification) . Line = " + line)
+					return errors.New("libiso: Syntax error in (field-specification) . Line = " + line)
 				}
 				fieldInfo.ID, fieldInfo.Name = fieldId, fieldName
 
@@ -119,28 +119,28 @@ func readLegacyFile(specDir string, specFile string) error {
 
 				spec, msg, err := resolveSpecAndMsg(specRef, msgRef)
 				if spec == nil || msg == nil {
-					return fmt.Errorf("isosim: Unknown spec/msg used. line: %d ", lineNo)
+					return fmt.Errorf("libiso: Unknown spec/msg used. line: %d ", lineNo)
 				}
 				pos, err := strconv.Atoi(sPosition)
 				if err != nil {
-					return fmt.Errorf("isosim: Invalid field position - %s : line: %d", sPosition, lineNo)
+					return fmt.Errorf("libiso: Invalid field position - %s : line: %d", sPosition, lineNo)
 				}
 				fieldId, err := strconv.Atoi(sFieldId)
 				if err != nil {
-					return fmt.Errorf("isosim: Invalid FieldID - %s : line: %d", sFieldId, lineNo)
+					return fmt.Errorf("libiso: Invalid FieldID - %s : line: %d", sFieldId, lineNo)
 				}
 
 				parentField, err := resolveField(msg, fieldRef)
 				if err != nil {
-					return fmt.Errorf("isosim: Unknown parent field - %s : line: %d : %w", fieldRef, lineNo, err)
+					return fmt.Errorf("libiso: Unknown parent field - %s : line: %d : %w", fieldRef, lineNo, err)
 				}
 
 				if fld := msg.FieldById(fieldId); fld != nil {
-					return fmt.Errorf("isosim: FieldId %d already used for field - %s : line: %d", fieldId, fld.Name, lineNo)
+					return fmt.Errorf("libiso: FieldId %d already used for field - %s : line: %d", fieldId, fld.Name, lineNo)
 				}
 				fieldInfo, err := NewField(valuePart)
 				if err != nil {
-					return errors.New("isosim: Syntax error in field-specification. Line = " + line)
+					return errors.New("libiso: Syntax error in field-specification. Line = " + line)
 				}
 				fieldInfo.ID, fieldInfo.Name, fieldInfo.Position = fieldId, fieldName, pos
 				fieldInfo.ParentId = parentField.ID
@@ -148,7 +148,7 @@ func readLegacyFile(specDir string, specFile string) error {
 
 			}
 		default:
-			return errors.New("isosim: Syntax error in spec definition file. Line = " + line)
+			return errors.New("libiso: Syntax error in spec definition file. Line = " + line)
 		}
 	}
 
@@ -162,13 +162,13 @@ func resolveField(msg *Message, ref string) (*Field, error) {
 		fieldId, _ := strconv.Atoi(ref)
 		field := msg.FieldById(fieldId)
 		if field == nil {
-			return nil, fmt.Errorf("isosim: No such field - ID: %d", fieldId)
+			return nil, fmt.Errorf("libiso: No such field - ID: %d", fieldId)
 		}
 		return field, nil
 	} else {
 		field := msg.Field(ref)
 		if field == nil {
-			return nil, fmt.Errorf("isosim: No such field - Name: %s", ref)
+			return nil, fmt.Errorf("libiso: No such field - Name: %s", ref)
 		}
 		return field, nil
 	}
@@ -182,13 +182,13 @@ func resolveSpecAndMsg(specRef string, msgRef string) (spec *Spec, msg *Message,
 		specId, _ := strconv.Atoi(specRef)
 		spec = SpecByID(specId)
 		if spec == nil {
-			err = fmt.Errorf("isosim: No such spec - ID: %d", specId)
+			err = fmt.Errorf("libiso: No such spec - ID: %d", specId)
 			return
 		}
 	} else {
 		spec = SpecByName(specRef)
 		if spec == nil {
-			err = fmt.Errorf("isosim: No such spec - Name: %s", specRef)
+			err = fmt.Errorf("libiso: No such spec - Name: %s", specRef)
 			return
 		}
 
@@ -198,13 +198,13 @@ func resolveSpecAndMsg(specRef string, msgRef string) (spec *Spec, msg *Message,
 		msgId, _ := strconv.Atoi(msgRef)
 		msg = spec.MessageByID(msgId)
 		if msg == nil {
-			err = fmt.Errorf("isosim: No such message (ID= %d) in spec - Name: %s", msgId, spec.Name)
+			err = fmt.Errorf("libiso: No such message (ID= %d) in spec - Name: %s", msgId, spec.Name)
 			return
 		}
 	} else {
 		msg = spec.MessageByName(msgRef)
 		if msg == nil {
-			err = fmt.Errorf("isosim: No such message (Name= %s) in spec - Name: %s", msgRef, spec.Name)
+			err = fmt.Errorf("libiso: No such message (Name= %s) in spec - Name: %s", msgRef, spec.Name)
 			return
 		}
 

@@ -68,7 +68,7 @@ func handleClientError(clientCon net.Conn, err error) {
 	}
 	if err != nil {
 		defer clientCon.Close()
-		logger.Panicf("Error Occured - %s ", err)
+		logger.Panicf("Error Occurred - %s ", err)
 
 	}
 }

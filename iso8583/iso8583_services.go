@@ -26,7 +26,7 @@ func GetSpecNames() []string {
 
 	specs := make([]string, len(specMap))
 	i := 0
-	for k, _ := range specMap {
+	for k := range specMap {
 		specs[i] = k
 		i = i + 1
 	}

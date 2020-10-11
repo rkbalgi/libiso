@@ -8,9 +8,7 @@ import (
 	"github.com/rkbalgi/libiso/crypto"
 )
 
-//generate a X9.9 MAC using a single length key
-//data will be zero padded if required
-
+// GenerateMacX99 generates a X9.9 MAC using a single length key  data will be zero padded if required
 func GenerateMacX99(inMacData []byte, keyData []byte) ([]byte, error) {
 
 	macData := make([]byte, len(inMacData))

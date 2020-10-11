@@ -96,7 +96,7 @@ func ReadSpecDefs(fileName string) {
 	if !specInit {
 		specMap = make(map[string]*MessageDef)
 	} else {
-		for k, _ := range specMap {
+		for k := range specMap {
 			delete(specMap, k)
 		}
 	}

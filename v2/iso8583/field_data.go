@@ -22,7 +22,7 @@ func (fd *FieldData) Value() string {
 func (fd *FieldData) Set(value string) error {
 	var err error
 	if fd.Data, err = fd.Field.ValueFromString(value); err != nil {
-		return fmt.Errorf("isosim: Failed to set value for field :%s to value %s :%w", fd.Field.Name, value, err)
+		return fmt.Errorf("libiso: Failed to set value for field :%s to value %s :%w", fd.Field.Name, value, err)
 	}
 
 	return err

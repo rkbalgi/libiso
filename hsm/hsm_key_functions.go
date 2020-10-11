@@ -210,7 +210,7 @@ func setVariants(vKey []byte, keyType string) {
 	if keyType[0] != '0' {
 		//apply variant
 		i, _ := strconv.ParseInt(keyType[:1], 10, 32)
-		vKey[0] = vKey[0] ^ __variants[i]
+		vKey[0] = vKey[0] ^ __Variants[i]
 
 	}
 }

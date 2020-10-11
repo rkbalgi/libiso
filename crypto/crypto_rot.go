@@ -1,11 +1,8 @@
 package crypto
 
-var english_alpha = []uint8{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
+var englishAlpha = []uint8{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
 
-/**
- This function rotates the input string by n
- (Caesars Cipher)
-**/
+// RotN function rotates the input string by n (Caesars Cipher)
 func RotN(n int, val string) string {
 
 	rotNVal := make([]byte, len(val))
@@ -15,15 +12,15 @@ func RotN(n int, val string) string {
 		tmp := val[i]
 		found := false
 
-		for j := 0; j < len(english_alpha); j++ {
-			if tmp == english_alpha[j] {
+		for j := 0; j < len(englishAlpha); j++ {
+			if tmp == englishAlpha[j] {
 				found = true
-				if (j + n) < len(english_alpha) {
-					rotNVal[i] = english_alpha[j+n]
+				if (j + n) < len(englishAlpha) {
+					rotNVal[i] = englishAlpha[j+n]
 				} else {
-					//how many beyond the length of english_alpha?
-					iters := (j + n) - len(english_alpha)
-					rotNVal[i] = english_alpha[iters]
+					//how many beyond the length of englishAlpha?
+					iters := (j + n) - len(englishAlpha)
+					rotNVal[i] = englishAlpha[iters]
 				}
 				break
 

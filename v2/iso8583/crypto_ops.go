@@ -15,7 +15,7 @@ func (pgp *PinGenProps) Generate() ([]byte, error) {
 		return nil, err
 	}
 	if pgp.PAN == "" || len(pgp.PAN) < 13 {
-		return nil, fmt.Errorf("isosim: Supplied PAN [%s] contains less than 13 digits", pgp.PAN)
+		return nil, fmt.Errorf("libiso: Supplied PAN [%s] contains less than 13 digits", pgp.PAN)
 	}
 	pan12 := pgp.PAN[len(pgp.PAN)-1-12 : len(pgp.PAN)-1]
 
@@ -49,7 +49,7 @@ func (pgp *PinGenProps) Generate() ([]byte, error) {
 			return pb, nil
 		}
 	default:
-		return nil, errors.New(string("isosim: Unsupported PIN block - " + pgp.PINFormat))
+		return nil, errors.New(string("libiso: Unsupported PIN block - " + pgp.PINFormat))
 	}
 
 }
