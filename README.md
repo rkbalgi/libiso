@@ -1,8 +1,7 @@
 # libiso - A library of utilities related to payments, crypto, ISO8583 etc 
 
 ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/rkbalgi/libiso?include_prereleases&style=flat)
-[![rkbalgi](https://circleci.com/github/rkbalgi/libiso.svg?style=svg)](https://app.circleci.com/pipelines/github/rkbalgi/libiso?branch=master)
-
+![CircleCI](https://img.shields.io/circleci/build/github/rkbalgi/libiso/master?style=flat-square)
 
 ## Creating ISO8583 messages
 
