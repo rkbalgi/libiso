@@ -66,10 +66,10 @@ func (isoMsg *Iso8583Message) ToWebMsg(isReq bool) *WebMsgData {
 					}
 				}
 
-			} //end case
+			}
 
-		} //end switch
-	} //end for
+		}
+	}
 
 	return &jsonMsg
 
@@ -125,14 +125,14 @@ func (isoMsg *Iso8583Message) GetBinaryBitmap() string {
 
 }
 
-//IsSelected returns a boolean indicating
-//if the 'position' is selected in the bitmap
+// IsSelected returns a boolean indicating
+//  if the 'position' is selected in the bitmap
 func (isoMsg *Iso8583Message) IsSelected(position int) bool {
 	return isoMsg.bitMap.IsOn(position)
 }
 
-//GetFieldData returns the data associated with the 'position'
-//in the iso_msg
+// GetFieldData returns the data associated with the 'position'
+//  in the iso_msg
 func (isoMsg *Iso8583Message) GetFieldData(position int) (data string, err error) {
 	fieldData, err := isoMsg.Field(position)
 	if err == nil {
@@ -143,6 +143,7 @@ func (isoMsg *Iso8583Message) GetFieldData(position int) (data string, err error
 
 }
 
+// NewIso8583Message returns a new message for the spec
 func NewIso8583Message(specName string) *Iso8583Message {
 
 	isoMsg := new(Iso8583Message)
@@ -164,31 +165,29 @@ func (isoMsg *Iso8583Message) __init__() {
 	for l := isoMsg.isoMsgDef.fieldsDefList.Front(); l != nil; l = l.Next() {
 		switch (l.Value).(type) {
 		case IsoField:
-			{
-				var isoField = (l.Value).(IsoField)
-				fieldData := &FieldData{fieldData: nil, fieldDef: isoField}
-				isoMsg.fieldDataList.PushBack(fieldData)
 
-				isoMsg.nameToDataMap[isoField.String()] = fieldData
-				isoMsg.idToDataMap[isoField.GetId()] = fieldData
+			var isoField = (l.Value).(IsoField)
+			fieldData := &FieldData{fieldData: nil, fieldDef: isoField}
+			isoMsg.fieldDataList.PushBack(fieldData)
 
-			}
+			isoMsg.nameToDataMap[isoField.String()] = fieldData
+			isoMsg.idToDataMap[isoField.GetId()] = fieldData
+
 		case BitmappedField:
-			{
-				var isoBmpField = (l.Value).(*BitMap)
-				isoMsg.bitMap = NewBitMap()
-				for i, fDef := range isoBmpField.subFieldDef {
-					if fDef != nil {
-						fieldData := &FieldData{fieldData: nil, fieldDef: fDef}
-						isoMsg.bitMap.subFieldData[i] = fieldData
-						isoMsg.nameToDataMap[fDef.String()] = fieldData
-						isoMsg.idToDataMap[fDef.GetId()] = fieldData
-					}
-				}
-				isoMsg.fieldDataList.PushBack(isoMsg.bitMap)
-				isoMsg.idToDataMap[isoBmpField.GetId()] = &FieldData{fieldData: nil, fieldDef: nil, bmpDef: isoMsg.bitMap}
 
+			var isoBmpField = (l.Value).(*BitMap)
+			isoMsg.bitMap = NewBitMap()
+			for i, fDef := range isoBmpField.subFieldDef {
+				if fDef != nil {
+					fieldData := &FieldData{fieldData: nil, fieldDef: fDef}
+					isoMsg.bitMap.subFieldData[i] = fieldData
+					isoMsg.nameToDataMap[fDef.String()] = fieldData
+					isoMsg.idToDataMap[fDef.GetId()] = fieldData
+				}
 			}
+			isoMsg.fieldDataList.PushBack(isoMsg.bitMap)
+			isoMsg.idToDataMap[isoBmpField.GetId()] = &FieldData{fieldData: nil, fieldDef: nil, bmpDef: isoMsg.bitMap}
+
 		default:
 			log.Println("unexpected type in iso8583 message definition!")
 		}
@@ -283,12 +282,6 @@ func (isoMsg *Iso8583Message) Dump() string {
 
 				for i, fData := range bmp.subFieldData {
 
-					//if i == 0 || i == 1 || i == 65 || i == 129 {
-					//skip invalid or bits that stand for position
-					//that represents additional bitmap position
-					//continue
-					//}
-
 					if fData != nil && bmp.IsOn(i) {
 						msgBuf.WriteString(fmt.Sprintf("\n%-25s: %s", fData.fieldDef.String(), fData.String()))
 					}
@@ -361,35 +354,24 @@ func (isoMsg *Iso8583Message) Parse(buf *bytes.Buffer) (err error) {
 
 		switch l.Value.(type) {
 		case *FieldData:
-			{
 
-				var fData = l.Value.(*FieldData)
-				log.Println("parsing.. ", fData.fieldDef.Def())
-				fData.fieldDef.Parse(isoMsg, fData, buf)
-				break
-			}
+			var fData = l.Value.(*FieldData)
+			log.Println("parsing.. ", fData.fieldDef.Def())
+			fData.fieldDef.Parse(isoMsg, fData, buf)
+			break
 
 		case *BitMap:
-			{
 
-				var bmp = l.Value.(*BitMap)
-				bmp.Parse(isoMsg, buf)
-				//parse sub fields of bitmap
-				for i, fData := range bmp.subFieldData {
-
-					//if i == 0 || i == 1 || i == 65 || i == 129 {
-					//skip invalid or bits that stand for position
-					//that represents additional bitmap position
-					//continue
-					//}
-
-					if fData != nil && bmp.IsOn(i) {
-						log.Println("parsing.. ", fData.fieldDef.Def())
-						fData.fieldDef.Parse(isoMsg, fData, buf)
-					}
+			var bmp = l.Value.(*BitMap)
+			bmp.Parse(isoMsg, buf)
+			//parse sub fields of bitmap
+			for i, fData := range bmp.subFieldData {
+				if fData != nil && bmp.IsOn(i) {
+					log.Println("parsing.. ", fData.fieldDef.Def())
+					fData.fieldDef.Parse(isoMsg, fData, buf)
 				}
-				break
 			}
+			break
 
 		}
 	}
@@ -411,23 +393,22 @@ func (isoMsg *Iso8583Message) Bytes() []byte {
 		switch obj := l.Value.(type) {
 
 		case *FieldData:
-			{
-				msgBuf.Write(obj.Bytes())
-				break
-			}
-		case BitmappedField:
-			{
-				msgBuf.Write(isoMsg.bitMap.Bytes())
-				bmp := obj.(*BitMap)
 
-				for i, v := range bmp.subFieldData {
-					if v != nil && v.fieldData != nil && bmp.IsOn(i) {
-						fData := v.Bytes()
-						isoMsg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
-							v.fieldDef.String(), len(v.fieldData), hex.EncodeToString(v.fieldData),
-							hex.EncodeToString(fData))
-						msgBuf.Write(fData)
-					}
+			msgBuf.Write(obj.Bytes())
+			break
+
+		case BitmappedField:
+
+			msgBuf.Write(isoMsg.bitMap.Bytes())
+			bmp := obj.(*BitMap)
+
+			for i, v := range bmp.subFieldData {
+				if v != nil && v.fieldData != nil && bmp.IsOn(i) {
+					fData := v.Bytes()
+					isoMsg.log.Printf("assembling: %s - len: %d data: %s final data: %s\n",
+						v.fieldDef.String(), len(v.fieldData), hex.EncodeToString(v.fieldData),
+						hex.EncodeToString(fData))
+					msgBuf.Write(fData)
 				}
 			}
 		}
@@ -438,12 +419,9 @@ func (isoMsg *Iso8583Message) Bytes() []byte {
 }
 
 func (isoMsg *Iso8583Message) SetFieldData(id int, fieldVal string) {
-
 	isoMsg.idToDataMap[id].SetData(fieldVal)
 }
 
 func (isoMsg *Iso8583Message) GetFieldDataById(id int) *FieldData {
-
 	return isoMsg.idToDataMap[id]
-
 }
