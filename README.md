@@ -78,7 +78,7 @@ With v2.0.1 you can turn off logging (and hence gain some speed and lower alloca
 
 	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parse, you can do this - Example: spec.MessageByName("1100 - Authorization")
 	parsedMsg, err := parser.Parse(msg,msgData)
-    iso := iso8583.FromParsedMsg(parsedMsg)
+	iso := iso8583.FromParsedMsg(parsedMsg)
 	assert.Equal(t, "000000001090", iso.Bitmap().Get(4).Value())
 
 ```
@@ -98,12 +98,14 @@ ok      github.com/rkbalgi/libiso/v2/iso8583    4.600s
 PS C:\Users\rkbal\IdeaProjects\libiso\v2\iso8583>
 
 ```
-With log level turned to Trace - 
+Just to see the impact of logging , with log level turned to TRACE - 
+```
 Benchmark_ParseWithMsg-8                   502           2355728 ns/op           24749 B/op        409 allocs/op
+```
 
 Also, a new API for assembling
 ```go
-            asm:=iso8583.NewAssembler(&iso8583.AssemblerConfig{
+			asm:=iso8583.NewAssembler(&iso8583.AssemblerConfig{
 			  LogEnabled: false,
 		    })
 
