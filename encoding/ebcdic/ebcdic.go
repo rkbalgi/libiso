@@ -97,7 +97,7 @@ func EncodeToString(data []byte) string {
 		var x uint32 = uint32(b)
 		tmp := ebcdic_to_ascii[(x * 2) : (x*2)+2]
 		i, _ := strconv.ParseUint(tmp, 16, 8)
-		buf.WriteString(string(i))
+		buf.WriteString(string([]byte{byte(i)}))
 
 	}
 

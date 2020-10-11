@@ -86,12 +86,12 @@ func Test_read_key_TripleLength(t *testing.T) {
 
 func Test_read_key_Invalid(t *testing.T) {
 
-	var key_holder TestStruct
+	var keyHolder TestStruct
 	buf := bytes.NewBuffer([]byte("Ke045fe3ea2a2f47d007afe3ea2a2f47d007a30307ee5eae300"))
 
-	result := readKey(buf, &key_holder.Key)
+	result := readKey(buf, &keyHolder.Key)
 
-	if !result {
+	if result {
 		t.Fail()
 	}
 
