@@ -17,6 +17,129 @@ func init() {
 	}
 }
 
+func Benchmark_ParseWithParserAPI(b *testing.B) {
+
+	var msgData, _ = hex.DecodeString("3131303070386000000080003136343736363937373635343332373737373030343030303030303030303030313039303636363535313230313333353035323239333131333336383236")
+
+	log.SetLevel(log.ErrorLevel)
+
+	specName := "ISO8583-Test"
+	spec := iso8583.SpecByName(specName)
+	if spec == nil {
+		b.Fatal("Unable to find spec - " + specName)
+	}
+
+	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parse, you can do this - Example: spec.MessageByName("1100 - Authorization")
+
+	parser := iso8583.NewParser(&iso8583.ParserConfig{LogEnabled: false})
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if msg != nil {
+			_, _, err := parser.Parse(msg, msgData)
+			if err != nil {
+				b.Fatal(err)
+			}
+		} else {
+			b.Fatal("Unable to derive the type of message the data represents")
+		}
+
+	}
+}
+
+func Benchmark_ParseWithMsg(b *testing.B) {
+
+	var msgData, _ = hex.DecodeString("3131303070386000000080003136343736363937373635343332373737373030343030303030303030303030313039303636363535313230313333353035323239333131333336383236")
+
+	log.SetLevel(log.ErrorLevel)
+
+	specName := "ISO8583-Test"
+	spec := iso8583.SpecByName(specName)
+	if spec == nil {
+		b.Fatal("Unable to find spec - " + specName)
+	}
+
+	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parse, you can do this - Example: spec.MessageByName("1100 - Authorization")
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		if msg != nil {
+			_, err := msg.Parse(msgData)
+			if err != nil {
+				b.Fatal(err)
+			}
+		} else {
+			b.Fatal("Unable to derive the type of message the data represents")
+		}
+
+	}
+}
+
+func BenchmarkIso_Assemble(b *testing.B) {
+
+	log.SetLevel(log.ErrorLevel)
+
+	specName := "ISO8583-Test"
+	spec := iso8583.SpecByName(specName)
+	if spec == nil {
+		b.Fatal("Unable to find spec - " + specName)
+	}
+	msg := spec.MessageByName("1100 - Authorization")
+
+	b.Run("old-style", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for i := 0; i < b.N; i++ {
+
+			iso := msg.NewIso()
+			iso.Set("Message Type", "1100")
+			iso.Bitmap().Set(3, "004000")
+			iso.Bitmap().Set(4, "4766977654327777")
+			iso.Bitmap().Set(3, "004000")
+
+			iso.Bitmap().Set(49, "336")
+			iso.Bitmap().Set(50, "826")
+
+			_, _, err := iso.Assemble()
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+	b.Run("new-assembler-api", func(b *testing.B) {
+
+		asm := iso8583.NewAssembler(&iso8583.AssemblerConfig{
+			LogEnabled: false,
+		})
+		b.ReportAllocs()
+		b.ResetTimer()
+
+		for i := 0; i < b.N; i++ {
+
+			iso := msg.NewIso()
+			iso.Set("Message Type", "1100")
+			iso.Bitmap().Set(3, "004000")
+			iso.Bitmap().Set(4, "4766977654327777")
+			iso.Bitmap().Set(3, "004000")
+
+			iso.Bitmap().Set(49, "336")
+			iso.Bitmap().Set(50, "826")
+
+			_, _, err := asm.Assemble(iso)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+
+}
+
 func Test_ParseAndAssemble_Iso8585_Test_Spec(t *testing.T) {
 
 	specName := "ISO8583-Test"

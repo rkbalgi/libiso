@@ -6,9 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strconv"
-
 	log "github.com/sirupsen/logrus"
+	"strconv"
 )
 
 // ErrInsufficientData is an error when there is not enough data in the raw message to parse it
@@ -47,7 +46,6 @@ func (pMsg *ParsedMsg) Get(name string) *FieldData {
 
 // GetById returns field data given its id
 func (pMsg *ParsedMsg) GetById(id int) *FieldData {
-
 	return pMsg.FieldDataMap[id]
 }
 
@@ -67,17 +65,17 @@ func (pMsg *ParsedMsg) Copy() *ParsedMsg {
 
 }
 
-func parse(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
+func parse(parserCfg *ParserConfig, buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 	var err error
 	switch field.Type {
 
 	case FixedType:
-		err = parseFixed(buf, parsedMsg, field)
+		err = parseFixed(parserCfg, buf, parsedMsg, field)
 	case VariableType:
-		err = parseVariable(buf, parsedMsg, field)
+		err = parseVariable(parserCfg, buf, parsedMsg, field)
 	case BitmappedType:
-		err = parseBitmap(buf, parsedMsg, field)
+		err = parseBitmap(parserCfg, buf, parsedMsg, field)
 	default:
 		return fmt.Errorf("isosim: Unsupported field type - %v", field.Type)
 
@@ -95,7 +93,7 @@ func parse(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 			bitmap := parsedMsg.FieldDataMap[field.ID].Bitmap
 			for _, cf := range field.Children {
 				if bitmap.IsOn(cf.Position) {
-					if err := parse(buf, parsedMsg, cf); err != nil {
+					if err := parse(parserCfg, buf, parsedMsg, cf); err != nil {
 						return err
 					}
 					bitmap.childData[cf.Position] = parsedMsg.FieldDataMap[cf.ID]
@@ -108,7 +106,7 @@ func parse(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 }
 
-func parseFixed(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
+func parseFixed(parserCfg *ParserConfig, buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 	fieldData := &FieldData{Field: field}
 	var err error
@@ -119,14 +117,15 @@ func parseFixed(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 	if field.Key {
 		parsedMsg.MessageKey += fieldData.Value()
 	}
-	log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: %d, Value: %s\n", field.Name, field.Size, hex.EncodeToString(fieldData.Data))
-
+	if parserCfg.LogEnabled {
+		log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: %d, Value: %s\n", field.Name, field.Size, hex.EncodeToString(fieldData.Data))
+	}
 	parsedMsg.FieldDataMap[field.ID] = fieldData
 
 	if field.HasChildren() {
 		newBuf := bytes.NewBuffer(parsedMsg.Get(field.Name).Data)
 		for _, cf := range field.Children {
-			if err := parse(newBuf, parsedMsg, cf); err != nil {
+			if err := parse(parserCfg, newBuf, parsedMsg, cf); err != nil {
 				return err
 			}
 		}
@@ -136,7 +135,7 @@ func parseFixed(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 }
 
-func parseVariable(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
+func parseVariable(parserCfg *ParserConfig, buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 	lenData, err := NextBytes(buf, field.LengthIndicatorSize)
 	if err != nil {
@@ -153,42 +152,29 @@ func parseVariable(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error 
 
 			switch field.LengthIndicatorSize {
 			case 1:
-				{
-
-					var byteLength uint8
-					if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
-						return err
-					}
-					length = uint64(byteLength)
-
+				var byteLength uint8
+				if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
+					return err
 				}
+				length = uint64(byteLength)
 			case 2:
-				{
-					var byteLength uint16
-					if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
-						return err
-					}
-					length = uint64(byteLength)
-
+				var byteLength uint16
+				if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
+					return err
 				}
+				length = uint64(byteLength)
 			case 4:
-				{
-					var byteLength uint32
-					if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
-						return err
-					}
-					length = uint64(byteLength)
-
+				var byteLength uint32
+				if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
+					return err
 				}
+				length = uint64(byteLength)
 			case 8:
-				{
-					var byteLength uint64
-					if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
-						return err
-					}
-					length = byteLength
-
+				var byteLength uint64
+				if err = binary.Read(bytes.NewBuffer(lenData), binary.BigEndian, &byteLength); err != nil {
+					return err
 				}
+				length = byteLength
 			default:
 				{
 					return errors.New(fmt.Sprint("Invalid length indicator size for binary (max 8) -", field.LengthIndicatorSize))
@@ -232,14 +218,15 @@ func parseVariable(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error 
 		parsedMsg.MessageKey += fieldData.Value()
 	}
 
-	log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: %d, Value: %s\n", field.Name, length, hex.EncodeToString(fieldData.Data))
-
+	if parserCfg.LogEnabled {
+		log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: %d, Value: %s\n", field.Name, length, hex.EncodeToString(fieldData.Data))
+	}
 	parsedMsg.FieldDataMap[field.ID] = fieldData
 
 	if field.HasChildren() {
 		newBuf := bytes.NewBuffer(parsedMsg.Get(field.Name).Data)
 		for _, cf := range field.Children {
-			if err := parse(newBuf, parsedMsg, cf); err != nil {
+			if err := parse(parserCfg, newBuf, parsedMsg, cf); err != nil {
 				return err
 			}
 		}
@@ -249,7 +236,7 @@ func parseVariable(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error 
 
 }
 
-func parseBitmap(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
+func parseBitmap(parserCfg *ParserConfig, buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 
 	bitmap := NewBitmap()
 	bitmap.field = field
@@ -257,24 +244,22 @@ func parseBitmap(buf *bytes.Buffer, parsedMsg *ParsedMsg, field *Field) error {
 	if err != nil {
 		return err
 	}
-	log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: -, Value: %s\n", field.Name, bitmap.BinaryString())
+	if parserCfg.LogEnabled {
+		log.WithFields(log.Fields{"component": "parser"}).Debugf("Field %s, Length: -, Value: %s\n", field.Name, bitmap.BinaryString())
+	}
 	parsedMsg.FieldDataMap[field.ID] = &FieldData{Field: field, Bitmap: bitmap}
 
 	return nil
 
 }
 
-// NextBytes returns the next 'n' bytes from the Buffer. This is similar to
-// the Next() method available on Buffer but this function returns a
-// copy of the slice
+// NextBytes returns the next 'n' bytes from the Buffer
 func NextBytes(buf *bytes.Buffer, n int) ([]byte, error) {
 
 	if buf.Len() < n {
 		return nil, ErrInsufficientData
 	}
-	cpData := make([]byte, n)
 	nextData := buf.Next(n)
-	copy(cpData, nextData)
-	return cpData, nil
+	return nextData, nil
 
 }

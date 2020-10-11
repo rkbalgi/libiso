@@ -21,7 +21,7 @@ func TestBitmap_IsOn(t *testing.T) {
 	p.Msg.addField(field)
 
 	buf := bytes.NewBuffer(data)
-	err := parseBitmap(buf, p, field)
+	err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 	assert.Nil(t, err)
 
 	for i := 1; i < 193; i++ {

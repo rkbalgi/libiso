@@ -1,7 +1,6 @@
 package iso8583
 
 import (
-	"bytes"
 	"time"
 )
 
@@ -95,23 +94,4 @@ func (iso *Iso) Bitmap() *Bitmap {
 // ParsedMsg returns the backing parsedMsg
 func (iso *Iso) ParsedMsg() *ParsedMsg {
 	return iso.parsedMsg
-}
-
-// Assemble assembles the raw form of the message
-func (iso *Iso) Assemble() ([]byte, *MetaInfo, error) {
-
-	msg := iso.parsedMsg.Msg
-	buf := new(bytes.Buffer)
-	meta := &MetaInfo{}
-	t1 := time.Now()
-	for _, field := range msg.Fields {
-		if err := assemble(buf, meta, iso.parsedMsg, iso.parsedMsg.FieldDataMap[field.ID]); err != nil {
-			return nil, nil, err
-		}
-	}
-
-	meta.OpTime = time.Since(t1)
-
-	return buf.Bytes(), meta, nil
-
 }

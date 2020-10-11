@@ -10,11 +10,14 @@ import (
 )
 
 // assemble assembles all the field into the dst Buffer buf
-func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData *FieldData) error {
+func (asm *Assembler) assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData *FieldData) error {
 
 	asmLog := log.WithFields(log.Fields{"component": "assembler"})
 
-	asmLog.Tracef("Assembling field - %s\n", fieldData.Field.Name)
+	if asm.cfg.LogEnabled {
+		asmLog.Tracef("Assembling field - %s\n", fieldData.Field.Name)
+	}
+
 	field := fieldData.Field
 	switch field.Type {
 
@@ -22,7 +25,9 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 		// if the field has children we will derive the data of the field
 		// from the children (nested fields) else we take it from the parent field
 		if !fieldData.Field.HasChildren() {
-			asmLog.Debugf("Field %s, Length: %d, Value: %s\n", field.Name, len(fieldData.Data), hex.EncodeToString(fieldData.Data))
+			if asm.cfg.LogEnabled {
+				asmLog.Debugf("Field %s, Length: %d, Value: %s\n", field.Name, len(fieldData.Data), hex.EncodeToString(fieldData.Data))
+			}
 			if field.Key == true {
 				meta.MessageKey += fieldData.Value()
 			}
@@ -32,18 +37,20 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 		{
 			if !fieldData.Field.HasChildren() {
 
-				vlen := 0
-				vlen = len(fieldData.Data)
+				varLength := 0
+				varLength = len(fieldData.Data)
 				if lengthAdjustment, isSpecial := lengthCorrection(field, fieldData.Data); isSpecial {
-					vlen = (vlen * 2) + lengthAdjustment
+					varLength = (varLength * 2) + lengthAdjustment
 				}
 
-				lenBuf, err := buildLengthIndicator(field.LengthIndicatorEncoding, field.LengthIndicatorSize, vlen)
+				lenBuf, err := buildLengthIndicator(field.LengthIndicatorEncoding, field.LengthIndicatorSize, varLength)
 				if err != nil {
 					return err
 				}
 
-				asmLog.Debugf("Field %s, LL (Variable): %s, Value: %s\n", field.Name, hex.EncodeToString(lenBuf.Bytes()), hex.EncodeToString(fieldData.Data))
+				if asm.cfg.LogEnabled {
+					asmLog.Debugf("Field %s, LL (Variable): %s, Value: %s\n", field.Name, hex.EncodeToString(lenBuf.Bytes()), hex.EncodeToString(fieldData.Data))
+				}
 				if field.Key == true {
 					meta.MessageKey += fieldData.Value()
 				}
@@ -52,7 +59,9 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 			}
 		}
 	case BitmappedType:
-		asmLog.Debugf("Field %s, Length (Bitmapped): -, Value: %s\n", field.Name, hex.EncodeToString(fieldData.Bitmap.Bytes()))
+		if asm.cfg.LogEnabled {
+			asmLog.Debugf("Field %s, Length (Bitmapped): -, Value: %s\n", field.Name, hex.EncodeToString(fieldData.Bitmap.Bytes()))
+		}
 		buf.Write(fieldData.Bitmap.Bytes())
 
 	}
@@ -63,7 +72,7 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 			bmp := fieldData.Bitmap
 			for _, childField := range fieldData.Field.Children {
 				if bmp.IsOn(childField.Position) {
-					if err := assemble(buf, meta, parsedMsg, parsedMsg.FieldDataMap[childField.ID]); err != nil {
+					if err := asm.assemble(buf, meta, parsedMsg, parsedMsg.FieldDataMap[childField.ID]); err != nil {
 						return err
 					}
 				}
@@ -72,7 +81,7 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 			if field.Type == FixedType {
 				tempBuf := bytes.Buffer{}
 				for _, cf := range fieldData.Field.Children {
-					if err := assemble(&tempBuf, meta, parsedMsg, parsedMsg.FieldDataMap[cf.ID]); err != nil {
+					if err := asm.assemble(&tempBuf, meta, parsedMsg, parsedMsg.FieldDataMap[cf.ID]); err != nil {
 						return err
 					}
 				}
@@ -81,29 +90,33 @@ func assemble(buf *bytes.Buffer, meta *MetaInfo, parsedMsg *ParsedMsg, fieldData
 				if field.Key == true {
 					meta.MessageKey += fieldData.Value()
 				}
-				asmLog.Debugf("Field %s, Length (Fixed): %d, Value: %s\n", field.Name, len(fieldData.Data), hex.EncodeToString(fieldData.Data))
+				if asm.cfg.LogEnabled {
+					asmLog.Debugf("Field %s, Length (Fixed): %d, Value: %s\n", field.Name, len(fieldData.Data), hex.EncodeToString(fieldData.Data))
+				}
 
 			} else if field.Type == VariableType {
 				//assemble all child fields and then construct the parent
 				tempBuf := bytes.Buffer{}
 				for _, cf := range fieldData.Field.Children {
-					if err := assemble(&tempBuf, meta, parsedMsg, parsedMsg.FieldDataMap[cf.ID]); err != nil {
+					if err := asm.assemble(&tempBuf, meta, parsedMsg, parsedMsg.FieldDataMap[cf.ID]); err != nil {
 						return err
 					}
 				}
 
-				vlen := len(fieldData.Data)
+				varLength := len(fieldData.Data)
 				if lengthAdjustment, isSpecial := lengthCorrection(field, fieldData.Data); isSpecial {
-					vlen = (vlen * 2) + lengthAdjustment
+					varLength = (varLength * 2) + lengthAdjustment
 				}
 
 				lenBuf, err := buildLengthIndicator(field.LengthIndicatorEncoding,
-					field.LengthIndicatorSize, vlen)
+					field.LengthIndicatorSize, varLength)
 				if err != nil {
 					return err
 				}
 				fieldData.Data = tempBuf.Bytes()
-				asmLog.Debugf("Field %s, LL (Variable): %s, Value: %s\n", field.Name, hex.EncodeToString(lenBuf.Bytes()), hex.EncodeToString(fieldData.Data))
+				if asm.cfg.LogEnabled {
+					asmLog.Debugf("Field %s, LL (Variable): %s, Value: %s\n", field.Name, hex.EncodeToString(lenBuf.Bytes()), hex.EncodeToString(fieldData.Data))
+				}
 
 				if field.Key == true {
 					meta.MessageKey += fieldData.Value()

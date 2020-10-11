@@ -104,7 +104,7 @@ func (spec *Spec) FindTargetMsg(data []byte) *Message {
 		MessageKey:   ""}
 
 	for _, field := range spec.HeaderFields {
-		if err := parse(buf, parsedMsg, field); err != nil {
+		if err := parse(&ParserConfig{LogEnabled: false}, buf, parsedMsg, field); err != nil {
 			log.Errorf("Failed to parse header fields: %s, Error: %v", field.Name, err)
 			return nil
 		}

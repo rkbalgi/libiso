@@ -80,7 +80,7 @@ func (bmp *Bitmap) Set(pos int, val string) error {
 	if field.HasChildren() {
 		log.Traceln("Attempting to set child fields during set parse for parent field -" + field.Name)
 		if field.Type == FixedType {
-			err = parseFixed(bytes.NewBuffer(rawFieldData), bmp.parsedMsg, field)
+			err = parseFixed(&ParserConfig{LogEnabled: false}, bytes.NewBuffer(rawFieldData), bmp.parsedMsg, field)
 		} else if field.Type == VariableType {
 			// build the complete field with length indicator and parse it again so that it sets up
 			// all the children
@@ -89,7 +89,7 @@ func (bmp *Bitmap) Set(pos int, val string) error {
 				return fmt.Errorf("isosim: Unable to set value for variable field: %s :%w", field.Name, err)
 			}
 			vFieldWithLI.Write(rawFieldData)
-			err = parseVariable(vFieldWithLI, bmp.parsedMsg, field)
+			err = parseVariable(&ParserConfig{LogEnabled: false}, vFieldWithLI, bmp.parsedMsg, field)
 		}
 
 		if err != nil {

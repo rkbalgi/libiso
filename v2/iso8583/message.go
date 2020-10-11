@@ -76,11 +76,15 @@ func (msg *Message) AllFields() []*Field {
 
 // Parse parses a a byte slice representing the message into fields
 func (msg *Message) Parse(msgData []byte) (*ParsedMsg, error) {
+	return parseWithConfig(&ParserConfig{LogEnabled: true}, msg, msgData)
+}
+
+func parseWithConfig(parserCfg *ParserConfig, msg *Message, msgData []byte) (*ParsedMsg, error) {
 
 	buf := bytes.NewBuffer(msgData)
 	parsedMsg := &ParsedMsg{Msg: msg, FieldDataMap: make(map[int]*FieldData, 64)}
 	for _, field := range msg.Fields {
-		if err := parse(buf, parsedMsg, field); err != nil {
+		if err := parse(parserCfg, buf, parsedMsg, field); err != nil {
 			return nil, err
 		}
 	}
@@ -91,7 +95,6 @@ func (msg *Message) Parse(msgData []byte) (*ParsedMsg, error) {
 	}
 
 	return parsedMsg, nil
-
 }
 
 // ParseJSON parses a JSON list of field values (from UI) into a parsed message representation
