@@ -171,7 +171,7 @@ func (fldData FieldData) Bytes() []byte {
 	if fldData.fieldDef.IsFixed() {
 		dataLen := fldData.fieldDef.DataLength()
 		if len(fldData.fieldData) > dataLen {
-			log.Printf("Warning: field [%s] length exceeds defined length, will be truncated")
+			log.Printf("Warning: field [%s] length exceeds defined length, will be truncated", fldData.Def().String())
 			return fldData.fieldData[0:dataLen]
 		} else if len(fldData.fieldData) < dataLen {
 			//add default padding

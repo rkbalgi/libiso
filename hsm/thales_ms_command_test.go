@@ -11,6 +11,7 @@ import (
 
 func failOnErr(t *testing.T, err error) {
 	if err != nil {
+		t.Log("Stopping .. ", err)
 		t.Fatal(err.Error())
 	}
 }
