@@ -54,7 +54,7 @@ TOASTABL DC    X'000102030405060708090A0B0C0D0E0F'  00-0F
 
 **/
 
-var ebcdic_to_ascii = "000102030405060708090A0B0C0D0E0F" +
+var ebcdicToAscii = "000102030405060708090A0B0C0D0E0F" +
 	"101112131415161718191A1B1C1D1E1F" +
 	"202122232425262728292A2B2C2D2E2F" +
 	"303132333435363738393A3B3C3D3E3F" +
@@ -71,7 +71,7 @@ var ebcdic_to_ascii = "000102030405060708090A0B0C0D0E0F" +
 	"5CE1535455565758595AEAEBECEDEEEF" +
 	"30313233343536373839FAFBFCFDFEFF"
 
-var ascii_to_ebcdic = "000102030405060708090A0B0C0D0E0F" +
+var asciiToEbcdic = "000102030405060708090A0B0C0D0E0F" +
 	"101112131415161718191A1B1C1D1E1F" +
 	"405A7F7B5B6C507D4D5D5C4E6B604B61" +
 	"F0F1F2F3F4F5F6F7F8F97A5E4C7E6E6F" +
@@ -88,14 +88,14 @@ var ascii_to_ebcdic = "000102030405060708090A0B0C0D0E0F" +
 	"E0E1E2E3E4E5E6E7E8E9EAEBECEDEEEF" +
 	"F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"
 
-//convert from ebcdic bytes to a ascii string
+//EncodeToString converts from ebcdic bytes to a ascii string
 func EncodeToString(data []byte) string {
 
 	buf := bytes.NewBufferString("")
 
 	for _, b := range data {
 		var x uint32 = uint32(b)
-		tmp := ebcdic_to_ascii[(x * 2) : (x*2)+2]
+		tmp := ebcdicToAscii[(x * 2) : (x*2)+2]
 		i, _ := strconv.ParseUint(tmp, 16, 8)
 		buf.WriteString(string([]byte{byte(i)}))
 
@@ -104,14 +104,14 @@ func EncodeToString(data []byte) string {
 	return buf.String()
 }
 
-//convert from a ascii encoded string to ebcdic bytes
+//Decode converts from a ascii encoded string to ebcdic bytes
 func Decode(str string) []byte {
 
 	data := make([]byte, len(str))
 
 	for i := 0; i < len(str); i++ {
 		b := uint32(str[i])
-		bVal, _ := strconv.ParseUint(ascii_to_ebcdic[b*2:b*2+2], 16, 8)
+		bVal, _ := strconv.ParseUint(asciiToEbcdic[b*2:b*2+2], 16, 8)
 		data[i] = byte(bVal)
 	}
 

@@ -2,10 +2,8 @@ package pin
 
 import (
 	"bytes"
-	_ "crypto/rand"
 	"encoding/hex"
 	"fmt"
-	_ "log"
 	"strconv"
 )
 

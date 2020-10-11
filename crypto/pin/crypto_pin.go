@@ -11,6 +11,7 @@ import (
 	_crypt "github.com/rkbalgi/libiso/crypto"
 )
 
+// PinBlocker represents a interface for types that can decrypt or encrypt a PIN block
 type PinBlocker interface {
 	Encrypt(pan string, clearPin string, key []byte) ([]byte, error)
 	GetPin(pan string, pinBlockData []byte, key []byte) (string, error)
@@ -27,6 +28,7 @@ func fillRandom(buf *bytes.Buffer) {
 	buf.Truncate(16)
 }
 
+// EncryptPinBlock encrypts a new pin block
 func EncryptPinBlock(pinBlock []byte, key []byte) (result []byte, err error) {
 
 	if len(key) == 8 {
@@ -39,6 +41,7 @@ func EncryptPinBlock(pinBlock []byte, key []byte) (result []byte, err error) {
 
 }
 
+// DecryptPinBlock decrypts a new PIN block
 func DecryptPinBlock(pinBlock []byte, key []byte) (result []byte, err error) {
 
 	if len(key) == 8 {

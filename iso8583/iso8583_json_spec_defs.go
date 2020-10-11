@@ -17,7 +17,6 @@ package iso8583
 //in the bitmap
 
 import (
-	_ "bufio"
 	"bytes"
 	"container/list"
 	"encoding/json"

@@ -1,19 +1,17 @@
 package crypto
 
-//implements padding schemes as defined in ISO/IEC 9797
+// Implements padding schemes as defined in ISO/IEC 9797
 // refer http://en.wikipedia.org/wiki/ISO/IEC_9797-1
 
-import (
-//	"encoding/hex"
-//	"log"
-//"fmt"
-)
-
+// PaddingType identifies the padding type used when MAC'ing
 type PaddingType int
 
 const (
+	// Iso9797M1Padding
 	Iso9797M1Padding PaddingType = iota + 1
+	// Iso9797M2Padding
 	Iso9797M2Padding
+	// DesBlockSize
 	DesBlockSize = 8
 )
 

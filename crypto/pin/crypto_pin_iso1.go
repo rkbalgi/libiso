@@ -2,7 +2,6 @@ package pin
 
 import (
 	"bytes"
-
 	"encoding/hex"
 	"fmt"
 	_ "log"
