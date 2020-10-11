@@ -12,7 +12,8 @@ First, create a yaml file containing the spec definition (see v2\iso8583\testdat
 if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 		log.Fatal(err)
 		return
-}```
+}
+```
 
 2. Once initialized you can construct ISO8583 messages like below (from iso_test.go) -
 
@@ -61,6 +62,62 @@ if err := iso8583.ReadSpecs(filepath.Join(".", "testdata")); err != nil {
 	assert.Equal(t, "31313030300000000000c00030303430303034373636393737363534333237373737333336383236", hex.EncodeToString(msgData))
 ```
 
+## Benchmarks
+With v2.0.1 you can turn off logging (and hence gain some speed and lower allocations) using the new parser API
+
+```go
+    
+    log.SetLevel(log.ErrorLevel)
+
+	specName := "ISO8583-Test"
+	spec := iso8583.SpecByName(specName)
+	if spec == nil {
+		b.Fatal("Unable to find spec - " + specName)
+	}
+	msgData, _ := hex.DecodeString("3131303070386000000080003136343736363937373635343332373737373030343030303030303030303030313039303636363535313230313333353035323239333131333336383236")
+
+	msg := spec.FindTargetMsg(msgData) // if you know the kind of message you are parse, you can do this - Example: spec.MessageByName("1100 - Authorization")
+	parsedMsg, err := parser.Parse(msg,msgData)
+    iso := iso8583.FromParsedMsg(parsedMsg)
+	assert.Equal(t, "000000001090", iso.Bitmap().Get(4).Value())
+
+```
+```
+PS C:\Users\rkbal\IdeaProjects\libiso\v2\iso8583> go test -bench . -run Benchmark_Parse
+time="2020-10-11T09:56:02+05:30" level=debug msg="Available spec files -  [isoSpecs.spec iso_specs.yaml sample_spec.yaml]"
+time="2020-10-11T09:56:02+05:30" level=debug msg="Reading file .. isoSpecs.spec"
+time="2020-10-11T09:56:02+05:30" level=debug msg="Reading file .. iso_specs.yaml"
+time="2020-10-11T09:56:02+05:30" level=debug msg="Reading file .. sample_spec.yaml"
+goos: windows
+goarch: amd64
+pkg: github.com/rkbalgi/libiso/v2/iso8583
+Benchmark_ParseWithParserAPI-8            327625              3692 ns/op            4016 B/op         27 allocs/op
+Benchmark_ParseWithMsg-8                   85014             14037 ns/op           12121 B/op        154 allocs/op
+PASS
+ok      github.com/rkbalgi/libiso/v2/iso8583    4.600s
+PS C:\Users\rkbal\IdeaProjects\libiso\v2\iso8583>
+
+```
+With log level turned to Trace - 
+Benchmark_ParseWithMsg-8                   502           2355728 ns/op           24749 B/op        409 allocs/op
+
+Also, a new API for assembling
+```go
+            asm:=iso8583.NewAssembler(&iso8583.AssemblerConfig{
+			  LogEnabled: false,
+		    })
+
+			iso := msg.NewIso()
+			iso.Set("Message Type", "1100")
+			iso.Bitmap().Set(3, "004000")
+			iso.Bitmap().Set(4, "4766977654327777")
+			iso.Bitmap().Set(3, "004000")
+
+			iso.Bitmap().Set(49, "336")
+			iso.Bitmap().Set(50, "826")
+
+			_, _, err := asm.Assemble(iso)
+```
 
 ## UPDATE (04/22/2020)
 1. Renaming the repo to libiso

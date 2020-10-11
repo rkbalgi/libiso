@@ -24,7 +24,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(f)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		for _, pos := range onBits {
@@ -44,7 +44,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(f)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		for _, pos := range []int{2, 3, 4, 28, 36, 37, 48, 63} {
@@ -64,7 +64,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(f)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		for _, pos := range []int{1, 2, 3, 4, 28, 36, 37, 48, 63, 66, 67, 75, 100, 111, 120} {
@@ -84,7 +84,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(info)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		assert.False(t, p.Get(IsoBitmap).Bitmap.IsOn(28))
@@ -101,7 +101,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(info)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		for _, pos := range onBits {
@@ -123,7 +123,7 @@ func Test_BitmapField(t *testing.T) {
 		field := p.Msg.addField(info)
 
 		buf := bytes.NewBuffer(data)
-		err := parseBitmap(buf, p, field)
+		err := parseBitmap(&ParserConfig{LogEnabled: false}, buf, p, field)
 		assert.Nil(t, err)
 
 		for _, pos := range onBits {
@@ -149,7 +149,7 @@ func Test_FixedField(t *testing.T) {
 	parsedMsg := &ParsedMsg{IsRequest: true, FieldDataMap: make(map[int]*FieldData), Msg: msg}
 
 	buf := bytes.NewBufferString("1234")
-	if err := parseFixed(buf, parsedMsg, msg.Field("FixedField")); err != nil {
+	if err := parseFixed(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field("FixedField")); err != nil {
 		t.Fatal(err)
 	}
 
@@ -179,7 +179,7 @@ func Test_VariableField(t *testing.T) {
 		parsedMsg := &ParsedMsg{IsRequest: true, FieldDataMap: make(map[int]*FieldData), Msg: msg}
 
 		buf := bytes.NewBufferString("041234")
-		if err := parseVariable(buf, parsedMsg, msg.Field(name)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(name)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -188,14 +188,17 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(name)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(name)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, []byte{0x30, 0x34, 0x31, 0x32, 0x33, 0x34}, buf2.Bytes())
 
 		buf2.Reset()
 		parsedMsg.Get(name).Set("covid19")
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(name)); err != nil {
+
+		asm = NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(name)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x30, 0x37}, []byte("covid19")...), buf2.Bytes())
@@ -223,7 +226,7 @@ func Test_VariableField(t *testing.T) {
 		buf := &bytes.Buffer{}
 		buf.Write([]byte{0x11})
 		buf.Write([]byte("Hello World"))
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: true}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -232,7 +235,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x11}, []byte("Hello World")...), buf2.Bytes())
@@ -257,7 +261,7 @@ func Test_VariableField(t *testing.T) {
 		buf := &bytes.Buffer{}
 		buf.Write([]byte{0x00, 0x11})
 		buf.Write([]byte("Hello World"))
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: true}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -266,7 +270,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x00, 0x11}, []byte("Hello World")...), buf2.Bytes())
@@ -292,7 +297,7 @@ func Test_VariableField(t *testing.T) {
 		buf := &bytes.Buffer{}
 		buf.Write([]byte{0x0e})
 		buf.Write([]byte("2020!! covid19"))
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -301,7 +306,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x0e}, []byte("2020!! covid19")...), buf2.Bytes())
@@ -327,7 +333,7 @@ func Test_VariableField(t *testing.T) {
 		buf := &bytes.Buffer{}
 		buf.Write([]byte{0x00, 0x0e})
 		buf.Write([]byte("2020!! covid19"))
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -336,7 +342,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x00, 0x0e}, []byte("2020!! covid19")...), buf2.Bytes())
@@ -363,7 +370,7 @@ func Test_VariableField(t *testing.T) {
 		buf.Write([]byte{0x00, 0x0F})
 		fdata, _ := hex.DecodeString("876526544676665F")
 		buf.Write(fdata)
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -371,7 +378,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x00, 0x0F}, fdata...), buf2.Bytes())
@@ -398,7 +406,7 @@ func Test_VariableField(t *testing.T) {
 		buf.Write([]byte{0x00, 0x15})
 		fdata, _ := hex.DecodeString("876526544676665F")
 		buf.Write(fdata)
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -406,7 +414,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x00, 0x15}, fdata...), buf2.Bytes())
@@ -433,7 +442,7 @@ func Test_VariableField(t *testing.T) {
 		buf.Write([]byte{0x31, 0x35})
 		fdata, _ := hex.DecodeString("876526544676665F")
 		buf.Write(fdata)
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -441,7 +450,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x31, 0x35}, fdata...), buf2.Bytes())
@@ -468,7 +478,7 @@ func Test_VariableField(t *testing.T) {
 		buf.Write([]byte{0x00, 0x0F})
 		fdata, _ := hex.DecodeString("0876526544676665")
 		buf.Write(fdata)
-		if err := parseVariable(buf, parsedMsg, msg.Field(fieldName)); err != nil {
+		if err := parseVariable(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 
@@ -476,7 +486,8 @@ func Test_VariableField(t *testing.T) {
 
 		//also assemble the field and check the length indicator
 		buf2 := &bytes.Buffer{}
-		if err := assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
+		asm := NewAssembler(&AssemblerConfig{LogEnabled: true})
+		if err := asm.assemble(buf2, meta, parsedMsg, parsedMsg.Get(fieldName)); err != nil {
 			t.Fatal(err)
 		}
 		assert.Equal(t, append([]byte{0x00, 0x0F}, fdata...), buf2.Bytes())
@@ -500,7 +511,7 @@ func TestFieldData_Copy(t *testing.T) {
 	parsedMsg := &ParsedMsg{IsRequest: true, FieldDataMap: make(map[int]*FieldData), Msg: msg}
 
 	buf := bytes.NewBufferString("1234")
-	if err := parseFixed(buf, parsedMsg, msg.Field("FixedField")); err != nil {
+	if err := parseFixed(&ParserConfig{LogEnabled: false}, buf, parsedMsg, msg.Field("FixedField")); err != nil {
 		t.Fatal(err)
 	}
 	fd := parsedMsg.Get("FixedField")
