@@ -2,6 +2,7 @@ package iso8583
 
 import (
 	"encoding/hex"
+	"errors"
 	_ "fmt"
 	"github.com/rkbalgi/libiso/encoding/ebcdic"
 	"log"
@@ -21,9 +22,11 @@ func (fldData *FieldData) Def() IsoField {
 	return fldData.fieldDef
 }
 
+var ErrUnsupportedEncoding = errors.New("libiso: Invalid/Unsupported field encoding")
+
 //SetData sets field data as per the encoding
 //additional padding will be applied if required
-func (fldData *FieldData) SetData(value string) {
+func (fldData *FieldData) SetData(value string) error {
 
 	switch fldData.fieldDef.getDataEncoding() {
 	case asciiEncoding:
@@ -66,7 +69,7 @@ func (fldData *FieldData) SetData(value string) {
 
 			data, err := hex.DecodeString(value)
 			if err != nil {
-				panic(err.Error())
+				return errors.New("libiso: Invalid value for a binary/bcd field")
 			}
 			switch fldData.fieldDef.(type) {
 			case *FixedFieldDef:
@@ -82,11 +85,10 @@ func (fldData *FieldData) SetData(value string) {
 
 		}
 	default:
-		{
-			panic("unsupported encoding")
-		}
-
+		return ErrUnsupportedEncoding
 	}
+
+	return nil
 
 }
 
@@ -135,27 +137,20 @@ func (fldData FieldData) String() string {
 
 	switch fldData.fieldDef.getDataEncoding() {
 	case asciiEncoding:
-		{
-			return string(fldData.fieldData)
-		}
+		return string(fldData.fieldData)
 	case ebcdicEncoding:
-		{
-			encoded := ebcdic.EncodeToString(fldData.fieldData)
-			log.Println("encoded - ", encoded, "hex ", hex.EncodeToString(fldData.fieldData))
-			return encoded
-		}
+		encoded := ebcdic.EncodeToString(fldData.fieldData)
+		log.Println("encoded - ", encoded, "hex ", hex.EncodeToString(fldData.fieldData))
+		return encoded
 	case binaryEncoding:
 		fallthrough
 	case bcdEncoding:
-		{
-			return hex.EncodeToString(fldData.fieldData)
-		}
+		return hex.EncodeToString(fldData.fieldData)
 	default:
-		{
-			panic("unsupported encoding")
-		}
-
+		log.Printf("unsupported encoding: %d", fldData.fieldDef.getDataEncoding())
 	}
+
+	return ""
 
 }
 

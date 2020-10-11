@@ -14,7 +14,7 @@ type PinBlock_Iso0 struct {
 func (pinBlock *PinBlock_Iso0) Encrypt(pan string, clearPin string, key []byte) ([]byte, error) {
 
 	if len(clearPin) > 12 {
-		panic("pin length > 12")
+		return nil, ErrInvalidPinLength
 	}
 
 	buf := bytes.NewBufferString(fmt.Sprintf("0%X%s", len(clearPin), clearPin))

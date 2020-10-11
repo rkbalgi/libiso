@@ -14,6 +14,9 @@ type PinblockIso1 struct {
 
 func (pinBlock *PinblockIso1) Encrypt(pan string, clearPin string, key []byte) (res []byte, err error) {
 
+	if len(clearPin) > 12 {
+		return nil, ErrInvalidPinLength
+	}
 	buf := bytes.NewBufferString(fmt.Sprintf("1%X%s", len(clearPin), clearPin))
 	fillRandom(buf)
 

@@ -8,8 +8,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	_crypt "github.com/rkbalgi/libiso/crypto"
 )
+
+var ErrInvalidPinLength = errors.New("libiso: Invalid PIN length (cannot exceed 12)")
 
 // PinBlocker represents a interface for types that can decrypt or encrypt a PIN block
 type PinBlocker interface {

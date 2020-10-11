@@ -3,13 +3,14 @@ package iso8583
 import (
 	"bytes"
 	"encoding/binary"
-	_ "encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"github.com/rkbalgi/libiso/encoding/ebcdic"
+	"log"
 	"strconv"
 )
 
+// VariableFieldDef represents the definition of a variable field
 type VariableFieldDef struct {
 	name           string
 	dataEncoding   int
@@ -19,7 +20,7 @@ type VariableFieldDef struct {
 	bPos           int
 }
 
-//create a new fixed field definition
+// NewVariableFieldDef creates a new fixed field definition
 func NewVariableFieldDef(pName string,
 	pLenEncoding int,
 	pDataEncoding int,
@@ -69,26 +70,15 @@ func (field *VariableFieldDef) Parse(
 	var dataLen uint64 = 0
 	switch field.lengthEncoding {
 	case asciiEncoding:
-		{
-			dataLen, _ = strconv.ParseUint(string(tmp), 10, 64)
-		}
+		dataLen, _ = strconv.ParseUint(string(tmp), 10, 64)
 	case ebcdicEncoding:
-		{
-
-			dataLen, _ = strconv.ParseUint(ebcdic.EncodeToString(tmp), 10, 64)
-		}
+		dataLen, _ = strconv.ParseUint(ebcdic.EncodeToString(tmp), 10, 64)
 	case binaryEncoding:
-		{
-			dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 16, 64)
-		}
+		dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 16, 64)
 	case bcdEncoding:
-		{
-			dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 10, 64)
-		}
+		dataLen, _ = strconv.ParseUint(hex.EncodeToString(tmp), 10, 64)
 	default:
-		{
-			panic("unsupported encoding")
-		}
+		log.Println("unsupported encoding")
 	}
 
 	bFieldData := make([]byte, dataLen)
@@ -130,76 +120,47 @@ func (field *VariableFieldDef) EncodedLength(dataLen int) []byte {
 
 	if field.lenIndSize > 4 &&
 		(field.lengthEncoding == bcdEncoding || field.lengthEncoding == binaryEncoding) {
-		panic("[llvar] invalid length indicator size for bcd/binary - >4")
+		log.Println("[llvar] invalid length indicator size for bcd/binary - >4")
 	}
 
 	var ll []byte
 
 	switch field.lengthEncoding {
 	case binaryEncoding:
-		{
-			switch field.lenIndSize {
-			case 1:
-				{
-					ll = []byte{byte(dataLen)}
-				}
-			case 2:
-				{
-					ll = make([]byte, 2)
-					binary.BigEndian.PutUint16(ll, uint16(dataLen))
-				}
-			case 4:
-				{
-					ll = make([]byte, 4)
-					binary.BigEndian.PutUint32(ll, uint32(dataLen))
-				}
-			default:
-				{
-					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field.lenIndSize))
-				}
-			}
-
+		switch field.lenIndSize {
+		case 1:
+			ll = []byte{byte(dataLen)}
+		case 2:
+			ll = make([]byte, 2)
+			binary.BigEndian.PutUint16(ll, uint16(dataLen))
+		case 4:
+			ll = make([]byte, 4)
+			binary.BigEndian.PutUint32(ll, uint32(dataLen))
+		default:
+			log.Printf(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d\n", field.lenIndSize))
 		}
 
 	case bcdEncoding:
-		{
-
-			switch field.lenIndSize {
-			case 1:
-				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%0d", dataLen))
-				}
-			case 2:
-				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%04d", dataLen))
-				}
-			case 4:
-				{
-					ll, _ = hex.DecodeString(fmt.Sprintf("%08d", dataLen))
-				}
-			default:
-				{
-					panic(fmt.Sprintf("[llvar] invalid length indicator size for binary field - %d", field.lenIndSize))
-				}
-			}
-
+		switch field.lenIndSize {
+		case 1:
+			ll, _ = hex.DecodeString(fmt.Sprintf("%0d", dataLen))
+		case 2:
+			ll, _ = hex.DecodeString(fmt.Sprintf("%04d", dataLen))
+		case 4:
+			ll, _ = hex.DecodeString(fmt.Sprintf("%08d", dataLen))
+		default:
+			log.Printf("[llvar] invalid length indicator size for binary field - %d", field.lenIndSize)
 		}
 
 	case asciiEncoding:
-		{
 
-			lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
-			ll = []byte(lenStr)
-
-		}
+		lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
+		ll = []byte(lenStr)
 
 	case ebcdicEncoding:
-		{
 
-			lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
-			ll = ebcdic.Decode(lenStr)
-
-		}
+		lenStr := encodedLengthAsString(field.lenIndSize, dataLen)
+		ll = ebcdic.Decode(lenStr)
 
 	}
 
@@ -212,37 +173,27 @@ func encodedLengthAsString(lenIndSize int, dataLen int) string {
 
 	switch lenIndSize {
 	case 1:
-		{
-			if dataLen > 9 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
-			}
-			tmp = fmt.Sprintf("%d", dataLen)
+		if dataLen > 9 {
+			log.Printf("[llvar] data length > %d\n", dataLen)
 		}
+		tmp = fmt.Sprintf("%d", dataLen)
 	case 2:
-		{
-			if dataLen > 99 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
-			}
-			tmp = fmt.Sprintf("%02d", dataLen)
+		if dataLen > 99 {
+			log.Printf("[llvar] data length > %d\n", dataLen)
 		}
+		tmp = fmt.Sprintf("%02d", dataLen)
 	case 3:
-		{
-			if dataLen > 999 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
-			}
-			tmp = fmt.Sprintf("%03d", dataLen)
+		if dataLen > 999 {
+			log.Printf("[llvar] data length > %d\n", dataLen)
 		}
+		tmp = fmt.Sprintf("%03d", dataLen)
 	case 4:
-		{
-			if dataLen > 9999 {
-				panic(fmt.Sprintf("[llvar] data length > %d\n", dataLen))
-			}
-			tmp = fmt.Sprintf("%04d", dataLen)
+		if dataLen > 9999 {
+			log.Printf("[llvar] data length > %d\n", dataLen)
 		}
+		tmp = fmt.Sprintf("%04d", dataLen)
 	default:
-		{
-			panic(fmt.Sprintf("[llvar] invalid length indicator size for  field - %d", lenIndSize))
-		}
+		log.Printf("[llvar] invalid length indicator size for  field - %d", lenIndSize)
 	}
 
 	return tmp

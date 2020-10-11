@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"reflect"
 	"regexp"
@@ -157,7 +158,7 @@ func setFixedField(sf interface{}, fieldSize uint, fieldValue interface{}, dataT
 		}
 	default:
 		{
-			panic(fmt.Sprintf("set_fixed_field not implemented for this type - %d", dataType))
+			log.Printf("set_fixed_field not implemented for this type - %d", dataType)
 		}
 	}
 

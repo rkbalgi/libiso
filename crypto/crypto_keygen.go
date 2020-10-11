@@ -22,34 +22,8 @@ func GenerateDesKey(keyLen int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	//if keyLen == 8 {
-	//	key = tmp[0:8]
-	//} else if keyLen == 16 {
-	//	key = tmp[:16]
-	//} else {
-	//	key = tmp[:24]
-	//}
-
 	toOddParity(key)
 
 	return key, nil
 
 }
-
-/*
-func GenerateDesKey(key_len int) []byte {
-
-	if(key_len%8!=0){
-		panic("invalid keylen for generation")
-	}
-
-	key := make([]byte, key_len)
-	n, err := rand.Read(key)
-	if n != key_len || err != nil {
-		panic("key gen failure" + err.Error())
-	}
-
-	return key
-
-}
-*/

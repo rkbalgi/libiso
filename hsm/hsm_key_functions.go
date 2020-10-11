@@ -2,6 +2,7 @@ package hsm
 
 import (
 	"encoding/hex"
+	"errors"
 	"github.com/rkbalgi/libiso/crypto"
 	"golang.org/x/xerrors"
 	"strconv"
@@ -44,7 +45,7 @@ func encryptKey(keyStr string, keyType string) ([]byte, error) {
 
 	lmkKey := keyTypeTable[keyType[1:]]
 	if lmkKey == nil {
-		panic("unsupported key type" + keyType)
+		return nil, errors.New("unsupported key type" + keyType)
 	}
 
 	return encryptKeyThalesV(keyData, lmkKey, keyType)
@@ -123,14 +124,13 @@ func encryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, e
 }
 
 //decrypt a key encrypted under the lmk using thales variants
-
 func decryptKey(keyStr string, keyType string) ([]byte, error) {
 
 	keyData := extractKeyData(keyStr)
 
 	lmkKey := keyTypeTable[keyType[1:]]
 	if lmkKey == nil {
-		panic("unsupported key type" + keyType)
+		return nil, errors.New("unsupported key type" + keyType)
 	}
 
 	return decryptKeyThalesV(keyData, lmkKey, keyType)
@@ -138,7 +138,6 @@ func decryptKey(keyStr string, keyType string) ([]byte, error) {
 }
 
 //decrypt a key under the kek using thales variants
-
 func decryptKeyThalesV(keyData []byte, lmkKey []byte, keyType string) ([]byte, error) {
 
 	vKey := make([]byte, 16)

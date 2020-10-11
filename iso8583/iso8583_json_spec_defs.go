@@ -171,7 +171,7 @@ func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 				}
 
 			} else {
-				log.Panic("unsupported field type - ", isoFieldDef.Type)
+				log.Println("unsupported field type - ", isoFieldDef.Type)
 			}
 		}
 		specMap[iso8583MsgDef.specName] = iso8583MsgDef
@@ -181,17 +181,6 @@ func ReadSpecDefsFromBuf(buf *bytes.Buffer) {
 
 func constructFixedFieldDef(jsonFieldDef *JsonFieldDef) *FixedFieldDef {
 
-	/*attrs := strings.Split(json_field_def.Attrs, ";")
-	if len(attrs) != 4 {
-		log.Panic("invalid attribute spec for fixed field -" + json_field_def.Name)
-		return nil
-	}
-	//TODO:: for now only look at 1 and 2 attrs i.e. lengt and encoding
-	field_len, err := strconv.ParseUint(attrs[1], 10, 32)
-	if err != nil {
-		log.Panic("invalid field length -", json_field_def.Name)
-		return nil
-	}*/
 	encodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.DataEncoding)
 	fixedFieldDef := NewFixedFieldDef(jsonFieldDef.Name, encodingType, jsonFieldDef.Attrs.FieldLength)
 	fixedFieldDef.SetBitPosition(jsonFieldDef.BitPosition)
@@ -203,17 +192,6 @@ func constructFixedFieldDef(jsonFieldDef *JsonFieldDef) *FixedFieldDef {
 
 func constructVariableFieldDef(jsonFieldDef *JsonFieldDef) *VariableFieldDef {
 
-	/*attrs := strings.Split(json_field_def.Attrs, ";")
-	if len(attrs) != 5 {
-		log.Panic("invalid attribute spec for variable field -" + json_field_def.Name)
-		return nil
-	}
-	//TODO:: for now only look at 1,2 and 3 attrs i.e. lengt and encoding
-	field_len, err := strconv.ParseUint(attrs[1], 10, 32)
-	if err != nil {
-		log.Panic("invalid length indicator length -", json_field_def.Name)
-		return nil
-	}*/
 	lenEncodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.FieldIndicatorEncoding)
 	dataEncodingType := getEncoding(jsonFieldDef, jsonFieldDef.Attrs.DataEncoding)
 
@@ -247,7 +225,7 @@ func constructBmpFieldDef(iso8583MsgDef *MessageDef, jsonFieldDef *JsonFieldDef)
 			}
 		default:
 			{
-				log.Panic("unsupported child field for bitmapped parent field - ", childField.Type)
+				log.Println("unsupported child field for bitmapped parent field - ", childField.Type)
 			}
 		}
 

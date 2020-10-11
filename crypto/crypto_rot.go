@@ -1,5 +1,7 @@
 package crypto
 
+import "log"
+
 var englishAlpha = []uint8{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'}
 
 // RotN function rotates the input string by n (Caesars Cipher)
@@ -28,7 +30,7 @@ func RotN(n int, val string) string {
 
 		}
 		if !found {
-			panic(string(tmp) + " character found, only lowercase english alphabets expected.")
+			log.Printf(string(tmp) + " character found, only lowercase english alphabets expected.")
 		}
 
 	}

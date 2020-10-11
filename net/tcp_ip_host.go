@@ -63,7 +63,7 @@ func (tcpHost *TcpHost) handleClient(clientConn *net.TCPConn) {
 
 		str := recover()
 		if str != nil {
-			tcpHost.log.Printf("panic recovered. client connection will be closed.")
+			tcpHost.log.Printf("panic recovered. client connection will be closed: %s", str)
 			return
 		}
 
