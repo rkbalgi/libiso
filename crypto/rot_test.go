@@ -16,7 +16,7 @@ func Test_RotN_InvalidChar(t *testing.T) {
 	defer func() {
 		str := recover()
 		if str == nil {
-			t.Log("Test_RotN_InvalidChar() failed - %v", str)
+			t.Logf("Test_RotN_InvalidChar() failed - %v", str)
 		}
 	}()
 	RotN(3, "xyzragha!")
