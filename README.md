@@ -72,8 +72,9 @@ Please checkout https://github.com/rkbalgi/isosim project which uses this librar
 With v2.0.1 you can turn off logging (and hence gain some speed and lower allocations) using the new parser API
 
 ```go
-    
-    log.SetLevel(log.ErrorLevel)
+        parser := iso8583.NewParser(&iso8583.ParserConfig{LogEnabled: false})
+
+        log.SetLevel(log.ErrorLevel)
 
 	specName := "ISO8583-Test"
 	spec := iso8583.SpecByName(specName)
