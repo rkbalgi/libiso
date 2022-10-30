@@ -1,10 +1,10 @@
 package net
 
 import (
-	"encoding/hex"
-	//"fmt"
 	"bytes"
 	bin "encoding/binary"
+	"encoding/hex"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -16,9 +16,8 @@ type EchoServ struct {
 	TcpAddr *net.TCPAddr
 }
 
-//start listening to incoming client connections
-//and start off a new goroutine for each client
-
+// ListenAndAccept starts listening to incoming client connections
+// and start off a new goroutine for each client
 func (echoServer *EchoServ) ListenAndAccept() (err error) {
 
 	logger.Println("listening at -", echoServer.TcpAddr.String())
@@ -73,14 +72,14 @@ func handleClientError(clientCon net.Conn, err error) {
 	}
 }
 
-// AddMLI adds a MLI to the payload
+// AddMLI adds an MLI to the payload
 func AddMLI(mliType MliType, data []byte) []byte {
 
 	switch mliType {
 
 	case Mli2e:
 		{
-			var mli []byte = make([]byte, 2)
+			var mli = make([]byte, 2)
 			bin.BigEndian.PutUint16(mli, uint16(len(data)))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
@@ -88,7 +87,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 		}
 	case Mli2i:
 		{
-			var mli []byte = make([]byte, 2)
+			var mli = make([]byte, 2)
 			bin.BigEndian.PutUint16(mli, uint16(len(data)+2))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
@@ -96,7 +95,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 		}
 	case Mli4e:
 		{
-			var mli []byte = make([]byte, 4)
+			var mli = make([]byte, 4)
 			bin.BigEndian.PutUint32(mli, uint32(len(data)))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
@@ -104,7 +103,7 @@ func AddMLI(mliType MliType, data []byte) []byte {
 		}
 	case Mli4i:
 		{
-			var mli []byte = make([]byte, 4)
+			var mli = make([]byte, 4)
 			bin.BigEndian.PutUint32(mli, uint32(len(data)+4))
 			buf := bytes.NewBuffer(mli)
 			buf.Write(data)
@@ -121,6 +120,6 @@ func AddMLI(mliType MliType, data []byte) []byte {
 func HandleError(err error) {
 
 	if err != nil {
-		logger.Panicf("panic! - %s ", err)
+		logger.Println(fmt.Errorf("libiso: Unexpected error - :%w", err))
 	}
 }
